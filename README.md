@@ -19,8 +19,20 @@ O jogo acompanha uma pergunta simples, “Qual é a capital do Brasil?”, do te
 
 ## Como jogar
 
-Abra o `index.html` num navegador moderno. O jogo inteiro está nesse arquivo. Ele precisa de internet para carregar as fontes e a biblioteca 3D ([three.js](https://threejs.org/)). O progresso fica salvo no próprio navegador.
+Acesse **https://llm-para-leigos.pages.dev**. O progresso fica salvo no próprio navegador. O jogo precisa de internet para carregar as fontes e a biblioteca 3D ([three.js](https://threejs.org/)).
+
+## Como editar
+
+O código fica na pasta `src/`:
+
+- `head.html`: estilos (cores, fontes, layout)
+- `body.html`: estrutura da tela (cabeçalho, Tok, menu, introdução)
+- `engine.js`, `hud.js`, `ui2d.js`, `mini3d.js`, `concepts.js`, `models.js`: motor do jogo, interface, cenas 3D, glossário e mini-modelos
+- `c01_vitrine.js` a `c12_formatura.js`: uma fase por arquivo (`museu_base.js` e `galaxia_base.js` são a base das fases 5 e 7)
+- `main.js`: inicialização
+
+O comando `bash build.sh` junta tudo num arquivo só, `dist/index.html`, que dá para abrir direto no navegador.
 
 ## Publicação
 
-O site é publicado com o Cloudflare Pages, direto deste repositório, sem etapa de build: o diretório de saída é a raiz do repositório.
+Cada mudança enviada para o ramo `main` é publicada automaticamente pelo Cloudflare Pages, que roda `bash build.sh` e publica a pasta `dist`.

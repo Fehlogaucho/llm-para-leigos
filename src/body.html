@@ -1,0 +1,86 @@
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <filter id="rough" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="4"/><feDisplacementMap in="SourceGraphic" scale="2.2"/></filter>
+    <filter id="bleed" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="3" seed="9"/><feDisplacementMap in="SourceGraphic" scale="5"/><feGaussianBlur stdDeviation="0.6"/></filter>
+    <symbol id="tokSym" viewBox="0 0 48 48"><g filter="url(#rough)"><line x1="24" y1="3.5" x2="24" y2="11" stroke="#23304D" stroke-width="2.5" stroke-linecap="round"/><circle cx="24" cy="4" r="3.3" fill="#CF5636" stroke="#23304D" stroke-width="1.2"/><rect x="6" y="11" width="36" height="32" rx="9" fill="#EFAE22" stroke="#23304D" stroke-width="2.2"/><circle cx="17.5" cy="25" r="5" fill="#fff" stroke="#23304D" stroke-width="1.2"/><circle cx="30.5" cy="25" r="5" fill="#fff" stroke="#23304D" stroke-width="1.2"/><circle cx="18.5" cy="26" r="2.4" fill="#23304D"/><circle cx="31.5" cy="26" r="2.4" fill="#23304D"/></g><ellipse cx="11" cy="33" rx="3" ry="2" fill="#CF5636" opacity=".35"/><ellipse cx="37" cy="33" rx="3" ry="2" fill="#CF5636" opacity=".35"/></symbol>
+  </defs>
+</svg>
+<div class="app">
+  <div id="stage">
+    <div id="tip" hidden></div>
+    <canvas id="fx" aria-hidden="true"></canvas>
+    <div class="stage-fade" id="stageFade" aria-hidden="true"></div>
+    <div id="scene2d" aria-live="polite"></div>
+    <div class="layer" id="hsLayer" aria-label="Pontos de informação"></div>
+    <div class="layer" id="balLayer"></div>
+    <div class="g2d" id="g2d" hidden aria-hidden="true"><svg viewBox="0 0 34 40"><path d="M17 36 C 15 28, 16 16, 17 4" fill="none" stroke="#23304D" stroke-width="3.2" stroke-linecap="round" filter="url(#rough)"/><path d="M7 26 L17 37 L27 26" fill="#EFAE22" stroke="#23304D" stroke-width="2.6" stroke-linejoin="round" filter="url(#rough)"/></svg></div>
+    <div class="hud-top">
+      <button class="hud-menu" id="menuBtn" aria-label="Abrir o menu do jogo" aria-expanded="false" aria-controls="drawer">
+        <span class="mn" id="hudIc">1</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h9" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+      </button>
+      <button class="hud-mission" id="hudMission" aria-label="Ver o resumo da fase"><span class="hm-k" id="hudMk">Missão 1/3</span><span id="hudMt">…</span></button>
+    </div>
+    <div class="dock" id="dock">
+      <div class="tok-box" id="tokBox">
+        <button class="tok-av" id="tokAv" aria-label="Tok: toque para ouvir a dica"><svg viewBox="0 0 48 48" aria-hidden="true"><use href="#tokSym"/><path class="mouth" d="M18 34 q6 5 12 0" stroke="#23304D" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg></button>
+        <div class="tok-say" id="tokSay" role="status"><p id="tokText">Oi! Eu sou o Tok.</p><div class="tok-foot" id="tokFoot"></div></div>
+      </div>
+      <div class="actbar" id="actbar" aria-label="Ações"></div>
+    </div>
+  </div>
+</div>
+<div class="drawer" id="drawer" hidden>
+  <div class="dr-card" role="dialog" aria-modal="true" aria-label="Menu do jogo">
+    <div class="dr-head">
+      <span class="mc-ic" aria-hidden="true" id="drIc">1</span>
+      <div class="mc-txt"><span class="mc-n" id="hudN">Fase 1</span><b id="hudName">…</b><span class="stars" id="hudStars" aria-hidden="true"></span></div>
+      <button class="icon-btn" id="drClose" aria-label="Fechar o menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>
+    </div>
+    <div class="dr-lv" id="xpChip" title="Seu nível"><span class="lv" id="hudLv">1</span><span class="xp-txt"><b id="hudLvName">Curioso</b><span class="xp-bar"><i id="hudXp"></i></span></span></div>
+    <div class="dr-grid">
+      <button class="dr-btn" id="drBrief"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/></svg>Resumo da fase</button>
+      <button class="dr-btn" id="mapBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z M9 4v14 M15 6v14" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Mapa das fases</button>
+      <button class="dr-btn" id="glossBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5zM5 19.5A1.5 1.5 0 0 0 6.5 21H19v-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Glossário</button>
+      <button class="dr-btn" id="voiceBtn" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h11a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H9l-4 3.5V15H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span class="on-t">Voz do Tok: ligada</span><span class="off-t">Voz do Tok: desligada</span></button>
+      <button class="dr-btn" id="soundBtn" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/></svg><span class="on-t">Sons: ligados</span><span class="off-t">Sons: desligados</span></button>
+      <button class="dr-btn" id="drIntro"><svg viewBox="0 0 48 48" aria-hidden="true"><use href="#tokSym"/></svg>Rever a introdução</button>
+    </div>
+  </div>
+</div>
+<div id="toast" role="status"></div>
+<div class="intro" id="intro" hidden>
+  <div class="intro-card" role="dialog" aria-modal="true" aria-labelledby="obTitle0">
+    <div class="ob-head">
+      <svg class="ob-tok" viewBox="0 0 48 48" aria-hidden="true"><use href="#tokSym"/><path d="M18 34 q6 5 12 0" stroke="#23304D" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg>
+      <div class="ob-hd"><span class="ob-k">LLM para leigos</span><div class="ob-dots" id="obDots" aria-hidden="true"><i class="on"></i><i></i><i></i></div></div>
+      <button class="ob-skip" id="obSkip">Pular</button>
+    </div>
+    <section class="ob-slide" data-i="0">
+      <h1 id="obTitle0">Você conversa com IAs. Mas sabe como elas pensam?</h1>
+      <p>Neste jogo você descobre, sem fórmulas, como funcionam as <b>LLMs</b>, as inteligências artificiais de texto por trás de assistentes como o ChatGPT e o Claude.</p>
+      <div class="ob-q"><span class="tk c5">Qual é a capital do Brasil?</span><span class="brush" style="font-size:26px">→</span><span class="tk y">Brasília</span></div>
+      <p class="note l">Vamos seguir essa pergunta até o fim.</p>
+    </section>
+    <section class="ob-slide" data-i="1" hidden>
+      <h1>A história em 12 fases</h1>
+      <ol class="ob-acts">
+        <li><span class="ob-n">1</span><span><b>O que uma LLM faz</b><small>a vitrine e um mistério</small></span></li>
+        <li><span class="ob-n">2</span><span><b>Viagem ao passado</b><small>as ideias que vieram antes, de 2.000 anos atrás até hoje</small></span></li>
+        <li><span class="ob-n">3–8</span><span><b>Como funciona, peça por peça</b><small>prever palavras, tokens, matrizes, treino, significados e atenção</small></span></li>
+        <li><span class="ob-n">9–12</span><span><b>Ajustar, buscar e criar</b><small>prompt, RAG, crie a sua LLM e a formatura</small></span></li>
+      </ol>
+    </section>
+    <section class="ob-slide" data-i="2" hidden>
+      <h1>Objetivo e controles</h1>
+      <p class="ob-goal"><b>Objetivo:</b> cumprir as missões de cada fase, subir de nível e passar na prova final para ganhar o troféu.</p>
+      <ul class="ob-how">
+        <li><span class="ob-ic"><span class="ic-btn" style="width:56px;text-align:center">Toque</span></span><span>O <b>botão azul que pisca</b> é sempre o próximo passo</span></li>
+        <li><span class="ob-ic ic-hs"><i>?</i></span><span>Os <b>balões amarelos</b> explicam cada conceito</span></li>
+        <li><span class="ob-ic"><svg viewBox="0 0 48 48" width="40" height="40" aria-hidden="true"><use href="#tokSym"/><path d="M18 34 q6 5 12 0" stroke="#23304D" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg></span><span>O <b>Tok</b> dá dicas e fala (a voz pode ser desligada)</span></li>
+        <li><span class="ob-ic"><span class="ic-cam" style="width:40px;display:grid;place-items:center">⟳</span></span><span>Nas fases em 3D, as <b>setas da lateral</b> giram a cena</span></li>
+      </ul>
+    </section>
+    <div class="ob-nav"><button class="btn" id="obBack" hidden>Voltar</button><button class="btn primary big" id="startBtn">Próximo</button></div>
+  </div>
+</div>
