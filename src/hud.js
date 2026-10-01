@@ -371,8 +371,9 @@ function initHud() {
   $('#hudMission').addEventListener('click', openMissions);
   $('#tokSay').addEventListener('click', () => { if (TG.dialog) TG.next(); else { VOICE.say(TG.hintText); } });
   TG.show = () => { };
-  const vb = $('#voiceBtn'); const drawV = () => { vb.setAttribute('aria-pressed', S.voice === false ? 'false' : 'true'); vb.title = S.voice === false ? 'Voz desligada' : 'Voz ligada'; };
-  if (!VOICE.ok) { vb.hidden = true; } else { vb.addEventListener('click', () => { S.voice = S.voice === false; saveState(); drawV(); if (S.voice === false) VOICE.stop(); else VOICE.say('Voz ligada!'); }); drawV(); }
+  const vb = $('#voiceBtn'), vq = $('#voiceQuick'); const drawV = () => { const on = S.voice !== false; vb.setAttribute('aria-pressed', on ? 'true' : 'false'); vb.title = on ? 'Voz ligada' : 'Voz desligada'; vq.setAttribute('aria-pressed', on ? 'true' : 'false'); vq.setAttribute('aria-label', on ? 'Leitura em voz alta: ligada. Toque para desligar' : 'Leitura em voz alta: desligada. Toque para ligar'); vq.title = on ? 'Desligar a leitura em voz alta' : 'Ligar a leitura em voz alta'; };
+  const togV = () => { S.voice = S.voice === false; saveState(); drawV(); if (S.voice === false) { VOICE.stop(); toast('Leitura em voz alta desligada'); } else VOICE.say('Voz ligada!'); };
+  if (!VOICE.ok) { vb.hidden = true; vq.hidden = true; } else { vb.addEventListener('click', togV); vq.addEventListener('click', togV); drawV(); }
   document.addEventListener('keydown', e => { if (e.key === 'Escape') { const m = document.querySelector('.mapv'); if (m) m.remove(); const g = document.querySelector('.gcard-wrap'); if (g) { if (g._close) g._close(); else g.remove(); } } });
   new ResizeObserver(() => document.documentElement.style.setProperty('--dock-h', ($('#dock').offsetHeight || 0) + 'px')).observe($('#dock'));
 }

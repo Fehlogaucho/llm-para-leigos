@@ -5,7 +5,7 @@ Um jogo em português, para celular e computador, que explica sem fórmulas como
 O jogo acompanha uma pergunta simples, “Qual é a capital do Brasil?”, do texto digitado até a resposta “Brasília”, em 12 fases:
 
 1. **O que uma LLM faz**: a vitrine e um mistério
-2. **Viagem ao passado**: 9 enigmas históricos, da China antiga ao ChatGPT, e uma conversa com a ELIZA (1966)
+2. **Viagem ao passado**: 9 cenas 3D animadas, da China antiga ao ChatGPT, que mostram o problema de cada época e a ideia que o resolveu; depois, uma conversa com a ELIZA (1966)
 3. **Prever a próxima palavra**: contagens, a roleta das chances e a temperatura
 4. **Tokens**: cortar palavras em pedaços e trocar cada pedaço por um número
 5. **Matrizes**: ser a matriz e ajustar os pesos até a resposta certa vencer (3D)
