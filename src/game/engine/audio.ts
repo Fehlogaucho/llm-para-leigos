@@ -172,3 +172,21 @@ export function playTheme(name: string) {
   }
 }
 export function stopTheme() { current?.stop(); current = null }
+
+/** Toca uma lista de amostras (números de −9 a 9) repetida: o “som em números”. */
+export function playSamples(samples: number[], cyclesPerSec: number, dur = 1.4) {
+  if (!ctx) return
+  const sr = ctx.sampleRate, len = Math.floor(sr * dur)
+  const buf = ctx.createBuffer(1, len, sr), d = buf.getChannelData(0)
+  const n = samples.length
+  for (let i = 0; i < len; i++) {
+    const ph = ((i / sr) * cyclesPerSec * n) % n
+    const a = Math.floor(ph), b = (a + 1) % n, f = ph - a
+    const env = Math.min(1, i / (sr * 0.02), (len - i) / (sr * 0.15))
+    d[i] = ((samples[a] * (1 - f) + samples[b] * f) / 9) * 0.5 * env
+  }
+  const src = ctx.createBufferSource(); src.buffer = buf
+  const g = ctx.createGain(); g.gain.value = 0.8
+  src.connect(g); g.connect(sfx)
+  src.start()
+}

@@ -11,7 +11,7 @@ function Title() {
   const start = (fresh: boolean) => {
     initAudio(); SFX.play('open')
     if (fresh) G().resetProgress()
-    const lv = fresh ? 'prologo' : (LEVELS[G().level] ? G().level : 'prologo')
+    const lv = fresh ? 'quarto' : (LEVELS[G().level] ? G().level : 'quarto')
     useGame.setState({ screen: 'game', level: '', loading: lv, levelReady: null })
   }
   useEffect(() => {
@@ -27,7 +27,7 @@ function Title() {
       <div className="logo">
         <div className="l1">LLM</div>
         <div className="l2">THE PREDICTION FACTORY</div>
-        <div className="l3">A Language Engine perdeu a memória. Atravesse os mundos que explicam como uma máquina aprende a prever palavras e recupere seus núcleos.</div>
+        <div className="l3">Uma pergunta, um raio… e o NEX foi parar dentro da IA. Ajude a Language Engine a recuperar a memória e encontre o caminho de volta para casa.</div>
       </div>
       <div className="menu">
         {saved && L && <button className="btn primary" onClick={() => start(false)}>Continuar · {L.title}</button>}
