@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { G, useGame, type Vec3 } from '../store'
-import { RT, INTERACTS } from './runtime'
+import { RT } from './runtime'
 import { INPUT } from './input'
 import { playTheme } from './audio'
 import { runScript, setLevelSignal, type Ctx } from './script'
@@ -34,6 +34,6 @@ export function useLevel(o: LevelOpts) {
       await new Promise<void>((res) => { const t = () => { if (ac.signal.aborted) return; if (!G().loading) res(); else setTimeout(t, 100) }; t() })
       for (const s of o.scripts || []) runScript(s, ac.signal)
     })()
-    return () => { ac.abort(); setLevelSignal(null); INPUT.tapTarget = null; INPUT.tapUse = null; RT.frozen = false; RT.lookAt = null; RT.novaLook = null; INTERACTS.clear() }
+    return () => { ac.abort(); setLevelSignal(null); INPUT.tapTarget = null; INPUT.tapUse = null; RT.frozen = false; RT.lookAt = null; RT.novaLook = null }
   }, [])
 }

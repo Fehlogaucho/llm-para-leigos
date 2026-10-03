@@ -7,7 +7,7 @@ import { SkyDome, Lights, Dust } from '../../world/Atmosphere'
 import { Interactable, Solid, Block, useFlag } from '../../world/core'
 import { Batch, Column, Lantern, Statue, RingBalustrade, Balustrade, RectPlatform } from '../../world/Architecture'
 import { Portal } from '../../world/Instruments'
-import { Gate, Lift, useNear } from '../../world/mechanics'
+import { Gate, Lift, useNear, useFarClose } from '../../world/mechanics'
 import { MAT } from '../../world/materials'
 import { useOverlay, Panel } from '../../world/puzzle'
 import { FONT } from '../../world/fonts'
@@ -220,6 +220,7 @@ function DiceArena() {
   })
   const totalRef = useRef(total); totalRef.current = total
   const openRef = useRef(open); openRef.current = open
+  useFarClose(open, () => setOpen(false), [0, 0, 4.4], 4.5)
   useOverlay('dice', open ? (
     <Panel title="Os Dados" onExit={() => setOpen(false)}>
       <p>Jogadas: <b>{total}</b>{last ? <> · última: <b>{last}</b></> : null}. {total < 120 ? `Jogue até ${120} vezes para ver o padrão.` : 'Veja como as barras ficaram parecidas.'}</p>
@@ -387,6 +388,7 @@ function FutureWheel() {
   const histRef = useRef(hist); histRef.current = hist
   const spinRef = useRef(spinning); spinRef.current = spinning
   const openRef = useRef(open); openRef.current = open
+  useFarClose(open, () => setOpen(false), [P.wheel[0] - 3.4, Y2, 0], 4.5, () => spinRef.current)
   useOverlay('wheel', open ? (
     <Panel title="A Roleta do Futuro" onExit={spinning ? undefined : () => setOpen(false)}>
       <p>Aposte numa cor e gire. Giros: <b>{hist.length}</b>/5 · acertos: <b>{hist.filter((h) => h.bet === h.res).length}</b></p>
@@ -452,6 +454,7 @@ function LiveGraph() {
   const triedRef = useRef(tried); triedRef.current = tried
   const openRef = useRef(open); openRef.current = open
   const labels = counts.map((_, i) => String(i + nd))
+  useFarClose(open, () => { setOpen(false); clearInterval(timer.current) }, [P.graph[0] - 1.4, 0, P.graph[2]], 4.5)
   useOverlay('graph', open ? (
     <Panel title="Gráfico Vivo" onExit={() => { setOpen(false); clearInterval(timer.current) }}>
       <p>Escolha quantos dados somar e jogue 240 vezes. Veja o formato mudar. {!tried.includes(2) || !tried.includes(3) ? 'Experimente 2 e 3 dados.' : ''}</p>

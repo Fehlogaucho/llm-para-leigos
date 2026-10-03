@@ -66,21 +66,35 @@ export function CameraRig() {
       const roots: THREE.Object3D[] = []
       for (const it of INTERACTS.values()) if (it.enabled && it.root) roots.push(it.root)
       const hits = ray.intersectObjects(roots, true)
+      const useOrWalk = (it: any) => {
+        const d = Math.hypot(it.pos.x - RT.player.x, it.pos.z - RT.player.z)
+        if (d < it.radius && Math.abs(it.pos.y - RT.player.y) < 3.5) { it.use(); return }
+        // anda até perto e usa
+        const dir = new THREE.Vector3().subVectors(RT.player, it.pos).setY(0).normalize()
+        INPUT.tapTarget = it.pos.clone().addScaledVector(dir, Math.max(0.6, it.radius * 0.5))
+        INPUT.tapTarget.y = it.pos.y
+        INPUT.tapUse = it.id
+        SFX.play('tick')
+      }
       if (hits.length) {
         let o: THREE.Object3D | null = hits[0].object
         while (o && !o.userData.interactId) o = o.parent
         const it = o ? INTERACTS.get(o.userData.interactId) : null
-        if (it) {
-          const d = Math.hypot(it.pos.x - RT.player.x, it.pos.z - RT.player.z)
-          if (d < it.radius) { it.use(); return }
-          // anda até perto e usa
-          const dir = new THREE.Vector3().subVectors(RT.player, it.pos).setY(0).normalize()
-          INPUT.tapTarget = it.pos.clone().addScaledVector(dir, Math.max(0.6, it.radius * 0.5))
-          INPUT.tapTarget.y = it.pos.y
-          INPUT.tapUse = it.id
-          SFX.play('tick')
-          return
+        if (it) { useOrWalk(it); return }
+      }
+      // 1b) tocou num objeto (ex.: o telescópio) perto de algo interativo
+      const visible = (x: THREE.Object3D | null) => { while (x) { if (!x.visible) return false; x = x.parent } return true }
+      const sh = ray.intersectObject(scene, true).find((h) => (h.object as any).isMesh && h.distance < 70 && visible(h.object))
+      // só objetos (paredes laterais, peças); tocar no chão continua sendo só andar
+      const upish = sh?.face ? sh.face.normal.clone().transformDirection(sh.object.matrixWorld).y > 0.8 : true
+      if (sh && !upish) {
+        let best: any = null, bd = 2.8
+        for (const it of INTERACTS.values()) {
+          if (!it.enabled) continue
+          const d = Math.hypot(it.pos.x - sh.point.x, it.pos.z - sh.point.z)
+          if (d < bd && Math.abs(it.pos.y - sh.point.y) < 4.5) { bd = d; best = it }
         }
+        if (best) { useOrWalk(best); return }
       }
       // 2) chão
       const h = COLL.raycast(ray.ray.origin, ray.ray.direction, 120)

@@ -189,3 +189,14 @@ export function Lift({ id, from, to, enabled = true, startTop = false, r = 1.8, 
 function InteractLift({ id, pos, label, enabled, onUse }: { id: string; pos: V3; label: string; enabled: boolean; onUse: () => void }) {
   return <Interactable id={id} label={label} position={[pos[0], pos[1] + 0.25, pos[2]]} radius={1.9} enabled={enabled} onUse={onUse} markerY={2.4} color="#7fe3ff" />
 }
+
+/** Fecha um painel quando o NEX se afasta (r metros) do ponto de uso. */
+export function useFarClose(open: boolean, close: () => void, pos: V3, r = 5, hold?: () => boolean) {
+  const cb = useRef(close); cb.current = close
+  const o = useRef(open); o.current = open
+  const h = useRef(hold); h.current = hold
+  useFrame(() => {
+    if (!o.current || (h.current && h.current())) return
+    if (Math.hypot(RT.player.x - pos[0], RT.player.z - pos[2]) > r || Math.abs(RT.player.y - pos[1]) > 3) { o.current = false; cb.current() }
+  })
+}

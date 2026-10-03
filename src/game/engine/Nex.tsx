@@ -256,6 +256,7 @@ export function Nex() {
     let best: any = null, bd = 1e9
     if (!frozen) for (const it of INTERACTS.values()) {
       if (!it.enabled) continue
+      if (it.root && it.root.parent) it.root.getWorldPosition(it.pos)
       const d = Math.hypot(it.pos.x - RT.player.x, it.pos.z - RT.player.z)
       if (d < it.radius && Math.abs(it.pos.y - RT.player.y) < 3.5 && d < bd) { bd = d; best = it }
     }
