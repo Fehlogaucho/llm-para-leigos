@@ -49,8 +49,8 @@ void main(){
   #include <colorspace_fragment>
 }`
 
-export function SkyDome({ preset = 'sunset' }: { preset?: string }) {
-  const p = SKY[preset] || SKY.sunset
+export function SkyDome({ preset = 'sunset', custom }: { preset?: string; custom?: Partial<SkyPreset> }) {
+  const p = { ...(SKY[preset] || SKY.sunset), ...(custom || {}) }
   const mat = useMemo(() => new THREE.ShaderMaterial({
     vertexShader: skyVert, fragmentShader: skyFrag, side: THREE.BackSide, depthWrite: false, fog: false,
     uniforms: {
@@ -58,18 +58,19 @@ export function SkyDome({ preset = 'sunset' }: { preset?: string }) {
       uBelow: { value: new THREE.Color(p.below) }, uSunCol: { value: new THREE.Color(p.sunCol) }, uSun: { value: new THREE.Vector3(...p.sun) },
       uTime: { value: 0 }, uStars: { value: p.stars },
     },
-  }), [preset])
+  }), [preset, JSON.stringify(custom || {})])
   const ref = useRef<THREE.Mesh>(null!)
   useFrame(({ camera }) => { mat.uniforms.uTime.value = RT.time; ref.current.position.copy(camera.position) })
   return <mesh ref={ref} material={mat} renderOrder={-10} frustumCulled={false} userData={{ noCollide: true }}><sphereGeometry args={[500, 48, 24]} /></mesh>
 }
 
 /** Luzes: sol com sombra que acompanha o jogador, céu/chão e reflexos. */
-export function Lights({ preset = 'sunset', sunI = 2.4, hemiI = 0.9, envI = 0.9 }: { preset?: string; sunI?: number; hemiI?: number; envI?: number }) {
-  const p = SKY[preset] || SKY.sunset
+export function Lights({ preset = 'sunset', sunI = 2.4, hemiI = 0.9, envI = 0.9, custom }: { preset?: string; sunI?: number; hemiI?: number; envI?: number; custom?: Partial<SkyPreset> }) {
+  const p = { ...(SKY[preset] || SKY.sunset), ...(custom || {}) }
   const light = useRef<THREE.DirectionalLight>(null!)
   const { scene } = useThree()
-  const sun = useMemo(() => new THREE.Vector3(...p.sun).normalize(), [preset])
+  const ck = JSON.stringify(custom || {})
+  const sun = useMemo(() => new THREE.Vector3(...p.sun).normalize(), [preset, ck])
   const high = QUALITY.q === 'high'
   useFrame(() => {
     const l = light.current
@@ -78,7 +79,7 @@ export function Lights({ preset = 'sunset', sunI = 2.4, hemiI = 0.9, envI = 0.9 
     l.target.position.set(RT.player.x, RT.player.y, RT.player.z)
     l.target.updateMatrixWorld()
   })
-  useMemo(() => { scene.fog = new THREE.Fog(p.fog, p.fogNear, p.fogFar) }, [preset])
+  useMemo(() => { scene.fog = new THREE.Fog(p.fog, p.fogNear, p.fogFar) }, [preset, ck])
   return (
     <>
       <directionalLight ref={light} color={p.sunCol} intensity={sunI} castShadow={high}
