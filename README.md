@@ -1,38 +1,30 @@
-# LLM para leigos
+# LLM: The Prediction Factory
 
-Um jogo em português, para celular e computador, que explica sem fórmulas como funcionam as LLMs, as inteligências artificiais de texto por trás de assistentes como o ChatGPT e o Claude.
+Uma aventura 3D em português para descobrir, por dentro, como funcionam as LLMs (as inteligências artificiais de texto).
 
-O jogo acompanha uma pergunta simples, “Qual é a capital do Brasil?”, do texto digitado até a resposta “Brasília”, em 12 fases:
+A Language Engine, uma máquina que conversa e responde, perdeu a memória. NEX e a robô NOVA atravessam mundos que contam a história das ideias por trás dela e recuperam os Núcleos de Conhecimento.
 
-1. **O que uma LLM faz**: a vitrine e um mistério
-2. **Viagem ao passado**: 9 cenas 3D animadas, da China antiga ao ChatGPT, que mostram o problema de cada época e a ideia que o resolveu; depois, uma conversa com a ELIZA (1966)
-3. **Prever a próxima palavra**: contagens, a roleta das chances e a temperatura
-4. **Tokens**: cortar palavras em pedaços e trocar cada pedaço por um número
-5. **Matrizes**: ser a matriz e ajustar os pesos até a resposta certa vencer (3D)
-6. **Treinamento**: 27 pesos que aprendem de verdade
-7. **Universo dos significados**: a galáxia das palavras (3D)
-8. **Atenção**: os holofotes que olham a frase inteira
-9. **Prompt ou fine-tuning**: dois jeitos de mudar a resposta
-10. **RAG**: a biblioteca do modelo, com e sem busca
-11. **Crie sua LLM**: uma pequena rede neural treinada no navegador
-12. **Formatura**: o caminho completo de uma resposta e a prova final
+- **Prólogo**: a Language Engine se desmonta e a NOVA acorda.
+- **Fase 1 · As Origens**: Observatório, Vale dos Números, Jardim da Lógica, Câmara da Probabilidade, Oficina das Máquinas, Sala da Computação e Câmara da Matriz.
+- **Fases 2 a 11 e Final**: tokens, próximo token, embeddings, atenção, Transformer, treinamento, RAG, agentes, especialistas, sistemas de IA e “Você é a LLM”.
+
+Cada área tem uma missão principal e side quests opcionais. As descobertas vão para o Codex, com uma camada simples e outra técnica.
 
 ## Como jogar
 
-Acesse **https://llm-para-leigos.pages.dev**. O progresso fica salvo no próprio navegador. O jogo precisa de internet para carregar as fontes e a biblioteca 3D ([three.js](https://threejs.org/)).
+Abra https://llm-para-leigos.pages.dev no navegador (celular ou computador).
+
+- Celular: arraste o círculo para andar ou toque no chão; arraste a tela para girar a câmera.
+- Computador: WASD ou setas, Shift para correr, mouse para girar, E para usar.
 
 ## Como editar
 
-O código fica na pasta `src/`:
+```bash
+npm install
+npm run dev      # servidor local
+bash build.sh    # build de produção em dist/
+```
 
-- `head.html`: estilos (cores, fontes, layout)
-- `body.html`: estrutura da tela (cabeçalho, Tok, menu, introdução)
-- `engine.js`, `hud.js`, `ui2d.js`, `mini3d.js`, `concepts.js`, `models.js`: motor do jogo, interface, cenas 3D, glossário e mini-modelos
-- `c01_vitrine.js` a `c12_formatura.js`: uma fase por arquivo (`museu_base.js` e `galaxia_base.js` são a base das fases 5 e 7)
-- `main.js`: inicialização
+O Cloudflare Pages roda `bash build.sh` e publica `dist/` a cada push na branch `main`.
 
-O comando `bash build.sh` junta tudo num arquivo só, `dist/index.html`, que dá para abrir direto no navegador.
-
-## Publicação
-
-Cada mudança enviada para o ramo `main` é publicada automaticamente pelo Cloudflare Pages, que roda `bash build.sh` e publica a pasta `dist`.
+A versão clássica (2D) continua em `/classico`.
