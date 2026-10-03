@@ -14,6 +14,7 @@ export const RT = {
   camDist: 6.2,
   camera: null as THREE.PerspectiveCamera | null,
   scene: null as THREE.Scene | null,
+  gl: null as THREE.WebGLRenderer | null,
   nova: new THREE.Vector3(0, 1.6, 0),
   novaLook: null as THREE.Vector3 | null,
   novaTalking: 0,

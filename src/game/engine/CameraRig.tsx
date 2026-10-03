@@ -22,6 +22,7 @@ export function CameraRig() {
   useEffect(() => {
     RT.camera = camera as THREE.PerspectiveCamera
     RT.scene = scene
+    RT.gl = gl
     const el = gl.domElement
     const ptrs = new Map<number, { x: number; y: number; sx: number; sy: number; t: number }>()
     let pinch = 0

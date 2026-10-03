@@ -10,7 +10,8 @@ import { QUALITY } from '../engine/quality'
 
 type V3 = [number, number, number]
 
-/** Junta malhas estáticas por material (menos chamadas de desenho). Mantém as originais ocultas para colisão. */
+/** Junta malhas estáticas por material (menos chamadas de desenho). Mantém as originais ocultas para colisão.
+ * Partes animadas ou que mudam de visibilidade: marque um ancestral com userData={{ noBatch: true }} (ou use <Dyn>). */
 export function Batch({ children, shadows = true }: { children?: ReactNode; shadows?: boolean }) {
   const ref = useRef<THREE.Group>(null!)
   const [merged, setMerged] = useState<THREE.Mesh[]>([])
@@ -20,9 +21,11 @@ export function Batch({ children, shadows = true }: { children?: ReactNode; shad
     const inv = new THREE.Matrix4().copy(g.matrixWorld).invert()
     const groups = new Map<THREE.Material, THREE.BufferGeometry[]>()
     const m4 = new THREE.Matrix4()
-    const hidden = (o: THREE.Object3D) => { let p: THREE.Object3D | null = o; while (p && p !== g) { if (!p.visible) return true; p = p.parent } return false }
+    // pula malhas ocultas, animadas (algum ancestral com userData.noBatch) e materiais especiais (texto 3D, shaders)
+    const skip = (o: THREE.Object3D) => { let p: THREE.Object3D | null = o; while (p && p !== g) { if (!p.visible || p.userData.noBatch) return true; p = p.parent } return false }
+    const okMat = (m: any) => m && (m.isMeshStandardMaterial || m.isMeshBasicMaterial || m.isMeshPhysicalMaterial || m.isMeshLambertMaterial) && !m.isDerivedMaterial && !m.wireframe && !m.transparent && !m.onBeforeCompile?.toString().includes('troika')
     g.traverse((o: any) => {
-      if (!o.isMesh || o.isInstancedMesh || o.userData.noBatch || Array.isArray(o.material) || o.userData.merged || hidden(o) || o.material.wireframe || o.material.transparent) return
+      if (!o.isMesh || o.isInstancedMesh || o.isSkinnedMesh || o.geometry?.isInstancedBufferGeometry || Array.isArray(o.material) || o.userData.merged || skip(o) || !okMat(o.material) || o.onBeforeRender?.length) return
       let geo: THREE.BufferGeometry = o.geometry.index ? o.geometry.toNonIndexed() : o.geometry.clone()
       for (const k of Object.keys(geo.attributes)) if (!['position', 'normal', 'uv'].includes(k)) geo.deleteAttribute(k)
       if (!geo.attributes.normal) geo.computeVertexNormals()
@@ -46,6 +49,11 @@ export function Batch({ children, shadows = true }: { children?: ReactNode; shad
     return () => out.forEach((m) => m.geometry.dispose())
   }, [])
   return <group ref={ref}>{children}{merged.map((m, i) => <primitive key={i} object={m} />)}</group>
+}
+
+/** Grupo que nunca é juntado pelo Batch (partes animadas, que somem/aparecem). */
+export function Dyn({ children, ...props }: { children?: ReactNode } & Record<string, any>) {
+  return <group {...props} userData={{ ...(props.userData || {}), noBatch: true }}>{children}</group>
 }
 
 /* ---------- geometrias compartilhadas ---------- */
@@ -229,7 +237,7 @@ export function Banner({ position, rotY = 0, w = 1.2, h = 3, emblem = 'compass' 
   return (
     <group position={position} rotation={[0, rotY, 0]}>
       {pole && <mesh position={[0, h / 2 + 0.1, 0]} rotation={[0, 0, Math.PI / 2]} material={MAT.gold()}><cylinderGeometry args={[0.035, 0.035, w + 0.3, 8]} /></mesh>}
-      <mesh ref={ref} geometry={g} material={mat} castShadow userData={{ noCollide: true }} />
+      <mesh ref={ref} geometry={g} material={mat} castShadow userData={{ noCollide: true, noBatch: true }} />
     </group>
   )
 }
@@ -330,7 +338,7 @@ export function Brazier({ position, s = 1 }: { position: V3; s?: number }) {
     <group position={position} scale={s}>
       <Solid><mesh position={[0, 0.5, 0]} material={MAT.bronzeDark()} castShadow><cylinderGeometry args={[0.12, 0.25, 1, 10]} /></mesh></Solid>
       <mesh position={[0, 1.05, 0]} material={MAT.bronze()} castShadow><cylinderGeometry args={[0.45, 0.25, 0.25, 16, 1, true]} /></mesh>
-      <group ref={fire} position={[0, 1.15, 0]}>
+      <group ref={fire} position={[0, 1.15, 0]} userData={{ noBatch: true }}>
         <mesh material={MAT.glowWarm()} position={[0, 0.15, 0]}><coneGeometry args={[0.28, 0.6, 8]} /></mesh>
         <mesh position={[0.1, 0.1, 0.05]}><coneGeometry args={[0.16, 0.42, 7]} /><meshBasicMaterial color="#fff2c0" toneMapped={false} /></mesh>
       </group>

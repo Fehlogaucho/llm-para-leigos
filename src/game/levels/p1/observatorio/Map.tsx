@@ -208,7 +208,7 @@ export function DomeBuilding() {
       <Brazier position={[x - 3.4, y, z + R + 2.2]} />
       <Brazier position={[x + 3.4, y, z + R + 2.2]} />
       {/* cúpula que abre */}
-      <group position={[x, y + 6.3, z]} visible={domeVisible}>
+      <group position={[x, y + 6.3, z]} visible={domeVisible} userData={{ noBatch: true }}>
         <group position={[-R, 0, 0]}><group ref={left}><group position={[R, 0, 0]}>
           <mesh geometry={half} rotation={[0, Math.PI / 2, 0]} material={MAT.copper()} castShadow userData={{ noCollide: true }} />
           <DomeRibs R={R} side={-1} />
@@ -276,7 +276,7 @@ export function Library({ secretOpen }: { secretOpen: boolean }) {
       <Wall from={[x0, y, z0]} to={[x - 1.4, y, z0]} h={H} />
       <Wall from={[x + 1.4, y, z0]} to={[x1, y, z0]} h={H} />
       {/* parede/estante secreta que desliza */}
-      <group ref={shelf}>
+      <group ref={shelf} userData={{ noBatch: true }}>
         <Solid>
           <mesh position={[x, y + H / 2, z0]} material={MAT.wall(1)} castShadow><boxGeometry args={[2.8, H, 0.6]} /></mesh>
         </Solid>
@@ -286,7 +286,7 @@ export function Library({ secretOpen }: { secretOpen: boolean }) {
       {[-3.6, -1.9, 1.9, 3.6].map((dx) => <Column key={dx} position={[x + dx, y, z1 + 1.4]} h={H} r={0.3} />)}
       <mesh position={[x, y + H + 0.25, z1 + 1.2]} material={MAT.stone()} castShadow userData={{ noCollide: true }}><boxGeometry args={[9, 0.5, 3]} /></mesh>
       {/* telhado (some quando o NEX entra) */}
-      <group visible={!inside}>
+      <group visible={!inside} userData={{ noBatch: true }}>
         <mesh position={[x, y + H + 0.2, z]} material={MAT.stone()} castShadow userData={{ noCollide: true }}><boxGeometry args={[W + 0.8, 0.4, D + 0.8]} /></mesh>
         <GableRoof position={[x, y + H + 0.4, z]} w={W + 1.2} d={D + 1.2} h={2.4} />
       </group>
@@ -320,7 +320,7 @@ export function HiddenLab({ children }: { children?: ReactNode }) {
       <Wall from={[x + 6, y, z - 4]} to={[x + 6, y, z + 5.5]} h={4.5} />
       <Wall from={[x - 6, y, z + 5.5]} to={[x - 1.4, y, z + 5.5]} h={4.5} />
       <Wall from={[x + 1.4, y, z + 5.5]} to={[x + 6, y, z + 5.5]} h={4.5} />
-      <group visible={!inside}>
+      <group visible={!inside} userData={{ noBatch: true }}>
         <mesh position={[x, y + 4.7, z + 0.75]} material={MAT.stoneDark()} userData={{ noCollide: true }}><boxGeometry args={[12.8, 0.4, 10.4]} /></mesh>
       </group>
       {/* rachaduras azuis nas paredes */}
@@ -454,7 +454,7 @@ function Decor() {
 
 export function ObservatoryMap({ secretOpen, portalOn }: { secretOpen: boolean; portalOn: boolean }) {
   return (
-    <>
+    <Batch>
       <Ground />
       <Entrance />
       <Plaza />
@@ -470,6 +470,6 @@ export function ObservatoryMap({ secretOpen, portalOn }: { secretOpen: boolean; 
       <Decor />
       <Paths />
       <Pedestal position={[P.dial[0] + 4.6, P.dial[1], P.dial[2] - 2.6]} h={0.9} />
-    </>
+    </Batch>
   )
 }

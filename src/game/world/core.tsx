@@ -59,7 +59,7 @@ export function Interactable({ id, label, radius = 2.2, position, enabled = true
   }, [id])
   useEffect(() => { const it = INTERACTS.get(id); if (it) { it.label = label; it.enabled = enabled; it.radius = radius } }, [id, label, enabled, radius])
   return (
-    <group ref={ref} position={position} {...props}>
+    <group ref={ref} position={position} {...props} userData={{ noBatch: true, interactId: id }}>
       {children}
       {marker && enabled && <Marker id={id} y={markerY} color={color} />}
     </group>

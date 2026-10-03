@@ -22,7 +22,7 @@ export const Telescope = forwardRef(function Telescope({ position, rotY = 0, s =
         <mesh position={[0, 0.5, 0]} material={MAT.stoneDark()} castShadow receiveShadow><cylinderGeometry args={[0.55, 0.7, 1, 16]} /></mesh>
       </Solid>
       <mesh position={[0, 1.02, 0]} material={MAT.gold()}><torusGeometry args={[0.55, 0.04, 8, 32]} /></mesh>
-      <group ref={yaw} position={[0, 1.05, 0]}>
+      <group ref={yaw} position={[0, 1.05, 0]} userData={{ noBatch: true }}>
         <mesh position={[0, 0.25, 0]} material={MAT.bronzeDark()} castShadow><cylinderGeometry args={[0.18, 0.28, 0.5, 12]} /></mesh>
         {[-1, 1].map((k) => <mesh key={k} position={[k * 0.32, 0.65, 0]} material={MAT.bronze()} castShadow><boxGeometry args={[0.08, 0.7, 0.18]} /></mesh>)}
         <group ref={pitch} position={[0, 0.85, 0]} rotation={[-alt, 0, 0]}>
@@ -54,7 +54,7 @@ export function ArmillarySphere({ position, s = 1, spin = 1 }: { position: V3; s
       </Solid>
       <mesh position={[0, 0.86, 0]} material={MAT.gold()}><cylinderGeometry args={[0.95, 0.95, 0.1, 32]} /></mesh>
       {[-1, 1].map((k) => <mesh key={k} position={[k * 0.5, 1.3, 0]} rotation={[0, 0, k * 0.5]} material={MAT.bronze()} castShadow><cylinderGeometry args={[0.06, 0.09, 1.1, 8]} /></mesh>)}
-      <group position={[0, 2.7, 0]}>
+      <group position={[0, 2.7, 0]} userData={{ noBatch: true }}>
         <mesh material={MAT.gold()} castShadow><torusGeometry args={[R, 0.07, 10, 64]} /></mesh>
         <group ref={rings}>
           <group><mesh rotation={[Math.PI / 2, 0, 0]} material={MAT.bronze()} castShadow><torusGeometry args={[R * 0.94, 0.055, 10, 64]} /></mesh></group>
@@ -80,7 +80,7 @@ export const CelestialGlobe = forwardRef(function CelestialGlobe({ position, s =
     <group position={position} scale={s}>
       <Solid><mesh position={[0, 0.35, 0]} material={MAT.woodDark()} castShadow><cylinderGeometry args={[0.18, 0.4, 0.7, 12]} /></mesh></Solid>
       <mesh position={[0, 0.8, 0]} material={MAT.bronze()}><torusGeometry args={[0.68, 0.035, 8, 40]} /></mesh>
-      <group position={[0, 1.15, 0]} rotation={[0, 0, 0.41]}>
+      <group position={[0, 1.15, 0]} rotation={[0, 0, 0.41]} userData={{ noBatch: true }}>
         <mesh ref={globe} castShadow><sphereGeometry args={[0.6, 40, 28]} /><meshStandardMaterial map={tex} roughness={0.4} metalness={0.1} emissive="#1a2f6a" emissiveIntensity={0.35} emissiveMap={tex} /></mesh>
         <mesh rotation={[0, Math.PI / 2, 0]} material={MAT.gold()}><torusGeometry args={[0.66, 0.025, 8, 48, Math.PI * 1.4]} /></mesh>
       </group>
@@ -107,7 +107,7 @@ export const Hourglass = forwardRef(function Hourglass({ position, s = 1 }: { po
   const sand = useMemo(() => new THREE.MeshStandardMaterial({ color: '#e8c27a', roughness: 0.9 }), [])
   return (
     <group position={position} scale={s}>
-      <group ref={body} position={[0, 0.95, 0]}>
+      <group ref={body} position={[0, 0.95, 0]} userData={{ noBatch: true }}>
         {[-1, 1].map((k) => <mesh key={k} position={[0, k * 0.82, 0]} material={MAT.woodDark()} castShadow><cylinderGeometry args={[0.42, 0.42, 0.1, 6]} /></mesh>)}
         {[0, 1, 2].map((i) => <mesh key={i} position={[Math.cos(i * 2.09) * 0.36, 0, Math.sin(i * 2.09) * 0.36]} material={MAT.woodDark()} castShadow><cylinderGeometry args={[0.03, 0.03, 1.6, 6]} /></mesh>)}
         <mesh geometry={bulb} position={[0, 0, 0]} material={MAT.glass()} />
@@ -133,7 +133,7 @@ export const Sundial = forwardRef(function Sundial({ position, r = 3.2 }: { posi
       </Solid>
       <mesh position={[0, 0.61, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow><circleGeometry args={[r, 64]} /><meshStandardMaterial map={dialTex()} roughness={0.6} /></mesh>
       <mesh geometry={gnomon} position={[0, 0.61, 0]} rotation={[0, Math.PI / 2, 0]} material={MAT.bronze()} castShadow />
-      <group ref={shadow} position={[0, 0.63, 0]}>
+      <group ref={shadow} position={[0, 0.63, 0]} userData={{ noBatch: true }}>
         <mesh position={[0, 0, -r * 0.45]} rotation={[-Math.PI / 2, 0, 0]} userData={{ noCollide: true }}><planeGeometry args={[0.16, r * 0.9]} /><meshBasicMaterial color="#1a1208" transparent opacity={0.55} depthWrite={false} /></mesh>
       </group>
       <group ref={marker} position={[0, 0.64, 0]} visible={false}>
@@ -152,7 +152,7 @@ export const Abacus = forwardRef(function Abacus({ position, rotY = 0, s = 1, on
   return (
     <group position={position} rotation={[0, rotY, 0]} scale={s}>
       <Solid><mesh position={[0, 0.45, 0]} material={MAT.woodDark()} castShadow><boxGeometry args={[W + 0.4, 0.9, 0.7]} /></mesh></Solid>
-      <group position={[0, 1.25, 0]}>
+      <group position={[0, 1.25, 0]} userData={{ noBatch: true }}>
         {[-1, 1].map((k) => <mesh key={k} position={[k * (W / 2 + 0.06), 0, 0]} material={MAT.wood()} castShadow><boxGeometry args={[0.1, 0.9, 0.12]} /></mesh>)}
         {[-1, 1].map((k) => <mesh key={k} position={[0, k * 0.42, 0]} material={MAT.wood()} castShadow><boxGeometry args={[W + 0.2, 0.08, 0.12]} /></mesh>)}
         {[0, 1, 2].map((r) => (
@@ -182,7 +182,7 @@ export function Orrery({ position, s = 1 }: { position: V3; s?: number }) {
       <mesh position={[0, 0.85, 0]} material={MAT.bronze()}><cylinderGeometry args={[0.55, 0.55, 0.08, 24]} /></mesh>
       <mesh position={[0, 1.5, 0]} material={MAT.glowWarm()}><sphereGeometry args={[0.2, 20, 14]} /></mesh>
       <mesh position={[0, 1.1, 0]} material={MAT.bronzeDark()}><cylinderGeometry args={[0.03, 0.03, 0.6, 8]} /></mesh>
-      <group ref={arms} position={[0, 1.5, 0]}>
+      <group ref={arms} position={[0, 1.5, 0]} userData={{ noBatch: true }}>
         {pl.map((c, i) => (
           <group key={i} rotation={[0, i * 1.3, 0]}>
             <mesh position={[(0.4 + i * 0.22) / 2, 0, 0]} rotation={[0, 0, Math.PI / 2]} material={MAT.bronze()}><cylinderGeometry args={[0.008, 0.008, 0.4 + i * 0.22, 4]} /></mesh>
@@ -268,7 +268,7 @@ export const Portal = forwardRef(function Portal({ position, rotY = 0, s = 1, ac
         <mesh position={[0, 0.25, 0]} material={MAT.stone()} receiveShadow castShadow><cylinderGeometry args={[3.2, 3.5, 0.5, 32]} /></mesh>
         {[-1, 1].map((k2) => <mesh key={k2} position={[k2 * (R + 0.45), 1.6, 0]} material={MAT.wall(1)} castShadow><boxGeometry args={[0.7, 3, 0.9]} /></mesh>)}
       </Solid>
-      <group position={[0, R + 0.6, 0]}>
+      <group position={[0, R + 0.6, 0]} userData={{ noBatch: true }}>
         <mesh material={MAT.wall(1)} castShadow><torusGeometry args={[R + 0.25, 0.42, 12, 48]} /></mesh>
         {Array.from({ length: 12 }, (_, i) => { const a = (i / 12) * Math.PI * 2; return <mesh key={i} position={[Math.cos(a) * (R + 0.25), Math.sin(a) * (R + 0.25), 0.36]} material={active ? MAT.glowBlue() : MAT.gold()}><boxGeometry args={[0.26, 0.26, 0.1]} /></mesh> })}
         <group ref={rings}>
