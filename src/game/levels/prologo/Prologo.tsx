@@ -298,7 +298,8 @@ async function main(c: Ctx) {
     { pos: [-5, 3.5, 17], look: [0, 4, -4], dur: 3.5 },
   ])
   await c.say([
-    { who: 'NEX', text: 'Que lugar é esse? Parece abandonado há séculos…' },
+    { who: 'NEX', text: 'Ai… minha cabeça. Eu estava no meu quarto, perguntei uma coisa para a IA… e levei um choque.' },
+    { who: 'NEX', text: 'Que lugar é esse? Parece o lado de dentro de uma máquina.' },
     { who: 'NEX', text: 'E aquela máquina gigante no meio… ainda tem uma luzinha acesa.' },
   ], { ambient: true })
   await c.say({ who: 'SISTEMA', text: move }, { ambient: true })
@@ -341,13 +342,14 @@ async function main(c: Ctx) {
   await c.cinematic([{ pos: [PED[0] + 2.5, 2, PED[2] + 3], look: [PED[0], 1.4, PED[2]], dur: 0.01, cut: true }, { pos: [PED[0] + 3.5, 2.2, PED[2] + 4.5], look: [PED[0] + 1, 1.6, PED[2]], dur: 3 }], false)
   RT.lookAt = null
   await c.say([
-    { who: 'NOVA', text: 'Sistema… ligado. Olá! Eu sou a NOVA.' },
-    { who: 'NEX', text: 'O que aconteceu? A máquina simplesmente… se desmontou!' },
-    { who: 'NOVA', text: 'A máquina perdeu a própria história. Ela se chama Language Engine: conversa, responde, cria histórias.' },
-    { who: 'NOVA', text: 'Mas cada peça que explica como ela funciona foi parar num mundo diferente.' },
-    { who: 'NEX', text: 'E como consertamos?' },
-    { who: 'NOVA', text: 'Não consertamos.' },
-    { who: 'NOVA', text: 'Descobrimos.' },
+    { who: 'NOVA', text: 'Sistema… ligado. Olá! Eu sou a NOVA, a guia desta máquina.' },
+    { who: 'NEX', text: 'Eu estava conversando com uma IA no meu computador. Teve um raio, um choque… e a tela me puxou!' },
+    { who: 'NOVA', text: 'Eu sei. Você está dentro dela: esta é a Language Engine, a LLM com quem você conversava.' },
+    { who: 'NOVA', text: 'O choque que te trouxe para cá também embaralhou a memória dela. Ela ainda consegue responder, mas esqueceu como funciona.' },
+    { who: 'NOVA', text: 'As peças que explicam como ela pensa, os Núcleos de Conhecimento, se espalharam por mundos diferentes.' },
+    { who: 'NEX', text: 'E como eu volto para casa?' },
+    { who: 'NOVA', text: 'Ajudando a máquina a se lembrar. Cada mundo guarda uma ideia: primeiro as origens, como números, regras e máquinas; depois, o que faz uma LLM escrever.' },
+    { who: 'NOVA', text: 'Quando os núcleos voltarem, ela vai funcionar direito de novo. E vai poder te devolver ao seu quarto.' },
     {
       who: 'NOVA', text: 'Quer saber mais antes de ir?', choices: [
         { label: 'O que são esses mundos?', next: [{ who: 'NOVA', text: 'Cada mundo guarda uma ideia que tornou possível uma máquina de linguagem. Os primeiros são bem antigos: começam com pessoas olhando para o céu.' }] },

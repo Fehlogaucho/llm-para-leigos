@@ -39,6 +39,11 @@ export const LEVEL_ORDER: string[] = []
 export function defineLevel(d: LevelDef) { LEVELS[d.id] = d; LEVEL_ORDER.push(d.id) }
 
 defineLevel({
+  id: 'quarto', phase: 0, badge: 'P', short: 'Prólogo · O Quarto', title: 'Uma Pergunta', kicker: 'PRÓLOGO', sub: 'Como você funciona?', theme: 'lab', img: '/img/origens.webp',
+  tip: 'Chegue perto do computador e toque em “Usar”.',
+  next: 'prologo', load: () => import('./prologo/Quarto'),
+})
+defineLevel({
   id: 'prologo', phase: 0, badge: 'P', short: 'Prólogo', title: 'A Language Engine', kicker: 'PRÓLOGO', sub: 'A máquina que esqueceu', theme: 'lab', img: '/img/origens.webp',
   tip: 'No celular: arraste o círculo para andar, ou toque no chão. Arraste a tela para girar a câmera.',
   next: 'p1a1', load: () => import('./prologo/Prologo'),

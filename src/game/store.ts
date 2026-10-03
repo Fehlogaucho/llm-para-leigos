@@ -63,7 +63,7 @@ interface State extends Progress {
 
 const SAVE = 'pf-save-v1'
 const SETS = 'pf-settings-v1'
-const blank = (): Progress => ({ level: 'prologo', flags: {}, codex: {}, fragments: [], cores: [], quests: {}, visited: [] })
+const blank = (): Progress => ({ level: 'quarto', flags: {}, codex: {}, fragments: [], cores: [], quests: {}, visited: [] })
 
 function load<T>(k: string, d: T): T {
   try { const s = localStorage.getItem(k); if (s) return { ...d, ...JSON.parse(s) } } catch { /* sem armazenamento */ }

@@ -23,7 +23,7 @@ export const CAT_INFO: Record<Cat, { label: string; color: string; icon: string 
 const E: CodexEntry[] = [
   // ---------- Prólogo ----------
   { id: 'engine', title: 'Language Engine', cat: 'historia', phase: 0, area: 'Prólogo', short: 'A máquina que responde, mas esqueceu por quê.',
-    simple: 'A Language Engine é uma máquina de linguagem: conversa, responde e cria histórias. Ela perdeu os Núcleos de Conhecimento que explicam como funciona. Cada fase devolve um núcleo.',
+    simple: 'A Language Engine é a LLM com quem o NEX conversava no computador. O choque que puxou o NEX para dentro dela embaralhou sua memória: ela ainda responde, mas perdeu os Núcleos de Conhecimento que explicam como funciona. Cada fase devolve um núcleo.',
     example: 'Núcleos: Matrix, Token, Probability, Embedding, Attention, Transformer, Training, Retrieval, Agents…' },
 
   // ---------- Fase 1 · Área 1: Observatório ----------

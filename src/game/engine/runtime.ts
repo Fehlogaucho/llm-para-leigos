@@ -24,6 +24,8 @@ export const RT = {
   lookAt: null as THREE.Vector3 | null, // ponto que o NEX olha
   gesture: '' as '' | 'reach' | 'point' | 'cheer' | 'think',
   gestureT: 0,
+  nexScale: 1, // encolher o NEX (abertura)
+  nexSpin: 0,
 }
 
 export interface Interact {

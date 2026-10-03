@@ -249,7 +249,8 @@ export function Nex() {
     dy = Math.atan2(Math.sin(dy), Math.cos(dy))
     s.yawVis += dy * (1 - Math.exp(-dt * 12))
     group.current.position.copy(RT.player)
-    group.current.rotation.y = s.yawVis
+    group.current.scale.setScalar(RT.nexScale)
+    group.current.rotation.y = s.yawVis + RT.nexSpin
     if (RT.gestureT > 0) RT.gestureT -= dt
     if (rig.current) animateNex(rig.current, RT.time, RT.playerSpeed, dt, s as any, RT.gesture, Math.max(0, RT.gestureT))
     // interação mais próxima
