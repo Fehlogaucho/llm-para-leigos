@@ -209,25 +209,34 @@ export function bannerTex(emblem: 'sun' | 'compass' | 'star' | 'eye' = 'compass'
 
 /** Mostrador do relógio de sol: marcas das horas gravadas na pedra. */
 export function dialTex() {
-  if (cache.has('dial')) return cache.get('dial')
+  if (cache.has('dial2')) return cache.get('dial2')
   const W = 1024, cv = document.createElement('canvas'); cv.width = cv.height = W
   const c = cv.getContext('2d')!
-  const base = stoneTiles('marbleDial', '#e3d6bd', '#a89272', 1).map.image as HTMLCanvasElement
+  const base = stoneTiles('marbleDial', '#efe4cc', '#b8a27e', 1).map.image as HTMLCanvasElement
   c.drawImage(base, 0, 0, W, W)
   c.translate(W / 2, W / 2)
-  c.strokeStyle = '#6b5434'; c.lineWidth = 10
+  // metade do dia (norte) mais clara, para destacar as horas
+  c.fillStyle = 'rgba(255,240,200,.35)'; c.beginPath(); c.moveTo(0, 0); c.arc(0, 0, W * 0.46, Math.PI, Math.PI * 2); c.fill()
+  c.strokeStyle = '#5a4428'; c.lineWidth = 10
   c.beginPath(); c.arc(0, 0, W * 0.46, 0, Math.PI * 2); c.stroke()
-  c.lineWidth = 4; c.beginPath(); c.arc(0, 0, W * 0.40, 0, Math.PI * 2); c.stroke()
-  c.font = 'bold 54px Cinzel, serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillStyle = '#5a4428'
-  const romans = ['VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'I', 'II', 'III', 'IV', 'V', 'VI']
+  c.lineWidth = 4; c.beginPath(); c.arc(0, 0, W * 0.36, Math.PI, Math.PI * 2); c.stroke()
+  c.textAlign = 'center'; c.textBaseline = 'middle'
   for (let i = 0; i <= 12; i++) {
-    const a = Math.PI + (i / 12) * Math.PI // 6h a 18h, metade norte
+    const h = 6 + i
+    const a = Math.PI + (i / 12) * Math.PI // 6h (oeste) → 12h (norte) → 18h (leste)
     const x = Math.cos(a), y = Math.sin(a)
-    c.lineWidth = 6; c.beginPath(); c.moveTo(x * W * 0.40, y * W * 0.40); c.lineTo(x * W * 0.46, y * W * 0.46); c.stroke()
-    c.save(); c.translate(x * W * 0.33, y * W * 0.33); c.rotate(a + Math.PI / 2); c.fillText(romans[i], 0, 0); c.restore()
+    const big = h % 3 === 0
+    c.strokeStyle = '#5a4428'; c.lineWidth = big ? 10 : 6
+    c.beginPath(); c.moveTo(x * W * 0.36, y * W * 0.36); c.lineTo(x * W * 0.46, y * W * 0.46); c.stroke()
+    c.fillStyle = h === 12 ? '#a8481a' : '#3a2a14'
+    c.font = `900 ${big ? 66 : 52}px Nunito, sans-serif`
+    c.fillText(`${h}h`, x * W * 0.285, y * W * 0.285)
   }
+  // sol e lua
+  c.font = '64px sans-serif'
+  c.fillText('☀', 0, -W * 0.13)
   const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8
-  cache.set('dial', t)
+  cache.set('dial2', t)
   return t
 }
 

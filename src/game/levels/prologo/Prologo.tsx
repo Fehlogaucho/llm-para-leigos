@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Sparkles, Text } from '@react-three/drei'
 import { useLevel } from '../../engine/level'
@@ -290,15 +290,53 @@ function FinalPortal({ onUse }: { onUse: () => void }) {
   )
 }
 
+/* ---------- chegada do NEX (depois do choque no quarto) ---------- */
+const ARRIVE = { t0: 0 }
+function Arrival() {
+  const [on, setOn] = useState(false)
+  const light = useRef<THREE.PointLight>(null!)
+  useEffect(() => { if (!G().flags.pro_seen) RT.nexScale = 0 }, [])
+  useFrame(() => {
+    if (!ARRIVE.t0) return
+    const k = (performance.now() - ARRIVE.t0) / 1000
+    const e = Math.min(1, k / 0.7)
+    const back = 1 + 2.2 * Math.pow(e - 1, 3) + 1.2 * Math.pow(e - 1, 2)
+    RT.nexScale = k < 0.7 ? Math.max(0.01, back) : 1
+    if (light.current) light.current.intensity = Math.max(0, 1 - k / 1.2) * 30
+    const want = k < 1.4
+    if (want !== on) setOn(want)
+    if (k > 2) ARRIVE.t0 = 0
+  })
+  return (
+    <group position={[0, 0, 16]}>
+      <pointLight ref={light} position={[0, 1.5, 0.5]} color="#9fe9ff" intensity={0} distance={10} decay={1.5} />
+      {on && <Sparkles count={60} scale={[2, 3, 2]} position={[0, 1.2, 0]} size={5} speed={2.5} color="#bff3ff" />}
+    </group>
+  )
+}
+
 /* ---------- roteiro ---------- */
 async function main(c: Ctx) {
   if (c.flag('pro_portal')) { c.objective('Entre no portal', [PORTAL_POS[0], 0, PORTAL_POS[2] + 1.6]); return }
   const move = IS_TOUCH ? 'Arraste o círculo dourado para andar (ou toque no chão). Arraste a tela para olhar em volta.' : 'Use WASD ou as setas para andar e arraste o mouse para olhar em volta. Também dá para clicar no chão.'
+  const first = !c.flag('pro_seen')
+  if (first) RT.nexScale = 0
   await c.cinematic([
     { pos: [11, 11, 9], look: [0, 6, -6], dur: 0.01, cut: true },
     { pos: [8, 7, 12], look: [0, 6, -6], dur: 4.5 },
     { pos: [-5, 3.5, 17], look: [0, 4, -4], dur: 3.5 },
   ])
+  if (first) {
+    // o NEX chega: um clarão e ele aparece, pequeno, e volta ao tamanho normal
+    c.freeze(true)
+    await c.cinematic([{ pos: [2.2, 2.2, 21], look: [0, 1, 16], dur: 0.01, cut: true }, { pos: [1.6, 1.9, 20.2], look: [0, 0.9, 16], dur: 0.6 }], false)
+    c.focus([1.6, 1.9, 20.2], [0, 0.9, 16], 50)
+    ARRIVE.t0 = performance.now(); SFX.play('portal')
+    await c.wait(1.6)
+    gesture('think', 1.8)
+    c.setFlag('pro_seen')
+    c.unfocus(); c.freeze(false)
+  }
   await c.say([
     { who: 'NEX', text: 'Ai… minha cabeça. Eu estava no meu quarto, perguntei uma coisa para a IA… e levei um choque.' },
     { who: 'NEX', text: 'Que lugar é esse? Parece o lado de dentro de uma máquina.' },
@@ -392,6 +430,7 @@ export default function Prologo() {
       <SkyPortals />
       <DormantNova />
       <FinalPortal onUse={onPortal} />
+      <Arrival />
     </>
   )
 }

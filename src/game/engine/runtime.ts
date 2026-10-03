@@ -22,7 +22,7 @@ export const RT = {
   time: 0,
   minY: -40,
   lookAt: null as THREE.Vector3 | null, // ponto que o NEX olha
-  gesture: '' as '' | 'reach' | 'point' | 'cheer' | 'think',
+  gesture: '' as '' | 'reach' | 'point' | 'cheer' | 'think' | 'scared',
   gestureT: 0,
   nexScale: 1, // encolher o NEX (abertura)
   nexSpin: 0,

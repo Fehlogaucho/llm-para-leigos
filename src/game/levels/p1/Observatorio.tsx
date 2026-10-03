@@ -238,14 +238,14 @@ function SundialSpot() {
     c.focus([x + 0.5, y + 7.5, z + 6], [x, y + 0.5, z - 0.3], 42)
     if (!c.flag('a1_med')) {
       setMarks([]); setHour(7); setUi('measure')
-      await c.say({ who: 'NOVA', text: 'Mova o sol com a barra. Coloque a sombra em IX, depois em XII e depois em XV.' }, { ambient: true })
+      await c.say({ who: 'NOVA', text: 'Arraste a barra para mover o sol. Ponha a ponta da sombra nas 9h, depois nas 12h e depois nas 15h.' }, { ambient: true })
       await c.until(() => marksRef.current.length >= 3 || !uiRef.current)
       if (!uiRef.current) { c.unfocus(); return }
       await c.wait(0.6)
       setUi(null)
       await c.say([
         { who: 'NEX', text: 'A sombra anda sempre do mesmo jeito: uma marca por hora!' },
-        { who: 'NOVA', text: 'Isso é medir: comparar com uma unidade combinada. De IX até XII, a sombra andou três marcas: três horas.' },
+        { who: 'NOVA', text: 'Isso é medir: comparar com uma unidade combinada. Das 9h até as 12h, a sombra andou três marcas: três horas.' },
         { who: 'NOVA', text: 'Com medidas, o mundo vira números. E números podem ser guardados, comparados… e um dia, calculados por máquinas.' },
       ])
       c.discover('medicao')
@@ -263,6 +263,7 @@ function SundialSpot() {
   const choose = async (h: number) => {
     setPick(h); anim.current = 9
     dial.current.marker.visible = true
+    dial.current.marker.rotation.y = hourAngle(14)
     SFX.play('click')
     await new Promise((r) => setTimeout(r, 2600))
     anim.current = null; setHour(14)
@@ -276,7 +277,7 @@ function SundialSpot() {
   }
   useOverlay('dial', ui === 'measure' ? (
     <Panel title="Relógio de Sol" onExit={() => setUi(null)}>
-      <p>{next ? <>Coloque a sombra em <b>{['IX', 'XII', 'XV'][TARGETS.indexOf(next)]}</b>. Marcadas: {marks.length}/3</> : 'Pronto!'}</p>
+      <p>{next ? <>Ponha a sombra nas <b>{next}h</b>. Marcadas: {marks.length}/3</> : 'Pronto!'}</p>
       <div className="row" style={{ gap: 12 }}>
         <span style={{ fontSize: 22 }}>🌅</span>
         <input type="range" min={6} max={18} step={0.05} value={hour} onChange={(e) => onSlide(+e.target.value)} style={{ flex: 1, accentColor: '#e8b65a', height: 32 }} aria-label="Posição do sol" />
@@ -286,7 +287,7 @@ function SundialSpot() {
     </Panel>
   ) : ui === 'predict' ? (
     <Panel title="Side quest · O Relógio" onExit={() => askRef.current(false)}>
-      <p>Agora são <b>9h</b> e a sombra anda <b>uma marca por hora</b>. Quando ela vai chegar na marca azul (XIV)?</p>
+      <p>Agora são <b>9h</b> e a sombra anda <b>uma marca por hora</b>. Que horas a sombra vai chegar na marca azul?</p>
       <div className="row">{[12, 14, 16].map((h) => <button key={h} className={'chipbtn' + (pick === h ? ' on' : '')} disabled={pick != null} onClick={() => choose(h)}>{h}h</button>)}</div>
     </Panel>
   ) : null, [ui, hour, marks, pick])
@@ -331,8 +332,8 @@ function HourglassSpot() {
 /* =================== 3. livro de registros (missão: representar) =================== */
 const BOOK_ROWS = [
   { label: 'Estrelas de Órion que você viu', opts: [3, 7, 12], a: 7 },
-  { label: 'Hora em que a sombra apontou para o XII', opts: [9, 12, 15], a: 12 },
-  { label: 'Horas entre IX e XII', opts: [2, 3, 6], a: 3 },
+  { label: 'Hora em que a sombra apontou para o meio-dia', opts: [9, 12, 15], a: 12 },
+  { label: 'Horas entre 9h e 12h', opts: [2, 3, 6], a: 3 },
 ]
 function RecordBook() {
   const done = useFlag('a1_rep')
@@ -374,7 +375,7 @@ function RecordBook() {
           <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: '1px dashed rgba(58,36,18,.3)', flexWrap: 'wrap' }}>
             <span style={{ flex: 1, minWidth: 150 }}>{r.label}</span>
             {r.opts.map((o) => <button key={o} className={'chipbtn' + (ans[i] === o ? ' on' : '')} style={{ color: ans[i] === o ? '#1b1206' : '#3a2412', borderColor: '#8a6a3a', minWidth: 46, minHeight: 40 }}
-              onClick={() => { SFX.play(o === r.a ? 'tick' : 'error'); setAns((a) => a.map((x, j) => (j === i ? o : x))); if (o !== r.a) G().showToast(i === 0 ? 'Conte de novo as estrelas de Órion (eram as do desenho).' : i === 1 ? 'XII é meio-dia.' : 'De IX até XII: conte as marcas.') }}>{o}</button>)}
+              onClick={() => { SFX.play(o === r.a ? 'tick' : 'error'); setAns((a) => a.map((x, j) => (j === i ? o : x))); if (o !== r.a) G().showToast(i === 0 ? 'Conte de novo as estrelas de Órion (eram as do desenho).' : i === 1 ? 'A sombra apontou para as 12h, o meio-dia.' : 'Das 9h até as 12h: conte as marcas.') }}>{o}</button>)}
           </div>
         ))}
         {plei && <div style={{ display: 'flex', gap: 8, padding: '6px 0' }}><span style={{ flex: 1 }}>Estrelas das Plêiades (luneta)</span><b>6</b></div>}

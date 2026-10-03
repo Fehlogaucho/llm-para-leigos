@@ -252,8 +252,8 @@ function Sparks() {
   if (!on) return null
   return (
     <>
-      <Sparkles count={60} scale={[0.9, 0.9, 0.5]} position={[DESK[0] + 0.5, 0.25, DESK[2] - 0.25]} size={9} speed={3} color="#9fe9ff" />
-      <Sparkles count={50} scale={[1.2, 0.8, 0.3]} position={[SCREEN[0], SCREEN[1], SCREEN[2] + 0.1]} size={7} speed={3} color="#fff3b0" />
+      <Sparkles count={40} scale={[0.9, 0.9, 0.5]} position={[DESK[0] + 0.5, 0.25, DESK[2] - 0.25]} size={3.5} speed={3} color="#9fe9ff" />
+      <Sparkles count={30} scale={[1.1, 0.7, 0.2]} position={[SCREEN[0], SCREEN[1], SCREEN[2] + 0.06]} size={2.5} speed={3} color="#fff3b0" />
     </>
   )
 }
@@ -345,16 +345,26 @@ async function main(c: Ctx) {
   FX.flash = 1.4; SFX.play('stone'); SFX.play('whoosh')
   FX.glitch = 1; FX.sparks = true
   SFX.play('error')
-  await fadeWhite(c, 0.85, 0.12)
-  gesture('cheer', 1.2)
-  await fadeWhite(c, 0, 0.5)
-  await c.say([{ who: 'NEX', text: 'AI! Levei um choque!' }])
+  await fadeWhite(c, 0.9, 0.12)
+  // câmera de frente para o NEX: ele leva o choque
+  const FACE: V3 = [CHAIR[0], 1.0, CHAIR[2] + 0.15]
+  const CAM1: V3 = [CHAIR[0] - 0.65, 1.3, CHAIR[2] - 1.12]
+  RT.lookAt = new THREE.Vector3(CAM1[0], 0, CAM1[2])
+  gesture('scared', 9)
+  await c.cinematic([{ pos: CAM1, look: FACE, dur: 0.01, cut: true }, { pos: [CAM1[0] + 0.1, 1.25, CAM1[2] - 0.08], look: FACE, dur: 0.4 }], false)
+  c.focus([CAM1[0] + 0.1, 1.25, CAM1[2] - 0.08], FACE, 50)
+  await fadeWhite(c, 0, 0.45)
+  await c.say([{ who: 'NEX', text: 'AAAI! Levei um choque!' }])
+  gesture('scared', 9)
   FX.shrink = { t0: performance.now() }; SFX.play('whoosh')
-  await c.wait(1.7)
+  c.focus([CHAIR[0] - 0.5, 0.75, CHAIR[2] - 0.95], [CHAIR[0], 0.3, CHAIR[2] + 0.15], 50)
+  await c.wait(1.8)
   await c.say([
     { who: 'NEX', text: 'Eu… estou encolhendo?!' },
     { who: 'ENGINE', text: 'pró… xi… ma… pa… la…' },
   ])
+  gesture('scared', 6)
+  RT.lookAt = new THREE.Vector3(SCREEN[0], 0, SCREEN[2])
   FX.vortex = 1; SFX.play('portal')
   await c.cinematic([{ pos: [SCREEN[0] + 1.6, 1.45, -1.5], look: [SCREEN[0], 1.1, SCREEN[2]], dur: 0.01, cut: true }, { pos: [SCREEN[0] + 0.9, 1.35, -1.9], look: [SCREEN[0], 1.2, SCREEN[2]], dur: 3.2 }], false)
   FX.pull = { from: RT.player.clone(), t0: performance.now() - 800 }

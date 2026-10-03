@@ -20,13 +20,13 @@ export function Loading() {
     if (!loading || ready !== loading) return
     const wait = Math.max(300, 2200 - (performance.now() - t0.current))
     const id = setTimeout(() => {
+      // libera os roteiros já no começo do esmaecimento: a cena de abertura começa
+      // por baixo da tela de carregamento (antes, o jogador via o NEX parado antes da cena)
       setOp(0)
-      setTimeout(() => {
-        setVis(false)
-        const L = LEVELS[loading]
-        useGame.setState({ loading: null })
-        if (L) G().pushBanner({ kind: 'area', title: L.title, sub: `${L.kicker}|${L.sub}` })
-      }, 650)
+      const L = LEVELS[loading]
+      useGame.setState({ loading: null })
+      if (L) G().pushBanner({ kind: 'area', title: L.title, sub: `${L.kicker}|${L.sub}` })
+      setTimeout(() => setVis(false), 650)
     }, wait)
     return () => clearTimeout(id)
   }, [ready, loading])

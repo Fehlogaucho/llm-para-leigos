@@ -125,19 +125,21 @@ export const Sundial = forwardRef(function Sundial({ position, r = 3.2 }: { posi
   const shadow = useRef<THREE.Group>(null!)
   const marker = useRef<THREE.Group>(null!)
   useImperativeHandle(ref, () => ({ shadow: shadow.current, marker: marker.current }))
-  const gnomon = useMemo(() => { const s = new THREE.Shape(); s.moveTo(0, 0); s.lineTo(r * 0.75, 0); s.lineTo(0, r * 0.6); s.lineTo(0, 0); const g = new THREE.ExtrudeGeometry(s, { depth: 0.12, bevelEnabled: false }); g.translate(0, 0, -0.06); return g }, [r])
+  const gnomon = useMemo(() => { const s = new THREE.Shape(); s.moveTo(0, 0); s.lineTo(r * 0.45, 0); s.lineTo(0, r * 0.42); s.lineTo(0, 0); const g = new THREE.ExtrudeGeometry(s, { depth: 0.12, bevelEnabled: true, bevelSize: 0.02, bevelThickness: 0.02, bevelSegments: 1 }); g.translate(0, 0, -0.06); return g }, [r])
+  // sombra desenhada: uma cunha escura que aponta claramente para a hora
+  const wedge = useMemo(() => { const s = new THREE.Shape(); s.moveTo(-0.07, 0); s.lineTo(0.07, 0); s.lineTo(0.2, r * 0.78); s.lineTo(0, r * 0.86); s.lineTo(-0.2, r * 0.78); s.lineTo(-0.07, 0); return new THREE.ShapeGeometry(s) }, [r])
   return (
     <group position={position}>
       <Solid>
         <mesh position={[0, 0.3, 0]} material={MAT.wall(2)} castShadow receiveShadow><cylinderGeometry args={[r + 0.3, r + 0.5, 0.6, 48]} /></mesh>
       </Solid>
       <mesh position={[0, 0.61, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow><circleGeometry args={[r, 64]} /><meshStandardMaterial map={dialTex()} roughness={0.6} /></mesh>
-      <mesh geometry={gnomon} position={[0, 0.61, 0]} rotation={[0, Math.PI / 2, 0]} material={MAT.bronze()} castShadow />
-      <group ref={shadow} position={[0, 0.63, 0]} userData={{ noBatch: true }}>
-        <mesh position={[0, 0, -r * 0.45]} rotation={[-Math.PI / 2, 0, 0]} userData={{ noCollide: true }}><planeGeometry args={[0.16, r * 0.9]} /><meshBasicMaterial color="#1a1208" transparent opacity={0.55} depthWrite={false} /></mesh>
+      <mesh geometry={gnomon} position={[0, 0.61, 0]} rotation={[0, Math.PI / 2, 0]} material={MAT.bronze()} />
+      <group ref={shadow} position={[0, 0.625, 0]} userData={{ noBatch: true }}>
+        <mesh geometry={wedge} rotation={[-Math.PI / 2, 0, 0]} userData={{ noCollide: true }}><meshBasicMaterial color="#1a1208" transparent opacity={0.62} depthWrite={false} /></mesh>
       </group>
       <group ref={marker} position={[0, 0.64, 0]} visible={false}>
-        <mesh position={[0, 0, -r * 0.88]} rotation={[-Math.PI / 2, 0, 0]} userData={{ noCollide: true }}><ringGeometry args={[0.12, 0.2, 24]} /><meshBasicMaterial color="#59d7ff" toneMapped={false} /></mesh>
+        <mesh position={[0, 0, -r * 0.92]} rotation={[-Math.PI / 2, 0, 0]} userData={{ noCollide: true }}><ringGeometry args={[0.14, 0.24, 24]} /><meshBasicMaterial color="#59d7ff" toneMapped={false} /></mesh>
       </group>
     </group>
   )

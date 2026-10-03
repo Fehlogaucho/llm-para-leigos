@@ -150,7 +150,14 @@ export function animateNex(r: any, t: number, speed: number, dt: number, state: 
     if (gesture === 'reach' || gesture === 'point') { aR = THREE.MathUtils.lerp(aR, -1.45, g); eR = THREE.MathUtils.lerp(eR, gesture === 'point' ? -0.05 : -0.3, g) }
     if (gesture === 'cheer') { aL = THREE.MathUtils.lerp(aL, -2.8, g); aR = THREE.MathUtils.lerp(aR, -2.8, g); zL = 0.3; zR = -0.3; eL = eR = -0.2 }
     if (gesture === 'think') { aR = THREE.MathUtils.lerp(aR, -0.9, g); eR = THREE.MathUtils.lerp(eR, -2.2, g); zR = THREE.MathUtils.lerp(zR, 0.35, g) }
+    if (gesture === 'scared') {
+      const sh = Math.sin(t * 38) * 0.08
+      aL = THREE.MathUtils.lerp(aL, -2.2 + sh, g); aR = THREE.MathUtils.lerp(aR, -2.2 - sh, g); zL = 0.55; zR = -0.55; eL = eR = -1.5
+      r.torso.rotation.z = Math.sin(t * 41) * 0.05 * g
+      r.torso.rotation.x = -0.18 * g
+    }
   }
+  if (gesture !== 'scared' || gk <= 0) r.torso.rotation.z = 0
   r.armL.rotation.set(aL, 0, zL + Math.sin(t * 2.1) * 0.02)
   r.armR.rotation.set(aR, 0, zR - Math.sin(t * 2.1) * 0.02)
   r.elbowL.rotation.x = eL
@@ -159,9 +166,11 @@ export function animateNex(r: any, t: number, speed: number, dt: number, state: 
   state.blink -= dt
   const bl = state.blink < 0.12 ? 0.1 : 1
   if (state.blink < 0) state.blink = 2.5 + Math.random() * 3
-  r.eyeL.scale.y = bl; r.eyeR.scale.y = bl
+  const scared = gesture === 'scared' && gk > 0
+  const eyeS = scared ? 1.35 : 1
+  r.eyeL.scale.set(eyeS, bl * eyeS, 1); r.eyeR.scale.set(eyeS, bl * eyeS, 1)
   const talk = RT.nexTalking > 0 ? 0.6 + Math.abs(Math.sin(t * 16)) * 0.9 : 1
-  r.mouth.scale.set(1, talk, 1)
+  r.mouth.scale.set(scared ? 1.3 : 1, scared ? 2.4 : talk, 1)
 }
 
 const v2 = new THREE.Vector2(), fwd = new THREE.Vector3(), right = new THREE.Vector3(), dir = new THREE.Vector3()
@@ -176,6 +185,7 @@ export function Nex() {
 
   useFrame((state, dtRaw) => {
     const dt = Math.min(dtRaw, 1 / 20)
+    const dtPhys = Math.min(dtRaw, 1 / 12)
     const s = st.current
     const g = G()
     RT.time += dt
@@ -214,29 +224,36 @@ export function Nex() {
     if (frozen) mag = 0
     const target = mag * (run ? RUN : WALK)
     const vel = RT.playerVel
-    const acc = 1 - Math.exp(-dt * (mag > 0 ? 10 : 14))
-    vel.x += (dir.x * target - vel.x) * acc
-    vel.z += (dir.z * target - vel.z) * acc
-    vel.y += GRAV * dt
-    if (vel.y < -30) vel.y = -30
-    RT.player.addScaledVector(vel, dt)
-    // colisão
-    segA.copy(RT.player).y += R
-    segB.copy(RT.player).y += H - R
-    resolveCapsule(segA, segB, R, push)
-    const len = push.length()
+    // física em passos pequenos: em aparelhos lentos (quadros longos) o NEX não atravessa nem trava em degraus
+    const steps = Math.max(1, Math.ceil(dtPhys / (1 / 60)))
+    const h = dtPhys / steps
     let grounded = false
-    if (len > 1e-6) {
-      const ny = push.y / len
-      if (ny > 0.5) { grounded = true; push.set(0, (len * len) / push.y, 0) }
-      RT.player.add(push)
-      if (grounded) { if (vel.y < 0) vel.y = 0 }
-      else { tmp.copy(push).normalize(); const dv = vel.dot(tmp); if (dv < 0) vel.addScaledVector(tmp, -dv) }
-    }
-    // gruda no chão em descidas
-    if (!grounded && vel.y <= 0 && RT.playerGrounded) {
-      const gy = COLL.groundY(RT.player.x, RT.player.y + 0.3, RT.player.z, 0.75)
-      if (gy != null && RT.player.y - gy < 0.4) { RT.player.y = gy; vel.y = 0; grounded = true }
+    for (let sIdx = 0; sIdx < steps; sIdx++) {
+      const acc = 1 - Math.exp(-h * (mag > 0 ? 10 : 14))
+      vel.x += (dir.x * target - vel.x) * acc
+      vel.z += (dir.z * target - vel.z) * acc
+      vel.y += GRAV * h
+      if (vel.y < -30) vel.y = -30
+      RT.player.addScaledVector(vel, h)
+      // colisão
+      segA.copy(RT.player).y += R
+      segB.copy(RT.player).y += H - R
+      resolveCapsule(segA, segB, R, push)
+      const len = push.length()
+      grounded = false
+      if (len > 1e-6) {
+        const ny = push.y / len
+        if (ny > 0.5) { grounded = true; push.set(0, (len * len) / push.y, 0) }
+        RT.player.add(push)
+        if (grounded) { if (vel.y < 0) vel.y = 0 }
+        else { tmp.copy(push).normalize(); const dv = vel.dot(tmp); if (dv < 0) vel.addScaledVector(tmp, -dv) }
+      }
+      // gruda no chão em descidas
+      if (!grounded && vel.y <= 0 && RT.playerGrounded) {
+        const gy = COLL.groundY(RT.player.x, RT.player.y + 0.3, RT.player.z, 0.75)
+        if (gy != null && RT.player.y - gy < 0.4) { RT.player.y = gy; vel.y = 0; grounded = true }
+      }
+      RT.playerGrounded = grounded
     }
     RT.playerGrounded = grounded
     RT.playerSpeed = Math.hypot(vel.x, vel.z)

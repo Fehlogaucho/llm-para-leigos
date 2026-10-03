@@ -192,7 +192,9 @@ export function Balustrade({ from, to, h = 1.05 }: { from: V3; to: V3; h?: numbe
 /** Balaustrada em arco (círculo parcial). */
 export function RingBalustrade({ center, r, a0 = 0, a1 = Math.PI * 2, gaps = [] as [number, number][], seg = 24 }: { center: V3; r: number; a0?: number; a1?: number; gaps?: [number, number][]; seg?: number }) {
   const parts: ReactNode[] = []
-  const inGap = (a: number) => gaps.some(([g0, g1]) => a > g0 && a < g1)
+  // ângulos podem vir negativos ou passar de 2π: compara dando a volta no círculo
+  const TAU = Math.PI * 2
+  const inGap = (a: number) => gaps.some(([g0, g1]) => (((a - g0) % TAU) + TAU) % TAU < g1 - g0)
   for (let i = 0; i < seg; i++) {
     const t0 = a0 + (a1 - a0) * (i / seg), t1 = a0 + (a1 - a0) * ((i + 1) / seg)
     if (inGap((t0 + t1) / 2)) continue
