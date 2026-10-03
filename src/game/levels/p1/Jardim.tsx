@@ -463,7 +463,7 @@ function RuleMachine() {
   })
   const openRef = useRef(open); openRef.current = open
   const beltTex = useMemo(() => { const cv = document.createElement('canvas'); cv.width = 64; cv.height = 16; const x = cv.getContext('2d')!; x.fillStyle = '#2a2a30'; x.fillRect(0, 0, 64, 16); x.fillStyle = '#4a4a54'; for (let i = 0; i < 8; i++) x.fillRect(i * 8, 0, 3, 16); const t = new THREE.CanvasTexture(cv); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(6, 1); return t }, [])
-  const binMat = useMemo(() => { const m = (MAT.woodDark() as THREE.MeshStandardMaterial).clone(); m.side = THREE.DoubleSide; return m }, [])
+  const binMat = useMemo(() => { const m = (MAT.woodDark() as THREE.MeshToonMaterial).clone(); m.side = THREE.DoubleSide; return m }, [])
   const chip = (on: boolean) => 'chipbtn' + (on ? ' on' : '')
   useOverlay('rules', open ? (
     <Panel title="Máquina de Regras" onExit={running ? undefined : () => setOpen(false)}>

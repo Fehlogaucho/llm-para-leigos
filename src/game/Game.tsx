@@ -17,6 +17,7 @@ import { TopBar, Prompt, Joystick, ObjectiveArrow, Banners, Toast, CinemaBars, O
 import { Dialogue } from './ui/Dialogue'
 import { Menus } from './ui/Menus'
 import { Loading } from './ui/Loading'
+import { InkOutline } from './engine/InkOutline'
 
 
 function World() {
@@ -34,6 +35,7 @@ function FontPreloader() {
 function Effects({ q }: { q: Quality }) {
   return (
     <EffectComposer multisampling={0} enableNormalPass={false}>
+      <InkOutline strength={0.9} thickness={q === 'high' ? 1.25 : 1} />
       <Bloom mipmapBlur intensity={q === 'high' ? 0.85 : 0.7} luminanceThreshold={0.82} luminanceSmoothing={0.25} radius={0.75} />
       <Vignette offset={0.28} darkness={0.55} />
       <ToneMapping mode={ToneMappingMode.AGX} />

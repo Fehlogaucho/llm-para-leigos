@@ -7,11 +7,12 @@ import { INPUT, moveVector, wantsRun } from './input'
 import { COLL, resolveCapsule } from './collision'
 import { useGame, G } from '../store'
 import { SFX } from './audio'
+import { toon } from '../world/materials'
 
 const R = 0.32, H = 1.42
 const WALK = 3.3, RUN = 6.2, GRAV = -24
 
-const mat = (c: string, o: Partial<THREE.MeshStandardMaterialParameters> = {}) => new THREE.MeshStandardMaterial({ color: c, roughness: 0.75, ...o })
+const mat = (c: string, o: Partial<THREE.MeshStandardMaterialParameters> = {}) => toon({ color: c, ...o })
 
 export function useNexMaterials() {
   return useMemo(() => ({

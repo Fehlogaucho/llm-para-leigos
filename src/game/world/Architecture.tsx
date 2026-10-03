@@ -23,7 +23,7 @@ export function Batch({ children, shadows = true }: { children?: ReactNode; shad
     const m4 = new THREE.Matrix4()
     // pula malhas ocultas, animadas (algum ancestral com userData.noBatch) e materiais especiais (texto 3D, shaders)
     const skip = (o: THREE.Object3D) => { let p: THREE.Object3D | null = o; while (p && p !== g) { if (!p.visible || p.userData.noBatch) return true; p = p.parent } return false }
-    const okMat = (m: any) => m && (m.isMeshStandardMaterial || m.isMeshBasicMaterial || m.isMeshPhysicalMaterial || m.isMeshLambertMaterial) && !m.isDerivedMaterial && !m.wireframe && !m.transparent && !m.onBeforeCompile?.toString().includes('troika')
+    const okMat = (m: any) => m && (m.isMeshStandardMaterial || m.isMeshToonMaterial || m.isMeshBasicMaterial || m.isMeshPhysicalMaterial || m.isMeshLambertMaterial) && !m.isDerivedMaterial && !m.wireframe && !m.transparent && !m.onBeforeCompile?.toString().includes('troika')
     g.traverse((o: any) => {
       if (!o.isMesh || o.isInstancedMesh || o.isSkinnedMesh || o.geometry?.isInstancedBufferGeometry || Array.isArray(o.material) || o.userData.merged || skip(o) || !okMat(o.material) || o.onBeforeRender?.length) return
       let geo: THREE.BufferGeometry = o.geometry.index ? o.geometry.toNonIndexed() : o.geometry.clone()

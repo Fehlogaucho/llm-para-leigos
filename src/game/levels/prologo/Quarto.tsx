@@ -149,7 +149,7 @@ function Screen() {
 /* ---------- quarto ---------- */
 function Room() {
   const wall = useMemo(() => new THREE.MeshStandardMaterial({ map: wallpaper(), roughness: 0.9 }), [])
-  const floor = useMemo(() => { const t = MAT.wood() as THREE.MeshStandardMaterial; const m = t.clone(); if (m.map) { m.map = m.map.clone(); m.map.repeat.set(3, 3); m.map.needsUpdate = true } return m }, [])
+  const floor = useMemo(() => { const t = MAT.wood() as THREE.MeshToonMaterial; const m = t.clone(); if (m.map) { m.map = m.map.clone(); m.map.repeat.set(3, 3); m.map.needsUpdate = true } return m }, [])
   const city = useMemo(() => new THREE.MeshStandardMaterial({ map: cityTex(), emissive: '#ffffff', emissiveMap: cityTex(), emissiveIntensity: 0.9 }), [])
   const rain = useMemo(() => new THREE.MeshBasicMaterial({ map: rainTex(), transparent: true, opacity: 0.6, depthWrite: false }), [])
   const poster = useMemo(() => new THREE.MeshStandardMaterial({ map: posterTex(), roughness: 0.8 }), [])

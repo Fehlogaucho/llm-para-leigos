@@ -55,7 +55,7 @@ const hex = (h: string): RGB => { const n = parseInt(h.slice(1), 16); return [(n
 const mix = (a: RGB, b: RGB, t: number): RGB => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]
 
 /** Lajotas grandes de pedra clara (piso). */
-export function stoneTiles(key = 'tiles', base = '#e6cfa6', dark = '#b0946c', tiles = 4) {
+export function stoneTiles(key = 'tiles', base = '#f2d4a4', dark = '#c29768', tiles = 4) {
   if (cache.has(key)) return cache.get(key)
   const W = SIZE(), cv = document.createElement('canvas'); cv.width = cv.height = W
   const ctx = cv.getContext('2d')!, img = ctx.createImageData(W, W), h = new Float32Array(W * W)
@@ -89,7 +89,7 @@ export function stoneTiles(key = 'tiles', base = '#e6cfa6', dark = '#b0946c', ti
 }
 
 /** Blocos de alvenaria (paredes). */
-export function stoneBlocks(key = 'blocks', base = '#e4cca2', dark = '#a88a62') {
+export function stoneBlocks(key = 'blocks', base = '#efd2a2', dark = '#b8915e') {
   if (cache.has(key)) return cache.get(key)
   const W = SIZE(), cv = document.createElement('canvas'); cv.width = cv.height = W
   const ctx = cv.getContext('2d')!, img = ctx.createImageData(W, W), h = new Float32Array(W * W)
@@ -138,7 +138,7 @@ export function rockTex(key = 'rock', base = '#8a7462', dark = '#4c3c32') {
   return res
 }
 
-export function grassTex(key = 'grass', base = '#6f8f3e', dark = '#3f5a26') {
+export function grassTex(key = 'grass', base = '#7fc04c', dark = '#4c8a2e') {
   if (cache.has(key)) return cache.get(key)
   const W = SIZE() / 2, cv = document.createElement('canvas'); cv.width = cv.height = W
   const ctx = cv.getContext('2d')!, img = ctx.createImageData(W, W)

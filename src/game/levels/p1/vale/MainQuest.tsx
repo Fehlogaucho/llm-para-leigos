@@ -614,7 +614,7 @@ export function BinaryDoor() {
   )
 }
 let _cs2: THREE.Material | null = null
-const CS = () => (_cs2 ||= (() => { const m = (MAT.wall(1) as THREE.MeshStandardMaterial).clone(); m.color.set('#a9b4c8'); return m })())
+const CS = () => (_cs2 ||= (() => { const m = (MAT.wall(1) as THREE.MeshToonMaterial).clone(); m.color.set('#a9b4c8'); return m })())
 
 /* =================== portal de saída (para a Área 3) =================== */
 export const PORTAL_USE: Vec3 = [P.portal[0], 0.15, P.portal[2] + 4.4]

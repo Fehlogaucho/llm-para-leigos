@@ -26,7 +26,7 @@ export function useInside(min: V3, max: V3) {
   return inside
 }
 
-const chamberStone = () => { const m = (MAT.wall(2) as THREE.MeshStandardMaterial).clone(); m.color.set('#a9b4c8'); return m }
+const chamberStone = () => { const m = (MAT.wall(2) as THREE.MeshToonMaterial).clone(); m.color.set('#a9b4c8'); return m }
 let _cs: THREE.Material | null = null
 let _to: THREE.Material | null = null
 const TILE_ON = () => (_to ||= new THREE.MeshStandardMaterial({ color: '#8fd8f5', emissive: '#2a9ad8', emissiveIntensity: 0.9, roughness: 0.4 }))
@@ -38,8 +38,8 @@ const FTILE = () => (_ft ||= new THREE.BoxGeometry(0.6, 0.6, 0.05))
 function Terrain() {
   const g = useMemo(() => buildTerrain(), [])
   const mats = useMemo(() => {
-    const gr = (MAT.grass(1) as THREE.MeshStandardMaterial).clone(); gr.vertexColors = true
-    const rk = (MAT.rock(1) as THREE.MeshStandardMaterial).clone(); rk.vertexColors = true
+    const gr = (MAT.grass(1) as THREE.MeshToonMaterial).clone(); gr.vertexColors = true
+    const rk = (MAT.rock(1) as THREE.MeshToonMaterial).clone(); rk.vertexColors = true
     return [gr, rk]
   }, [])
   return <Solid><mesh geometry={g} material={mats} receiveShadow /></Solid>
@@ -340,7 +340,7 @@ function CaveShell() {
     const uv = g.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * 8, uv.getY(i) * 3)
     return g
   }, [])
-  const rockMat = useMemo(() => { const m = (MAT.rock(1) as THREE.MeshStandardMaterial).clone(); m.side = THREE.DoubleSide; m.color.set('#b8a898'); return m }, [])
+  const rockMat = useMemo(() => { const m = (MAT.rock(1) as THREE.MeshToonMaterial).clone(); m.side = THREE.DoubleSide; m.color.set('#b8a898'); return m }, [])
   const mound = useMemo(() => {
     const r = rng(31)
     const out: { p: V3; s: V3; r: V3 }[] = []

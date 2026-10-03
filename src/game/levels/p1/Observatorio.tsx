@@ -5,6 +5,7 @@ import { Line, Sparkles, Text } from '@react-three/drei'
 import { useLevel } from '../../engine/level'
 import { SkyDome, Lights, Planet, CloudSea, CloudPuffs, FloatingIslands, Dust } from '../../world/Atmosphere'
 import { Interactable, Solid, useFlag } from '../../world/core'
+import { Eras } from './observatorio/Eras'
 import { ObservatoryMap, P, towerPoint, TOWER } from './observatorio/Map'
 import { Telescope, Sundial, Hourglass, CelestialGlobe, Abacus } from '../../world/Instruments'
 import { MAT } from '../../world/materials'
@@ -21,6 +22,8 @@ type V3 = [number, number, number]
 const v = (a: V3) => new THREE.Vector3(...a)
 
 /* =================== posições =================== */
+// céu de fim de tarde mais vivo (estilo desenho animado)
+const OBS_SKY = { hemi: '#c8d6ff', zenith: '#2a4aa8', mid: '#7a8ee6', horizon: '#ffb36a', below: '#f0b48a', sunCol: '#ffd9a8', sun: [-0.8, 0.42, -0.42] as V3, stars: 0.25, fog: '#f2c4a0', fogNear: 120, fogFar: 460 }
 const TEL: V3 = [P.terr[0] - 1.6, P.terr[1], P.terr[2] - 1.2]
 const LUN: V3 = [P.terr[0] + 3, P.terr[1], P.terr[2] - 3.4]
 const DIAL: V3 = P.dial
@@ -113,6 +116,8 @@ function TerraceTelescope() {
       await c.say([
         { who: 'NEX', text: 'Os pontos formam um desenho! Um caçador, com um cinto de três estrelas.' },
         { who: 'NOVA', text: 'É Órion. As três do meio são as Três Marias. Você não inventou esse desenho: você o encontrou, olhando com atenção.' },
+        { who: 'NEX', text: 'Esse telescópio parece bem antigo.' },
+        { who: 'NOVA', text: 'Este canto lembra a Itália de 1609. Galileu Galilei apontou uma luneta para o céu e viu montanhas na Lua e luas em volta de Júpiter. Ninguém tinha visto isso antes!' },
         { who: 'NOVA', text: 'Observar é o primeiro passo de tudo. Antes de qualquer máquina, alguém precisa olhar e anotar.' },
       ])
       c.discover('observacao')
@@ -184,6 +189,7 @@ function Luneta() {
       { who: 'NEX', text: 'Seis! São seis estrelas.' },
       { who: 'NOVA', text: 'Repare no que você fez: trocou seis pontos de luz por um único símbolo, o “6”.' },
       { who: 'NOVA', text: 'O “6” serve para seis estrelas, seis pedras ou seis dias. Isso se chama abstração.' },
+      { who: 'NOVA', text: 'Há mais de 2.000 anos, o grego Hiparco contou e anotou quase mil estrelas. Contar foi o primeiro jeito de guardar o céu.' },
     ])
     c.discover('abstracao')
     c.fragment('numero', 'Fragmento: NÚMERO')
@@ -246,6 +252,7 @@ function SundialSpot() {
       await c.say([
         { who: 'NEX', text: 'A sombra anda sempre do mesmo jeito: uma marca por hora!' },
         { who: 'NOVA', text: 'Isso é medir: comparar com uma unidade combinada. Das 9h até as 12h, a sombra andou três marcas: três horas.' },
+        { who: 'NOVA', text: 'No Egito, há uns 3.500 anos, já se fazia isso: a sombra de obeliscos e relógios de sol dividia o dia em horas. Por isso este canto tem cara de Egito.' },
         { who: 'NOVA', text: 'Com medidas, o mundo vira números. E números podem ser guardados, comparados… e um dia, calculados por máquinas.' },
       ])
       c.discover('medicao')
@@ -318,7 +325,7 @@ function HourglassSpot() {
       c.setFlag('a1_hour')
       await c.wait(1.2)
       c.discover('tempo_rep')
-      await c.say({ who: 'NOVA', text: 'A areia cai sempre no mesmo ritmo. A ampulheta não guarda o tempo: ela o representa.' }, { ambient: true })
+      await c.say([{ who: 'NOVA', text: 'A areia cai sempre no mesmo ritmo. A ampulheta não guarda o tempo: ela o representa.' }, { who: 'NOVA', text: 'Há uns 700 anos, marinheiros usavam ampulhetas para medir o tempo no mar, onde nem sempre dava para ver o sol.' }], { ambient: true })
     })
   }
   return (
@@ -360,6 +367,7 @@ function RecordBook() {
       await c.wait(1)
       await c.say([
         { who: 'NEX', text: 'Pronto. O céu inteiro virou uma lista de números.' },
+        { who: 'NOVA', text: 'Em Alexandria, no Egito, há 2.300 anos, a maior biblioteca do mundo guardava o que se sabia em milhares de rolos de papiro. Guardar é tão importante quanto descobrir.' },
         { who: 'NOVA', text: 'Mais que uma lista: uma tabela, com linhas e colunas. Você trocou o mundo por símbolos que dá para guardar.' },
         { who: 'NOVA', text: 'Isso é representar. Computadores só trabalham com representações. Guarde essa tabela na memória: no fim desta fase, ela vai virar algo poderoso.' },
       ])
@@ -512,6 +520,7 @@ function AbacusSpot() {
     await c.wait(0.8)
     await c.say([
       { who: 'NEX', text: '1 dezena e 5 unidades… 15!' },
+      { who: 'NOVA', text: 'Na Mesopotâmia, há mais de 4.000 anos, mercadores contavam com pedrinhas em sulcos. O ábaco nasceu dessa ideia, e foi usado por milhares de anos.' },
       { who: 'NOVA', text: 'Quando a fileira encheu, você trocou 10 contas por 1 na fileira de cima. Agrupar assim deixa números grandes pequenos de guardar.' },
     ])
     c.discover('abaco')
@@ -691,6 +700,7 @@ async function main(c: Ctx) {
     await c.say([
       { who: 'NEX', text: 'Uau… onde estamos?' },
       { who: 'NOVA', text: 'No Observatório. Muito antes dos computadores, foi assim que tudo começou: pessoas olhando para o céu.' },
+      { who: 'NOVA', text: 'Cada canto daqui lembra uma época: o Egito antigo, a Grécia, a Itália de Galileu, a Mesopotâmia. As placas de pedra contam quando cada ideia surgiu.' },
       { who: 'NEX', text: 'E o que olhar o céu tem a ver com uma máquina de linguagem?' },
       {
         who: 'NOVA', text: 'Tudo. Uma máquina só entende o que consegue representar. E representar começa com observar e medir.', choices: [
@@ -732,7 +742,7 @@ function hint(id: string, pos: V3, r: number, lines: { who: string; text: string
   }
 }
 const hints = [
-  hint('statues', P.plaza, 9, [{ who: 'NOVA', text: 'Esses sábios passavam noites inteiras anotando o céu. Sem eles, nada do que vem depois existiria.' }]),
+  hint('statues', P.plaza, 9, [{ who: 'NOVA', text: 'Estes sábios gregos passavam noites inteiras anotando o céu. A esfera de anéis no meio da fonte é um modelo do céu que eles usavam.' }]),
   hint('tower', [P.tower[0], P.tower[1], P.tower[2] + 7], 4, [{ who: 'NOVA', text: 'A Torre dos Astros! Dá para subir pela rampa em espiral. Lá no meio tem um instrumento curioso.' }]),
   hint('garden', P.garden, 9, [{ who: 'NOVA', text: 'Olha o chão do jardim: um mapa de estrelas! Pise nas estrelas douradas para ligá-las.' }]),
   hint('lib', [P.lib[0], P.lib[1], P.lib[2] + 6], 4, [{ who: 'NOVA', text: 'A Biblioteca. Tem um livro torto na estante do fundo… estranho.' }]),
@@ -747,14 +757,15 @@ export default function Observatorio() {
   const portalOn = useFlag('a1_done')
   return (
     <>
-      <SkyDome preset="sunset" />
-      <Lights preset="sunset" sunI={2.6} hemiI={1.0} />
+      <SkyDome preset="sunset" custom={OBS_SKY} />
+      <Lights preset="sunset" custom={OBS_SKY} sunI={2.4} hemiI={1.15} />
       <Planet />
       <CloudSea y={-34} />
       <CloudPuffs n={22} />
       <FloatingIslands n={14} />
       <Dust count={110} scale={[90, 16, 90]} position={[0, 8, 0]} />
       <ObservatoryMap secretOpen={!!secret} portalOn={!!portalOn} />
+      <Eras />
       <Orion />
       <TerraceTelescope />
       <Luneta />
