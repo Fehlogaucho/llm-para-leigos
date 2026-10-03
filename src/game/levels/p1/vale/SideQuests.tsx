@@ -181,7 +181,7 @@ export function HiddenNumber() {
       ], { ambient: true })
       return
     }
-    okR.current = false; setPick(null); setOpen(true)
+    okR.current = false; setPick(null); setOpen(true); openR.current = true
     const [x, y, z] = TEMPLE_DOOR
     c.focus(portrait() ? [x - 6.5, y + 2.6, z + 1] : [x - 4.6, y + 1.9, z + 0.8], [x, y + 1.5, z], 50)
     await c.until(() => okR.current || !openR.current)
@@ -306,7 +306,7 @@ export function CaveSystems() {
   }
   const run = () => start('sistemas', async (c) => {
     c.quest('q_sistemas', 'active', 'Sistemas Numéricos')
-    okR.current = false; setCh(null); setSeen([]); setMode('dec'); setSeen(['dec']); setOpen(true)
+    okR.current = false; setCh(null); setSeen([]); setMode('dec'); setSeen(['dec']); setOpen(true); openR.current = true
     const cam = center.clone().addScaledVector(dir, portrait() ? 6.6 : 5.2).setY(portrait() ? 3.4 : 2.7)
     c.focus(cam.toArray() as Vec3, center.clone().setY(1.6).addScaledVector(dir, -1.2).toArray() as Vec3, 52)
     if (!done) await c.say({ who: 'NOVA', text: 'Treze cristais. Toque nas abas e veja os mesmos treze se organizarem de jeitos diferentes.' }, { ambient: true })

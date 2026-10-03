@@ -350,7 +350,7 @@ function RecordBook() {
     }
     const [x, y, z] = BOOK
     c.focus([x + 0.2, y + 2.6, z + 1.6], [x, y + 1.1, z], 40)
-    setAns(c.flag('a1_rep') ? BOOK_ROWS.map((r) => r.a) : [null, null, null]); setOpen(true)
+    setAns(c.flag('a1_rep') ? BOOK_ROWS.map((r) => r.a) : [null, null, null]); setOpen(true); openRef.current = true
     if (!c.flag('a1_rep')) {
       await c.say({ who: 'NOVA', text: 'Este é o Livro de Registros. Anote o que você observou e mediu: toque no número certo de cada linha.' }, { ambient: true })
       await c.until(() => okRef.current || !openRef.current)
@@ -502,7 +502,7 @@ function AbacusSpot() {
   const fin = phase === 'add' && added === 7 && cnt[1] === 1 && cnt[2] === 5
   const run = () => start('abaco', async (c) => {
     c.quest('q_abaco', 'active', 'O Ábaco')
-    setCnt([0, 0, 0]); setPhase('eight'); setAdded(0); setOpen(true)
+    setCnt([0, 0, 0]); setPhase('eight'); setAdded(0); setOpen(true); openRef.current = true
     c.focus([ABACUS[0], ABACUS[1] + 1.9, ABACUS[2] - 2.4], [ABACUS[0], ABACUS[1] + 1.2, ABACUS[2]], 42)
     await c.say({ who: 'NOVA', text: 'Vamos fazer 8 + 7 sem escrever nada. Primeiro, empurre 8 contas amarelas (unidades) para a esquerda.' }, { ambient: true })
     await c.until(() => finRef.current || !openRef.current)

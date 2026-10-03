@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { useMemo, useRef, useState, type ReactNode } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Solid } from './core'
+import { Solid, Interactable } from './core'
 import { MAT } from './materials'
 import { RT } from '../engine/runtime'
 
@@ -136,4 +136,56 @@ export function Beam({ from, to, color = '#fff2b0', on = true, w = 0.12 }: { fro
       <meshBasicMaterial color={color} transparent opacity={0.6} depthWrite={false} blending={THREE.AdditiveBlending} toneMapped={false} />
     </mesh>
   )
+}
+
+/**
+ * Elevador: disco que leva o NEX entre duas alturas. Parado, o disco é sólido;
+ * durante a viagem o NEX acompanha o disco (sem colisão) e não anda.
+ */
+export function Lift({ id, from, to, enabled = true, startTop = false, r = 1.8, labelUp = 'Subir', labelDown = 'Descer', onArrive }: {
+  id: string; from: V3; to: V3; enabled?: boolean; startTop?: boolean; r?: number; labelUp?: string; labelDown?: string; onArrive?: (top: boolean) => void
+}) {
+  const [st, setSt] = useState<'bottom' | 'top' | 'moving'>(startTop ? 'top' : 'bottom')
+  const disc = useRef<THREE.Group>(null!)
+  const mv = useRef<{ t0: number; up: boolean; off: THREE.Vector3 } | null>(null)
+  const DUR = 3.2
+  useFrame(() => {
+    const m = mv.current
+    const g = disc.current
+    if (!g) return
+    if (!m) { g.position.set(...(st === 'top' ? to : from)); return }
+    const k = Math.min(1, (performance.now() - m.t0) / 1000 / DUR)
+    const e = k * k * (3 - 2 * k)
+    const a = m.up ? from : to, b = m.up ? to : from
+    g.position.set(a[0] + (b[0] - a[0]) * e, a[1] + (b[1] - a[1]) * e, a[2] + (b[2] - a[2]) * e)
+    RT.player.set(g.position.x + m.off.x, g.position.y + 0.25, g.position.z + m.off.z)
+    RT.playerVel.set(0, 0, 0)
+    RT.lastSafe.copy(RT.player)
+    if (k >= 1) { mv.current = null; RT.frozen = false; setSt(m.up ? 'top' : 'bottom'); onArrive?.(m.up) }
+  })
+  const go = (up: boolean) => {
+    if (mv.current) return
+    const base = up ? from : to
+    const off = new THREE.Vector3(RT.player.x - base[0], 0, RT.player.z - base[2])
+    if (off.length() > r * 0.7) off.setLength(r * 0.5)
+    mv.current = { t0: performance.now(), up, off }
+    RT.frozen = true
+    setSt('moving')
+    import('../engine/audio').then((a) => a.SFX.play('gear'))
+  }
+  const here = st === 'top' ? to : from
+  return (
+    <group>
+      <group ref={disc} position={here} userData={{ noBatch: true }}>
+        <mesh position={[0, 0.12, 0]} material={MAT.bronzeDark()} castShadow receiveShadow userData={{ noCollide: true }}><cylinderGeometry args={[r, r * 0.92, 0.25, 32]} /></mesh>
+        <mesh position={[0, 0.26, 0]} rotation={[-Math.PI / 2, 0, 0]} material={MAT.glowBlue()} userData={{ noCollide: true }}><ringGeometry args={[r * 0.78, r * 0.86, 40]} /></mesh>
+      </group>
+      {st !== 'moving' && <Solid invisible><mesh position={[here[0], here[1] + 0.1, here[2]]}><cylinderGeometry args={[r, r, 0.3, 24]} /></mesh></Solid>}
+      {st === 'bottom' && <InteractLift id={id + '_up'} pos={from} label={labelUp} enabled={enabled} onUse={() => go(true)} />}
+      {st === 'top' && <InteractLift id={id + '_down'} pos={to} label={labelDown} enabled={enabled} onUse={() => go(false)} />}
+    </group>
+  )
+}
+function InteractLift({ id, pos, label, enabled, onUse }: { id: string; pos: V3; label: string; enabled: boolean; onUse: () => void }) {
+  return <Interactable id={id} label={label} position={[pos[0], pos[1] + 0.25, pos[2]]} radius={1.9} enabled={enabled} onUse={onUse} markerY={2.4} color="#7fe3ff" />
 }

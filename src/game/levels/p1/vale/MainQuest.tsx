@@ -355,7 +355,7 @@ export function GroupMachine() {
   const run = () => start('machine', async (c) => {
     if (c.flag('a2_group')) { await c.say({ who: 'NOVA', text: c.flag('a2_chest') ? 'A máquina descansa. Mil pedras já viraram um baú.' : 'O baú com mil pedras está pronto. Leve-o até o totem.' }, { ambient: true }); return }
     if (!c.flag('a2_try')) { await c.say({ who: 'NOVA', text: 'Uma máquina cheia de sacos e caixas. Primeiro tente carregar as pedras da pedreira.' }, { ambient: true }); return }
-    setSt({ tray: 0, sacks: 0, crates: 0, chest: 0 }); setOpen(true)
+    setSt({ tray: 0, sacks: 0, crates: 0, chest: 0 }); setOpen(true); openR.current = true
     c.focus(portrait() ? [-2.4, 5.6, -24.6] : [-4.4, 3.6, -27.2], [MX, 0.9, -32.6], 50)
     RT.lookAt = new THREE.Vector3(MX, 0, -32)
     await c.say({ who: 'NOVA', text: 'Uma máquina de agrupar! Ponha 10 pedras e ela fecha um saco.' }, { ambient: true })
@@ -526,7 +526,7 @@ export function BinaryDoor() {
   const run = () => start('porta', async (c) => {
     if (c.flag('a2_door')) return
     if (!c.flag('a2_chest')) { await c.say({ who: 'NOVA', text: 'Uma porta enorme com lajes no chão. Antes, vamos terminar o que começamos nas ruínas.' }, { ambient: true }); return }
-    setBits([false, false, false, false]); setOpen(true)
+    setBits([false, false, false, false]); setOpen(true); openR.current = true
     c.objective(null)
     c.focus(portrait() ? [0, 7.6, -36.4] : [0, 4.8, -40.6], [0, 2.6, -52.5], 50)
     if (!c.flag('a2_door_seen')) {

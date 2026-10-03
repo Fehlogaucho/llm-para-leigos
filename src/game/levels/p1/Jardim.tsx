@@ -434,7 +434,7 @@ function RuleMachine() {
   const run = () => start('rules', async (c) => {
     if (!c.flag('a3_maze')) c.setFlag('a3_maze')
     c.quest('q_regras', 'active', 'A Máquina de Regras')
-    setOpen(true); setLog([])
+    setOpen(true); setLog([]); openRef.current = true
     c.focus([mx + 0.4, my + 6.2, mz + 7.2], [mx + 0.4, my - 1.4, mz - 0.5], 48)
     if (!c.flag('a3_rules_seen')) {
       c.setFlag('a3_rules_seen')
