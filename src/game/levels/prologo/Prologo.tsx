@@ -18,6 +18,8 @@ import { QUALITY } from '../../engine/quality'
 const ENGINE: [number, number, number] = [0, 0, -6]
 const DOOR: [number, number, number] = [0, 0, 1.6]
 const PED: [number, number, number] = [-4.2, 0, 9]
+// o portal abre longe da porta, no meio da caverna (antes prendia o NEX entre a porta e o portal)
+const PORTAL_POS: [number, number, number] = [3.2, 0, 8.5]
 
 /* ---------- caverna ---------- */
 function Cave() {
@@ -282,15 +284,15 @@ function FinalPortal({ onUse }: { onUse: () => void }) {
   if (!on) return null
   return (
     <group>
-      <Portal position={[0, 0, 4.2]} active s={0.9} />
-      <Interactable id="pro_portal" label="Entrar no portal" position={[0, 0, 5.2]} radius={2.8} onUse={onUse} markerY={5.4} color="#7fe3ff" />
+      <Portal position={PORTAL_POS} active s={0.9} />
+      <Interactable id="pro_portal" label="Entrar no portal" position={[PORTAL_POS[0], 0, PORTAL_POS[2] + 1.6]} radius={2.8} onUse={onUse} markerY={5.4} color="#7fe3ff" />
     </group>
   )
 }
 
 /* ---------- roteiro ---------- */
 async function main(c: Ctx) {
-  if (c.flag('pro_portal')) { c.objective('Entre no portal', [0, 0, 5.2]); return }
+  if (c.flag('pro_portal')) { c.objective('Entre no portal', [PORTAL_POS[0], 0, PORTAL_POS[2] + 1.6]); return }
   const move = IS_TOUCH ? 'Arraste o círculo dourado para andar (ou toque no chão). Arraste a tela para olhar em volta.' : 'Use WASD ou as setas para andar e arraste o mouse para olhar em volta. Também dá para clicar no chão.'
   await c.cinematic([
     { pos: [11, 11, 9], look: [0, 6, -6], dur: 0.01, cut: true },
@@ -359,11 +361,14 @@ async function main(c: Ctx) {
     },
   ])
   c.discover('engine')
+  // coloca o NEX de frente para o portal, num lugar livre
+  RT.player.set(PORTAL_POS[0], 0.1, PORTAL_POS[2] + 5.5); RT.lastSafe.copy(RT.player); RT.playerVel.set(0, 0, 0)
+  RT.playerYaw = Math.PI; RT.camYaw = 0
   c.setFlag('pro_portal', 1)
   SFX.play('portal')
   c.freeze(false)
-  await c.say({ who: 'NOVA', text: 'Um portal se abriu bem onde ficava o coração da máquina. Vamos!' }, { ambient: true })
-  c.objective('Entre no portal', [0, 0, 5.2])
+  await c.say({ who: 'NOVA', text: 'Um portal se abriu bem na sua frente. Vamos!' }, { ambient: true })
+  c.objective('Entre no portal', [PORTAL_POS[0], 0, PORTAL_POS[2] + 1.6])
 }
 
 export default function Prologo() {
