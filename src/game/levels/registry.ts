@@ -91,3 +91,8 @@ defineLevel({
   quests: [{ id: 'q_construa', name: 'Construa a Matriz' }, { id: 'q_mimagem', name: 'Matriz como Imagem' }, { id: 'q_mmapa', name: 'Matriz como Mapa' }, { id: 'q_mvetor', name: 'Matriz × Vetor' }],
   next: 'p2a1', load: () => import('./p1/Matriz'),
 })
+defineLevel({
+  id: 'p2a1', phase: 2, badge: '2·1', short: 'Fase 2 · Em breve', title: 'A Cidade das Representações', kicker: 'FASE 2', sub: 'Em construção', theme: 'cidade', img: '/img/origens.webp',
+  tip: 'Você terminou a Fase 1! A Fase 2 está sendo construída.',
+  load: () => import('./p2/EmBreve'),
+})
