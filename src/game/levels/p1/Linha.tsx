@@ -14,7 +14,8 @@ import { G, useGame } from '../../store'
 import { STOPS, PEOPLE } from './linha/stops'
 import { holo } from './linha/people'
 import { openDoc, openAsk, openGame, openPipeline, MemoryStrip, memFlag, readExtra, readAgain, extraQuest, OV } from './linha/Doc'
-import { LinhaWorld, Console, STOP_Z, SIDE, HOLO_P, USE_P, STAND_P, EXTRA_P, CORE, CORE_USE, PORTAL_USE, type V3 } from './linha/World'
+import { LinhaWorld, Console, STOP_Z, SIDE, HOLO_P, USE_P, STAND_P, EXTRA_P, CORE, CORE_USE, PORTAL_USE, VILLAGE, type V3 } from './linha/World'
+import { graosTalk, graosHint, graosMesa, BIG } from './linha/Graos'
 
 /* =========================================================
    FASE 1 · AS ORIGENS — A LINHA DO TEMPO DA MEMÓRIA
@@ -35,7 +36,7 @@ const DOC_LINE = [
 
 /* ---------- uma parada ---------- */
 async function runStop(c: Ctx, i: number) {
-  const s = STOPS[i], sd = SIDE(i), z = STOP_Z(i), P = PEOPLE[s.who]
+  const s = STOPS[i], sd = SIDE(i), z = STOP_Z(i)
   const h = holo(s.id)
   c.objective(null); c.freeze(true)
   const st = STAND_P(i)
@@ -59,20 +60,25 @@ async function runStop(c: Ctx, i: number) {
     else if (s.ask) { await c.say({ who: s.who, text: 'Antes de eu ir, me responda uma coisa.' }); await openAsk(c, s.ask, s.who) }
     await c.say({ who: s.who, text: s.bye })
     h.live = false
-    // a Engine recupera a palavra
-    c.setFlag(memFlag(s.id))
-    G().pushBanner({ kind: 'memory', title: s.word, sub: `${s.year} · ${P.name}` })
-    SFX.play('core'); gesture('cheer', 1.8)
-    await c.wait(1.4)
-    await c.say({ who: 'ENGINE', text: s.engine })
-    for (const id of s.codex) c.discover(id)
-    if (s.extra) c.quest(extraQuest(s.id), 'active', s.extra.title)
+    await recover(c, i)
   } finally {
     h.live = false
     RT.lookAt = null; RT.novaPos = null
     c.unfocus(); c.freeze(false)
     RT.camYaw = 0
   }
+}
+
+/** A Engine recupera a palavra da parada i. */
+async function recover(c: Ctx, i: number) {
+  const s = STOPS[i], P = PEOPLE[s.who]
+  c.setFlag(memFlag(s.id))
+  G().pushBanner({ kind: 'memory', title: s.word, sub: `${s.year} · ${P.name}` })
+  SFX.play('core'); gesture('cheer', 1.8)
+  await c.wait(1.4)
+  await c.say({ who: 'ENGINE', text: s.engine })
+  for (const id of s.codex) c.discover(id)
+  if (s.extra) c.quest(extraQuest(s.id), 'active', s.extra.title)
 }
 
 /* ---------- abertura ---------- */
@@ -151,7 +157,7 @@ async function finale(c: Ctx) {
   await c.say([
     { who: 'ENGINE', text: 'Onze memórias… voltando todas juntas. Esperem…' },
     { who: 'ENGINE', text: 'Eu me lembro! Eu leio fichas e transformo tudo em números, em zeros e uns.' },
-    { who: 'ENGINE', text: 'Guardo o que aprendi em tabelas de pesos, ajustados para errar cada vez menos.' },
+    { who: 'ENGINE', text: 'Guardo o que aprendi em matrizes de pesos, ajustados para errar cada vez menos.' },
     { who: 'ENGINE', text: 'Multiplico matrizes, passo a passo, e escolho a próxima palavra pelas chances.' },
     { who: 'NEX', text: 'Ela falou sem engasgar nenhuma vez!' },
     { who: 'NOVA', text: 'Vamos testar. NEX, comece uma frase para ela completar.' },
@@ -161,7 +167,7 @@ async function finale(c: Ctx) {
   await openPipeline(c)
   await c.say([
     { who: 'ENGINE', text: '“O céu é azul.” Uma palavra de cada vez. Eu lembro como eu escrevo!' },
-    { who: 'NEX', text: 'Então é isso? Fichas, números, tabelas, pesos e chances?' },
+    { who: 'NEX', text: 'Então é isso? Fichas, números, matrizes, pesos e chances?' },
     { who: 'NOVA', text: 'Essa é a matemática por trás de toda LLM. Ninguém inventou tudo de uma vez: foram milhares de anos de ideias, uma em cima da outra.' },
   ])
   c.core('MATRIX', 'MATRIX CORE')
@@ -185,9 +191,15 @@ async function main(c: Ctx) {
   for (;;) {
     const i = nextIndex()
     if (i < 0) break
-    c.objective(`Desperte a memória de ${STOPS[i].year}`, USE_P(i))
     if (tease) c.say({ who: 'NOVA', text: STOPS[i].tease }, { ambient: true }).catch(() => {})
-    await c.until(() => done(i))
+    if (STOPS[i].custom === 'graos') {
+      // parte 2: primeiro o comerciante, depois a mesa de madeira
+      if (!c.flag('g2_talk')) { c.objective('Fale com o comerciante da vila', VILLAGE.merchantUse); await c.until(() => !!G().flags.g2_talk || done(i)) }
+      if (!done(i)) { c.objective('Organize os registros na mesa de madeira', VILLAGE.tableUse); await c.until(() => done(i)) }
+    } else {
+      c.objective(`Desperte a memória de ${STOPS[i].year}`, USE_P(i))
+      await c.until(() => done(i))
+    }
     await c.until(() => !G().focus && !G().dialog) // a Engine fala primeiro
     tease = true
   }
@@ -202,6 +214,30 @@ async function main(c: Ctx) {
 
 /* ---------- objetos de uso ---------- */
 function StopUse({ i }: { i: number }) {
+  if (STOPS[i].custom === 'graos') return <VillageUse i={i} />
+  return <GenericUse i={i} />
+}
+/** Parte 2: o comerciante (cenas 1–3) e a mesa de madeira (cenas 4–11). */
+function VillageUse({ i }: { i: number }) {
+  const s = STOPS[i]
+  const flags = useGame((st) => st.flags)
+  const isDone = !!flags[memFlag(s.id)], talk = !!flags.g2_talk
+  let next = 0; while (next < STOPS.length && flags[memFlag(STOPS[next].id)]) next++
+  const active = !!flags.l1_intro && !isDone && i === next
+  return (
+    <>
+      <Interactable id={'l1stop' + i} position={VILLAGE.merchantUse} radius={2.8} markerY={2.3} color="#e6c04a"
+        label={isDone ? `Reler: ${s.doc.title}` : 'Falar com o comerciante'} marker={!talk || isDone}
+        enabled={active || isDone}
+        onUse={() => { if (isDone) readAgain(s.doc); else if (!talk) start('l1stop' + i, graosTalk); else start('g2_hint', graosHint) }} />
+      <Interactable id="g2_mesa" position={VILLAGE.tableUse} radius={2.4} markerY={1.6} color="#ffd27a"
+        label="Organizar os registros na mesa" enabled={active && talk}
+        onUse={() => start('g2_mesa', (c) => graosMesa(c, (cc) => recover(cc, i)))} />
+      {s.extra && isDone && <Lectern i={i} />}
+    </>
+  )
+}
+function GenericUse({ i }: { i: number }) {
   const s = STOPS[i]
   const flags = useGame((st) => st.flags)
   const isDone = !!flags[memFlag(s.id)]
@@ -245,7 +281,7 @@ export default function Linha() {
   const spawn: V3 = f.l1_final ? [0, 0.1, CORE_USE[2] + 1] : last >= 0 ? [0, 0.1, STOP_Z(last) + 1] : [0, 0.1, 9]
   useLevel({ spawn, yaw: Math.PI, scripts: [main], minY: -10 })
   useOverlay('l1mem', <MemoryStrip />, [])
-  useEffect(() => () => G().setOverlay(OV, null), []) // fecha painéis abertos ao sair da fase
+  useEffect(() => () => { G().setOverlay(OV, null); G().setOverlay(BIG, null) }, []) // fecha painéis abertos ao sair da fase
   return (
     <>
       <SkyDome preset="night" custom={SKY} />

@@ -17,25 +17,16 @@ import { SpinGear, cardMat } from '../oficina/Hall'
 import { NumCube, Brackets } from '../matriz/Chamber'
 import { STOPS, PEOPLE } from './stops'
 import { Holo } from './people'
+import { STOP_Z, SIDE, USE_P, FOG_Z, CORE, CORE_USE, PORTAL_P, SEG, Z_BACK, type V3 } from './layout'
+import { Village } from './Village'
 
 /* =========================================================
    O mundo da Fase 1: uma única trilha reta (a linha do tempo),
    com 11 marcos. Névoa da memória entre os marcos; no fim,
    a Memória Central da Language Engine.
    ========================================================= */
-export type V3 = [number, number, number]
-export const STOP_Z = (i: number) => -8 - i * 11
-export const SIDE = (i: number) => (i % 2 === 0 ? -1 : 1)
-export const HOLO_P = (i: number): V3 => [SIDE(i) * 7.4, 0, STOP_Z(i)]
-export const USE_P = (i: number): V3 => [SIDE(i) * 4.9, 0, STOP_Z(i) - 1.3]
-export const STAND_P = (i: number): V3 => [SIDE(i) * 4.5, 0.05, STOP_Z(i) + 0.3]
-export const EXTRA_P = (i: number): V3 => [SIDE(i) * 8.6, 0, STOP_Z(i) + 3.2]
-export const FOG_Z = (i: number) => STOP_Z(i) - 5.5
-export const CORE: V3 = [0, 0, -134]
-export const CORE_USE: V3 = [0, 0, -128.6]
-export const PORTAL_P: V3 = [0, 0, -143]
-export const PORTAL_USE: V3 = [0, 0, -141]
-const HALF = 13, Z_FRONT = 20, Z_BACK = -150, Z_GROUND = 28
+export { STOP_Z, SIDE, HOLO_P, USE_P, STAND_P, EXTRA_P, FOG_Z, CORE, CORE_USE, PORTAL_P, PORTAL_USE, SEG, VILLAGE, type V3 } from './layout'
+const HALF = 13, Z_FRONT = 20, Z_GROUND = 28
 
 /* ---------- materiais ---------- */
 const cache: Record<string, THREE.Material> = {}
@@ -91,8 +82,8 @@ function Ground() {
 /** A estrada: um trecho por época, com a linha do tempo dourada no meio. */
 function Road() {
   const segs = useMemo(() => {
-    const out: { z0: number; z1: number; m: number }[] = [{ z0: 4, z1: STOP_Z(0) + 5.5, m: 0 }]
-    STOPS.forEach((_, i) => out.push({ z0: STOP_Z(i) + 5.5, z1: i === STOPS.length - 1 ? CORE_USE[2] + 1 : STOP_Z(i) - 5.5, m: i }))
+    const out: { z0: number; z1: number; m: number }[] = [{ z0: 4, z1: SEG(0)[0], m: 0 }]
+    STOPS.forEach((_, i) => out.push({ z0: SEG(i)[0], z1: i === STOPS.length - 1 ? CORE_USE[2] + 1 : SEG(i)[1], m: i }))
     return out
   }, [])
   return (
@@ -195,7 +186,7 @@ function Dice({ position, rot = 0 }: { position: V3; rot?: number }) {
     </group>
   )
 }
-function RodBoard({ position, rotY = 0 }: { position: V3; rotY?: number }) {
+export function RodBoard({ position, rotY = 0 }: { position: V3; rotY?: number }) {
   return (
     <group position={position} rotation={[0, rotY, 0]}>
       <Solid><mesh position={[0, 0.3, 0]} material={redLacquer()} castShadow><boxGeometry args={[2.2, 0.6, 1.2]} /></mesh></Solid>
@@ -208,7 +199,7 @@ function RodBoard({ position, rotY = 0 }: { position: V3; rotY?: number }) {
     </group>
   )
 }
-function RedLantern({ position }: { position: V3 }) {
+export function RedLantern({ position }: { position: V3 }) {
   return (
     <group position={position}>
       <Solid><mesh position={[0, 1.4, 0]} material={MAT.woodDark()}><cylinderGeometry args={[0.06, 0.08, 2.8, 8]} /></mesh></Solid>
@@ -274,6 +265,10 @@ function LetterTower({ position, letters }: { position: V3; letters: string }) {
 
 /** Cenário de cada parada: chão da época, projetor, placa e objetos. */
 function StopSite({ i }: { i: number }) {
+  if (STOPS[i].custom === 'graos') return <Village />
+  return <GenericSite i={i} />
+}
+function GenericSite({ i }: { i: number }) {
   const s = STOPS[i], P = PEOPLE[s.who], sd = SIDE(i), z = STOP_Z(i)
   const hx = sd * 7.4
   const back = (dx: number, dz: number, y = 0): V3 => [hx + sd * dx, y, z + dz]
@@ -371,6 +366,7 @@ function StopSite({ i }: { i: number }) {
 
 /** Console onde o NEX desperta a memória (perto da estrada). */
 export function Console({ i, lit }: { i: number; lit: boolean }) {
+  if (STOPS[i].custom) return null
   const P = PEOPLE[STOPS[i].who]
   const m = useRef<THREE.MeshStandardMaterial>(null!)
   useFrame(() => { if (m.current) m.current.emissiveIntensity = lit ? 2 + Math.sin(RT.time * 4) * 0.8 : 0.5 })

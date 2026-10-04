@@ -6,7 +6,7 @@
    Textos simples, para leigos. Fatos históricos conferidos.
    ========================================================= */
 
-export interface Person { name: string; short: string; color: string; acc: 'beard' | 'turban' | 'hat' | 'wig' | 'bun' | 'cap' | 'none' | 'sideburns' | 'glasses' }
+export interface Person { name: string; short: string; color: string; acc: 'beard' | 'turban' | 'hat' | 'wig' | 'bun' | 'cap' | 'none' | 'sideburns' | 'glasses' | 'straw' }
 export const PEOPLE: Record<string, Person> = {
   ESCRIBA: { name: 'Escriba de Uruk', short: 'EU', color: '#d8954a', acc: 'beard' },
   LIUHUI: { name: 'Liu Hui', short: 'LH', color: '#e0505a', acc: 'hat' },
@@ -19,6 +19,8 @@ export const PEOPLE: Record<string, Person> = {
   MARKOV: { name: 'Andrei Markov', short: 'AM', color: '#8ff0b0', acc: 'beard' },
   SHANNON: { name: 'Claude Shannon', short: 'CS', color: '#ffb35a', acc: 'none' },
   ROSENBLATT: { name: 'Frank Rosenblatt', short: 'FR', color: '#9fe9ff', acc: 'glasses' },
+  // personagens das cenas (não são paradas)
+  COMERCIANTE: { name: 'Comerciante da vila', short: 'CV', color: '#e6c04a', acc: 'straw' },
 }
 
 export interface Page { h: string; t: string; ill?: string }
@@ -30,6 +32,7 @@ export interface Stop {
   intro: string[] // falas do inventor ao aparecer
   doc: Doc
   game?: Game; ask?: Ask
+  custom?: 'graos' // parada com cena própria (O Mistério dos Três Grãos)
   nex: string // reação do NEX ao inventor
   tease: string // fala da NOVA quando a névoa abre para esta parada
   play?: string // o inventor chama para a brincadeira
@@ -73,27 +76,25 @@ export const STOPS: Stop[] = [
     },
   },
   {
-    id: 'tabela', year: '200 a.C.', who: 'LIUHUI',
+    id: 'tabela', year: '200 a.C.', who: 'LIUHUI', custom: 'graos',
     intro: [
-      'Ni hao! Eu sou Liu Hui. No ano 263, escrevi explicações para um livro que já era antigo: Os Nove Capítulos da Arte Matemática.',
-      'Vou te mostrar um truque daquele livro. Ele tem uns 2.000 anos e é a base de tudo o que uma LLM guarda.',
+      'Eu sou Liu Hui. No ano 263, escrevi explicações para um livro que já era antigo: Os Nove Capítulos da Arte Matemática.',
+      'O mistério dos três grãos está nesse livro. E o jeito que você resolveu é o mesmo que os calculistas usavam, com varetas de bambu.',
     ],
     doc: {
-      title: 'Números em tabela', year: 'há ~2.000 anos', place: 'China', who: 'LIUHUI', pages: [
-        { h: 'O problema', ill: '🌾🌾🌾 + 🌾🌾 + 🌾 = 39', t: 'Um fiscal quer saber quanto arroz rende cada tipo de feixe: bom, médio e fraco. Ele só sabe totais: 3 feixes bons, 2 médios e 1 fraco rendem 39 medidas. E há mais duas misturas assim.' },
-        { h: 'A ideia: um tabuleiro', ill: '│3│2│1│', t: 'Os calculistas punham cada mistura numa coluna do tabuleiro, com varetas de bambu. Cada linha guardava um tipo de feixe. O lugar de cada número dizia o que ele era.' },
-        { h: 'Mexer nas colunas', ill: '9¼ · 4¼ · 2¾', t: 'Somando e subtraindo colunas inteiras, os números iam sumindo até sobrar a resposta: o feixe bom rende 9¼ medidas, o médio 4¼ e o fraco 2¾.' },
-        { h: 'E na LLM?', ill: '▦', t: 'Uma tabela em que a posição de cada número importa ganhou um nome em 1850: matriz. Tudo o que uma LLM aprendeu fica guardado em matrizes gigantes, com bilhões de números.' },
+      title: 'O mistério dos três grãos', year: 'há ~2.000 anos', place: 'China', who: 'LIUHUI', pages: [
+        { h: 'Um problema de 2.000 anos', ill: '📜🌾', t: 'O mistério dos três grãos é o primeiro problema do capítulo 8 do livro Os Nove Capítulos da Arte Matemática, escrito na China há uns 2.000 anos. Ninguém sabe quem foi o autor.' },
+        { h: 'O tabuleiro de varetas', ill: '│││ ││ │', t: 'Os calculistas punham cada registro numa coluna de um tabuleiro, com varetas de bambu. Varetas vermelhas eram números positivos; pretas, negativos. O lugar de cada vareta dizia o que ela era.' },
+        { h: 'Eliminar, coluna por coluna', ill: '39 − 34 = 5', t: 'Igual a você: tirando um registro do outro, uma incógnita some. Repetindo, sobra uma só, e as outras aparecem em seguida. Na Europa, esse método só apareceu mais de mil anos depois. Hoje ele se chama eliminação de Gauss.' },
+        { h: 'E na LLM?', ill: 'exemplos → pesos → previsão', t: 'Uma LLM resolve um mistério parecido, só que gigante: descobre bilhões de valores escondidos (os pesos) a partir de textos que já existem. Depois usa esses valores para prever o que nunca viu: a próxima palavra.' },
       ],
     },
-    game: 'tabela',
-    nex: 'Dois mil anos? E eu achando que tabela era coisa de planilha!',
-    tease: 'A névoa abriu! Lá na frente: China, há uns 2.000 anos. Alguém está mexendo com varetas de bambu…',
-    play: 'Agora você: monte a primeira mistura no tabuleiro, com as varetas.',
+    nex: 'Esse problema tem 2.000 anos? E eu resolvi igualzinho aos calculistas?',
+    tease: 'A névoa abriu! Lá na frente tem uma vila da China antiga. Parece que um comerciante tem um mistério…',
     place: 'CHINA',
     extraCodex: 'nome_matriz',
-    bye: 'Lembre: numa tabela, o lugar do número é tão importante quanto o número.',
-    word: 'TABELAS', engine: 'ta… be… las. Eu guardo… tudo em tabelas.', codex: ['matriz'],
+    bye: 'Quando não dá para medir algo diretamente, use o que você já sabe. Até mais, viajante!',
+    word: 'MATRIZES', engine: 'ma… tri… zes. Eu guardo… o que aprendi… em matrizes.', codex: ['incognitas', 'matriz'],
     extra: {
       title: 'Por que “matriz”?', year: '1683 a 1850', place: 'Japão, Alemanha e Inglaterra', pages: [
         { h: 'Um número que resume a tabela', ill: '▦ → 1 número', t: 'Sem se conhecerem, Seki Takakazu, no Japão (1683), e Leibniz, na Alemanha (1693), descobriram o determinante: uma conta com os números da tabela que diz se o problema tem uma única resposta.' },
@@ -243,7 +244,7 @@ export const STOPS: Stop[] = [
     },
     game: 'vetor',
     nex: 'Multiplicar uma tabela inteira? Isso parece trabalhoso…',
-    tease: 'Ainda na Inglaterra, 1858. Lembra das tabelas do Liu Hui? Elas voltaram, agora com nome: matrizes.',
+    tease: 'Ainda na Inglaterra, 1858. Lembra das tabelas do mistério dos três grãos? Agora alguém quer multiplicar matrizes inteiras.',
     play: 'Escolha a matriz que leva a seta até a estrela.',
     place: 'INGLATERRA',
     bye: 'Uma matriz não é só uma tabela parada: ela transforma.',
@@ -318,13 +319,13 @@ export const STOPS: Stop[] = [
 ]
 
 /** A frase que a Engine lembra no fim, montada com as palavras de cada parada. */
-export const FINAL_SENTENCE = 'Eu me lembro! Eu leio fichas e transformo tudo em números, em zeros e uns. Guardo o que aprendi em tabelas de pesos, ajustados para errar menos. Multiplico matrizes, passo a passo, e escolho a próxima palavra pelas chances.'
+export const FINAL_SENTENCE = 'Eu me lembro! Eu leio fichas e transformo tudo em números, em zeros e uns. Guardo o que aprendi em matrizes de pesos, ajustados para errar menos. Multiplico matrizes, passo a passo, e escolho a próxima palavra pelas chances.'
 
 /** O caminho de “O céu é” dentro da Engine (final). */
 export const PIPELINE = [
   { words: ['FICHAS'], show: '[O] [céu] [é]', t: 'A frase é cortada em fichas: os tokens.' },
   { words: ['SÍMBOLOS', 'BITS', 'ZERO E UM'], show: '46 · 3121 · 518', t: 'Cada ficha vira um número. E todo número vira zeros e uns, que a máquina guarda.' },
-  { words: ['TABELAS'], show: '[0,2  −1,3  0,7 …]', t: 'Cada número puxa uma linha de uma tabela gigante: uma lista de números para cada ficha.' },
+  { words: ['MATRIZES'], show: '[0,2  −1,3  0,7 …]', t: 'Cada número puxa uma linha de uma matriz gigante: uma lista de números para cada ficha.' },
   { words: ['MULTIPLICAR', 'PASSOS'], show: '▦ × ▦ × ▦ …', t: 'Essas listas atravessam matrizes, multiplicação após multiplicação, sempre nos mesmos passos.' },
   { words: ['PESOS', 'MENOR ERRO'], show: 'bilhões de pesos', t: 'Os números dessas matrizes são pesos, ajustados no treino para errar cada vez menos.' },
   { words: ['CHANCES'], show: 'azul 62% · escuro 21% · bonito 12%', t: 'No fim, sai uma chance para cada palavra possível.' },

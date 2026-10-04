@@ -12,8 +12,8 @@ import { PEOPLE, type Person } from './stops'
    holograma 3D que aparece em cada parada da Linha do Tempo.
    ========================================================= */
 
-const SKIN: Record<string, string> = { ESCRIBA: '#c98f5e', KHWARIZMI: '#c8915e', LIUHUI: '#eec7a0' }
-const HAIR: Record<string, string> = { ESCRIBA: '#2a1a10', LIUHUI: '#1a1410', KHWARIZMI: '#2a1a10', PASCAL: '#5a3a24', LEIBNIZ: '#3a2a1c', GAUSS: '#d8d4cc', ADA: '#3a2214', CAYLEY: '#5a4030', MARKOV: '#9a948a', SHANNON: '#6a4a30', ROSENBLATT: '#2a1e16' }
+const SKIN: Record<string, string> = { ESCRIBA: '#c98f5e', KHWARIZMI: '#c8915e', LIUHUI: '#eec7a0', COMERCIANTE: '#e8bf92' }
+const HAIR: Record<string, string> = { ESCRIBA: '#2a1a10', LIUHUI: '#1a1410', KHWARIZMI: '#2a1a10', PASCAL: '#5a3a24', LEIBNIZ: '#3a2a1c', GAUSS: '#d8d4cc', ADA: '#3a2214', CAYLEY: '#5a4030', MARKOV: '#9a948a', SHANNON: '#6a4a30', ROSENBLATT: '#2a1e16', COMERCIANTE: '#1a1410' }
 
 /** Retrato em SVG, no mesmo estilo dos rostos do NEX e da NOVA. */
 export function PersonFace({ who }: { who: string }) {
@@ -34,7 +34,8 @@ export function PersonFace({ who }: { who: string }) {
       {p.acc === 'hat' && <><rect x="20" y="13" width="24" height="9" rx="2" fill="#1c1c22" /><rect x="11" y="18" width="10" height="3" rx="1.5" fill="#1c1c22" /><rect x="43" y="18" width="10" height="3" rx="1.5" fill="#1c1c22" /></>}
       {p.acc === 'cap' && <><path d="M17 27q2-11 15-11t15 11z" fill={hair} /><path d="M18 22q14-12 28 0q-14-5-28 0z" fill="#2a2440" /></>}
       {p.acc === 'wig' && <path d="M16 30q0-15 16-15t16 15q-6-7-16-7t-16 7z" fill={hair} />}
-      {(p.acc === 'beard' || p.acc === 'none' || p.acc === 'sideburns' || p.acc === 'glasses' || p.acc === 'bun') && <path d="M17 29q0-13 15-13t15 13q-4-6-15-6t-15 6z" fill={hair} />}
+      {(p.acc === 'beard' || p.acc === 'none' || p.acc === 'sideburns' || p.acc === 'glasses' || p.acc === 'bun' || p.acc === 'straw') && <path d="M17 29q0-13 15-13t15 13q-4-6-15-6t-15 6z" fill={hair} />}
+      {p.acc === 'straw' && <><path d="M6 25 L32 9 L58 25 Q32 30 6 25z" fill="#d8b45a" stroke="#9a7a2a" strokeWidth="1.2" /><path d="M20 21 L32 14 L44 21" stroke="#9a7a2a" strokeWidth="1" fill="none" /></>}
       {p.acc === 'sideburns' && <><rect x="16.5" y="29" width="4" height="10" rx="2" fill={hair} /><rect x="43.5" y="29" width="4" height="10" rx="2" fill={hair} /></>}
       {/* olhos */}
       <ellipse cx="26" cy="34" rx="2.6" ry="3" fill="#fff" /><ellipse cx="38" cy="34" rx="2.6" ry="3" fill="#fff" />
@@ -51,7 +52,7 @@ export function PersonFace({ who }: { who: string }) {
 const VOICES: Record<string, { pitch: number; rate: number }> = {
   ESCRIBA: { pitch: 0.75, rate: 0.95 }, LIUHUI: { pitch: 0.9, rate: 0.98 }, KHWARIZMI: { pitch: 0.8, rate: 0.96 }, PASCAL: { pitch: 0.95, rate: 1.04 },
   LEIBNIZ: { pitch: 0.85, rate: 1.0 }, GAUSS: { pitch: 0.92, rate: 1.02 }, ADA: { pitch: 1.3, rate: 1.04 }, CAYLEY: { pitch: 0.88, rate: 1.0 },
-  MARKOV: { pitch: 0.7, rate: 0.95 }, SHANNON: { pitch: 1.0, rate: 1.1 }, ROSENBLATT: { pitch: 0.95, rate: 1.06 },
+  MARKOV: { pitch: 0.7, rate: 0.95 }, SHANNON: { pitch: 1.0, rate: 1.1 }, ROSENBLATT: { pitch: 0.95, rate: 1.06 }, COMERCIANTE: { pitch: 0.82, rate: 1.02 },
 }
 for (const [k, p] of Object.entries(PEOPLE)) {
   SPEAKERS[k] = { name: p.name.toUpperCase(), color: p.color, face: () => <PersonFace who={k} /> }
@@ -151,6 +152,7 @@ function Accessory({ acc, m, light, body, who }: { acc: Person['acc']; m: THREE.
     case 'bun': return <>{cap}<mesh position={[0, 0.12, -0.15]} material={m}><sphereGeometry args={[0.1, 10, 8]} /></mesh>{[-1, 1].map((s) => <mesh key={s} position={[0.17 * s, -0.04, 0]} material={m}><sphereGeometry args={[0.06, 8, 6]} /></mesh>)}</>
     case 'cap': return <><mesh position={[0, 0.1, -0.01]} scale={[1.1, 0.55, 1.1]} material={body}><sphereGeometry args={[0.19, 14, 8, 0, Math.PI * 2, 0, Math.PI * 0.5]} /></mesh>{[-1, 1].map((s) => <mesh key={s} position={[0.17 * s, -0.04, -0.03]} material={m}><sphereGeometry args={[0.06, 8, 6]} /></mesh>)}</>
     case 'sideburns': return <>{cap}{[-1, 1].map((s) => <mesh key={s} position={[0.175 * s, -0.06, 0.02]} material={m}><boxGeometry args={[0.04, 0.14, 0.07]} /></mesh>)}</>
+    case 'straw': return <>{cap}<mesh position={[0, 0.17, 0]} material={light}><coneGeometry args={[0.44, 0.24, 18]} /></mesh></>
     case 'glasses': return <>{cap}{[-1, 1].map((s) => <mesh key={s} position={[0.07 * s, 0.01, 0.185]} material={m}><torusGeometry args={[0.045, 0.01, 6, 14]} /></mesh>)}</>
     default: return cap
   }

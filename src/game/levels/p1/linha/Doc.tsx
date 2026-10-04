@@ -113,7 +113,7 @@ function GameView({ game, who, onDone }: { game: Game; who: string; onDone: () =
 }
 
 /** Mostra um painel e espera fechar (cancelado se o jogador sair da fase). */
-async function show(c: Ctx, make: (done: () => void) => ReactNode) {
+export async function show(c: Ctx, make: (done: () => void) => ReactNode) {
   let done = false
   G().setOverlay(OV, make(() => { done = true }))
   try { await c.until(() => done) } finally { G().setOverlay(OV, null) }

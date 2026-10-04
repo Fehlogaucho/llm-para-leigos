@@ -130,8 +130,8 @@ const E: CodexEntry[] = [
 
   // ---------- Área 7: Câmara da Matriz ----------
   { id: 'matriz', title: 'Matriz', cat: 'fundamento', phase: 1, area: 'Linha do Tempo', short: 'Números em linhas e colunas: o lugar de cada um importa.',
-    simple: 'Uma matriz é uma tabela de números em que cada valor tem uma linha e uma coluna, e o lugar dele diz o que ele significa. Há 2.000 anos, na China, já se resolviam problemas assim, com varetas de bambu. Tudo o que uma LLM aprendeu fica guardado em matrizes gigantes.',
-    example: 'bom   [3 2 1]\nmédio [2 3 2]\nfraco [1 1 3]\n       39 34 26', links: ['matriz_vetor', 'vetor', 'nome_matriz'] },
+    simple: 'Uma matriz é uma tabela de números em que cada valor tem uma linha e uma coluna, e o lugar dele diz o que ele significa. Há 2.000 anos, na China, o mistério dos três grãos já era resolvido assim, com varetas de bambu num tabuleiro. Com milhares de incógnitas, só organizando tudo em matrizes. Tudo o que uma LLM aprendeu fica guardado em matrizes gigantes.',
+    example: 'bom   [3 2 1]\nmédio [2 3 2]\nfraco [1 1 3]\n       39 34 26', links: ['incognitas', 'matriz_vetor', 'vetor', 'nome_matriz'] },
   { id: 'matriz_imagem', title: 'Matriz como imagem', cat: 'fundamento', phase: 1, area: 'Câmara da Matriz', short: 'Mudou o número, mudou o desenho.',
     simple: 'Cada célula da matriz acende um pixel. A matriz não é só uma tabela: ela representa uma imagem.', links: ['imagem_numeros', 'matriz'] },
   { id: 'matriz_mapa', title: 'Matriz como mapa', cat: 'curiosidade', phase: 1, area: 'Câmara da Matriz', short: '1 = plataforma, 0 = vazio.',
@@ -146,6 +146,10 @@ const E: CodexEntry[] = [
   { id: 'tokens_barro', title: 'Fichas (tokens)', cat: 'fundamento', phase: 1, area: 'Linha do Tempo', short: 'Uma coisinha no lugar de outra.',
     simple: 'Há uns 5.500 anos, na Mesopotâmia, cada ovelha era representada por uma fichinha de barro. Os arqueólogos chamam essas fichas de tokens. Uma LLM faz igual: corta o texto em pedacinhos e troca cada um por um token. Ela nunca lê letras: lê fichas.',
     example: '“gatinho” → [gat] [inho]', links: ['escrita', 'texto_numeros'] },
+  { id: 'incognitas', title: 'Descobrir o que nunca foi medido', cat: 'fundamento', phase: 1, area: 'Linha do Tempo', short: 'Dados + relações → valores escondidos.',
+    simple: 'Ninguém nunca mediu um feixe de arroz sozinho. Mesmo assim, três registros (39, 34 e 26 dou) bastaram: tirando de um registro o que ele tem de igual a outro, um tipo some e aparece uma relação. Juntando relações, os valores escondidos aparecem. E com eles dá para prever uma mistura que nunca foi feita.',
+    tech: 'Isso é um sistema de equações: 3B + 2M + F = 39, 2B + 3M + F = 34 e B + 2M + 3F = 26. O método de eliminar incógnitas, hoje chamado de eliminação de Gauss, já estava nos Nove Capítulos da Arte Matemática. Uma LLM faz algo parecido, em escala gigante: descobre bilhões de valores escondidos (os pesos) a partir de exemplos e usa esses valores para prever o que nunca viu.',
+    example: 'B − M = 5 → M = 4,25 → B = 9,25 → F = 2,75\n6 médios → 6 × 4,25 = 25,5 dou', links: ['matriz', 'menor_erro'] },
   { id: 'escrita', title: 'Das fichas à escrita', cat: 'historia', phase: 1, area: 'Linha do Tempo', short: 'Desenhar as fichas virou escrever números.',
     simple: 'A arqueóloga Denise Schmandt-Besserat estudou milhares de fichinhas de barro do Oriente Médio, algumas com mais de 9.000 anos. Elas eram guardadas em envelopes de barro com desenhos por fora. Com o tempo, bastavam os desenhos: tinha nascido a escrita.', links: ['tokens_barro'] },
   { id: 'nome_matriz', title: 'Por que “matriz”?', cat: 'curiosidade', phase: 1, area: 'Linha do Tempo', short: 'Matrix: em latim, o lugar onde algo é gerado.',
