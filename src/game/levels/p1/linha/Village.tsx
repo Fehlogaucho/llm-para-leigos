@@ -62,23 +62,35 @@ export function Sheaf({ k, position, s = 1, rotY = 0 }: { k: GK; position: V3; s
 }
 
 function House({ position, rotY = FACE, w = 3.2, d = 2.6 }: { position: V3; rotY?: number; w?: number; d?: number }) {
-  const roof = useMemo(() => { const g = new THREE.ConeGeometry(1, 1, 4, 1); g.rotateY(Math.PI / 4); return g }, [])
+  // Dez faces mantém o desenho leve, mas tira a silhueta de caixa das casas.
+  const roof = useMemo(() => { const g = new THREE.CylinderGeometry(0.42, 1, 0.72, 10); g.rotateY(Math.PI / 10); return g }, [])
   return (
     <group position={position} rotation={[0, rotY, 0]}>
       <Solid>
-        <mesh position={[0, 0.15, 0]} material={MAT.stoneDark()} receiveShadow><boxGeometry args={[w + 0.4, 0.3, d + 0.4]} /></mesh>
-        <mesh position={[0, 1.3, 0]} material={plaster()} castShadow receiveShadow><boxGeometry args={[w, 2.0, d]} /></mesh>
+        <mesh position={[0, 0.15, 0]} scale={[(w + 0.4) / 2.24, 1, (d + 0.4) / 2.24]} material={MAT.stoneDark()} receiveShadow><cylinderGeometry args={[1.05, 1.12, 0.3, 10]} /></mesh>
+        <mesh position={[0, 1.3, 0]} rotation={[0, Math.PI / 10, 0]} scale={[w / 2.1, 1, d / 2.1]} material={plaster()} castShadow receiveShadow><cylinderGeometry args={[1, 1.05, 2.0, 10]} /></mesh>
       </Solid>
-      {[-1, 1].map((sx) => [-1, 1].map((sz) => <mesh key={sx + '_' + sz} position={[sx * (w / 2 + 0.05), 1.3, sz * (d / 2 + 0.05)]} material={redPillar()} castShadow><cylinderGeometry args={[0.09, 0.09, 2.0, 8]} /></mesh>))}
-      <mesh position={[0, 2.25, 0]} material={wood()}><boxGeometry args={[w + 0.2, 0.12, d + 0.2]} /></mesh>
-      {/* telhado de beiral largo, levemente curvo */}
-      <mesh position={[0, 2.38, 0]} scale={[w * 0.85, 0.12, d * 0.95]} material={roofTile()} castShadow><boxGeometry args={[1, 1, 1]} /></mesh>
-      <mesh geometry={roof} position={[0, 2.95, 0]} scale={[w * 0.68, 1.15, d * 0.78]} material={roofTile()} castShadow />
-      <mesh position={[0, 3.5, 0]} material={roofTile()}><boxGeometry args={[w * 0.55, 0.12, 0.16]} /></mesh>
-      {[-1, 1].map((sx) => <mesh key={sx} position={[sx * w * 0.29, 3.6, 0]} rotation={[0, 0, sx * 0.6]} material={roofTile()}><coneGeometry args={[0.07, 0.3, 6]} /></mesh>)}
-      {/* porta e janelas (lado da frente = +z local) */}
-      <mesh position={[0, 0.95, d / 2 + 0.01]} material={wood()}><planeGeometry args={[0.8, 1.3]} /></mesh>
-      {[-1, 1].map((sx) => <mesh key={sx} position={[sx * w * 0.3, 1.45, d / 2 + 0.01]} material={MAT.dark()}><planeGeometry args={[0.55, 0.5]} /></mesh>)}
+      {[-1, 1].map((sx) => [-1, 1].map((sz) => (
+        <group key={sx + '_' + sz} position={[sx * (w / 2 + 0.03), 0, sz * (d / 2 + 0.03)]}>
+          <mesh position={[0, 1.3, 0]} material={redPillar()} castShadow><cylinderGeometry args={[0.09, 0.11, 2.0, 8]} /></mesh>
+          <mesh position={[0, 2.32, 0]} scale={[1, 0.65, 1]} material={redPillar()}><sphereGeometry args={[0.13, 8, 6]} /></mesh>
+        </group>
+      )))}
+      <mesh position={[0, 2.25, 0]} scale={[(w + 0.16) / 2.1, 1, (d + 0.16) / 2.1]} material={wood()}><cylinderGeometry args={[1, 1.05, 0.12, 10]} /></mesh>
+      {/* Camadas facetadas fazem um beiral macio, sem abandonar o low-poly. */}
+      <mesh position={[0, 2.4, 0]} scale={[w * 0.56, 1, d * 0.62]} material={roofTile()} castShadow><cylinderGeometry args={[1.04, 1.13, 0.16, 10]} /></mesh>
+      <mesh geometry={roof} position={[0, 2.82, 0]} scale={[w * 0.55, 1, d * 0.60]} material={roofTile()} castShadow />
+      <mesh position={[0, 3.22, 0]} scale={[w * 0.38, 1, d * 0.37]} material={roofTile()}><cylinderGeometry args={[0.58, 0.64, 0.1, 10]} /></mesh>
+      <mesh position={[0, 3.42, 0]} material={roofTile()}><coneGeometry args={[0.13, 0.32, 8]} /></mesh>
+      {/* porta e janelas com relevo arredondado (lado da frente = +z local) */}
+      <mesh position={[0, 1.02, d / 2 + 0.035]} scale={[0.46, 0.72, 0.055]} material={wood()} castShadow><sphereGeometry args={[1, 8, 6]} /></mesh>
+      <mesh position={[0, 1.02, d / 2 + 0.096]} material={woodLight()}><torusGeometry args={[0.27, 0.018, 5, 10]} /></mesh>
+      {[-1, 1].map((sx) => (
+        <group key={sx} position={[sx * w * 0.3, 1.45, d / 2 + 0.04]}>
+          <mesh scale={[0.29, 0.27, 0.045]} material={MAT.dark()}><sphereGeometry args={[1, 8, 6]} /></mesh>
+          <mesh position={[0, 0, 0.05]} material={woodLight()}><cylinderGeometry args={[0.018, 0.018, 0.38, 6]} /></mesh>
+        </group>
+      ))}
     </group>
   )
 }
@@ -130,10 +142,16 @@ function Gate({ z }: { z: number }) {
 function Stall({ position }: { position: V3 }) {
   return (
     <group position={position}>
-      <Solid><mesh position={[0, 0.5, 0]} material={woodLight()} castShadow receiveShadow><boxGeometry args={[0.8, 1.0, 2.6]} /></mesh></Solid>
-      <mesh position={[0, 1.02, 0]} material={wood()}><boxGeometry args={[0.95, 0.06, 2.75]} /></mesh>
-      {[[-0.4, -1.3], [-0.4, 1.3], [1.7, -1.3], [1.7, 1.3]].map(([x, z], k) => <mesh key={k} position={[x, 1.3, z]} material={wood()} castShadow><cylinderGeometry args={[0.05, 0.05, 2.6, 6]} /></mesh>)}
-      <mesh position={[0.65, 2.62, 0]} rotation={[0, 0, 0.2]} material={cloth()} castShadow><boxGeometry args={[2.6, 0.05, 3.0]} /></mesh>
+      <Solid><mesh position={[0, 0.5, 0]} scale={[0.47, 1, 1.28]} material={woodLight()} castShadow receiveShadow><cylinderGeometry args={[1, 1.08, 1.0, 8]} /></mesh></Solid>
+      <mesh position={[0, 1.02, 0]} scale={[0.5, 1, 1.34]} material={wood()}><cylinderGeometry args={[1.05, 1.12, 0.08, 10]} /></mesh>
+      {[[-0.4, -1.3], [-0.4, 1.3], [1.7, -1.3], [1.7, 1.3]].map(([x, z], k) => (
+        <group key={k} position={[x, 0, z]}>
+          <mesh position={[0, 1.3, 0]} material={wood()} castShadow><cylinderGeometry args={[0.055, 0.07, 2.6, 8]} /></mesh>
+          <mesh position={[0, 2.62, 0]} material={woodLight()}><sphereGeometry args={[0.09, 8, 6]} /></mesh>
+        </group>
+      ))}
+      <mesh position={[0.65, 2.62, 0]} rotation={[0, 0, 0.2]} scale={[1.46, 0.14, 1.66]} material={cloth()} castShadow><sphereGeometry args={[1, 10, 6]} /></mesh>
+      <mesh position={[0.65, 2.49, 0]} rotation={[0, 0, 0.2]} scale={[1.38, 1, 1.56]} material={cloth()}><torusGeometry args={[1, 0.025, 5, 10]} /></mesh>
       {/* espigas sobre o balcão */}
       {(['B', 'M', 'F'] as GK[]).map((k, j) => <Sheaf key={k} k={k} position={[0, 1.05, -0.8 + j * 0.8]} s={1.1} />)}
       {[[0.6, -1.7], [1.1, -1.65], [0.8, 1.75]].map(([x, z], k) => <mesh key={k} position={[x, 0.35, z]} scale={[1, 1.2, 1]} material={MAT.cloth('#c9a46a')} castShadow><sphereGeometry args={[0.32, 10, 8]} /></mesh>)}
@@ -215,12 +233,17 @@ function Scale({ position }: { position: V3 }) {
 function Table({ position }: { position: V3 }) {
   return (
     <group position={position} rotation={[0, FACE, 0]}>
-      <Solid><mesh position={[0, 0.72, 0]} material={wood()} castShadow receiveShadow><boxGeometry args={[2.4, 0.1, 1.2]} /></mesh></Solid>
-      {[[-1.05, -0.5], [1.05, -0.5], [-1.05, 0.5], [1.05, 0.5]].map(([x, z], k) => <mesh key={k} position={[x, 0.35, z]} material={wood()} castShadow><boxGeometry args={[0.1, 0.7, 0.1]} /></mesh>)}
-      <mesh position={[0, 0.78, 0]} material={woodLight()}><boxGeometry args={[2.0, 0.02, 0.9]} /></mesh>
-      {[-0.33, 0.33].map((x) => <mesh key={x} position={[x, 0.8, 0]} material={MAT.dark()}><boxGeometry args={[0.02, 0.02, 0.85]} /></mesh>)}
+      <Solid><mesh position={[0, 0.72, 0]} scale={[1.3, 0.1, 0.67]} material={wood()} castShadow receiveShadow><sphereGeometry args={[1, 10, 6]} /></mesh></Solid>
+      {[[-1.0, -0.42], [1.0, -0.42], [-1.0, 0.42], [1.0, 0.42]].map(([x, z], k) => (
+        <group key={k} position={[x, 0, z]}>
+          <mesh position={[0, 0.35, 0]} material={wood()} castShadow><cylinderGeometry args={[0.08, 0.12, 0.7, 8]} /></mesh>
+          <mesh position={[0, 0.04, 0]} scale={[1, 0.55, 1]} material={woodLight()}><sphereGeometry args={[0.13, 8, 6]} /></mesh>
+        </group>
+      ))}
+      <mesh position={[0, 0.79, 0]} scale={[1.16, 0.035, 0.55]} material={woodLight()}><sphereGeometry args={[1, 10, 6]} /></mesh>
+      {[-0.33, 0.33].map((x) => <mesh key={x} position={[x, 0.81, 0]} rotation={[Math.PI / 2, 0, 0]} material={MAT.dark()}><cylinderGeometry args={[0.012, 0.012, 0.82, 6]} /></mesh>)}
       {RECORDS.map((r, ci) => r.n.map((n, ri) => Array.from({ length: n }, (_, k) => (
-        <mesh key={ci + '_' + ri + '_' + k} position={[0.66 - ci * 0.66 + (k - (n - 1) / 2) * 0.07, 0.82, -0.28 + ri * 0.28]} material={grainMat((['B', 'M', 'F'] as GK[])[ri])}><boxGeometry args={[0.03, 0.02, 0.2]} /></mesh>
+        <mesh key={ci + '_' + ri + '_' + k} position={[0.66 - ci * 0.66 + (k - (n - 1) / 2) * 0.07, 0.84, -0.28 + ri * 0.28]} scale={[0.026, 0.018, 0.11]} material={grainMat((['B', 'M', 'F'] as GK[])[ri])}><sphereGeometry args={[1, 5, 4]} /></mesh>
       ))))}
       {/* banquinhos */}
       {[-0.7, 0.7].map((x) => <mesh key={x} position={[x, 0.25, 1.0]} material={woodLight()} castShadow><cylinderGeometry args={[0.22, 0.25, 0.5, 10]} /></mesh>)}
