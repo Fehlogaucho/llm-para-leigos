@@ -392,7 +392,7 @@ async function main(c: Ctx) {
     { who: 'NOVA', text: 'Quando os núcleos voltarem, ela vai funcionar direito de novo. E vai poder te devolver ao seu quarto.' },
     {
       who: 'NOVA', text: 'Quer saber mais antes de ir?', choices: [
-        { label: 'O que são esses mundos?', next: [{ who: 'NOVA', text: 'Cada mundo guarda uma ideia que tornou possível uma máquina de linguagem. Os primeiros são bem antigos: começam com pessoas olhando para o céu.' }] },
+        { label: 'O que são esses mundos?', next: [{ who: 'NOVA', text: 'Cada mundo guarda uma ideia que tornou possível uma máquina de linguagem. Os primeiros são bem antigos: começam com um pastor contando ovelhas com fichinhas de barro.' }] },
         { label: 'Por que você me ajuda?', next: [{ who: 'NOVA', text: 'Porque perguntas são o combustível desta máquina. E você parece ter muitas.' }] },
         { label: 'Vamos logo!', next: [{ who: 'NOVA', text: 'Gosto da energia!' }] },
       ],
@@ -412,7 +412,7 @@ async function main(c: Ctx) {
 export default function Prologo() {
   useLevel({ spawn: [0, 0, 16], yaw: Math.PI, scripts: [main] })
   const onDoor = () => { G().setFlag('pro_door') }
-  const onPortal = () => { G().setFlag('pro_done'); useGame.setState({ objective: null }); import('../../engine/script').then((m) => m.gotoLevel('p1a1')) }
+  const onPortal = () => { G().setFlag('pro_done'); useGame.setState({ objective: null }); import('../../engine/script').then((m) => m.gotoLevel('p1')) }
   return (
     <>
       <color attach="background" args={['#04060c']} />

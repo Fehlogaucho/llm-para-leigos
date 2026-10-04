@@ -1,3 +1,8 @@
+import type { ReactNode } from 'react'
+
+/** Personagens extras (ex.: inventores da Fase 1): nome, cor e retrato. */
+export const SPEAKERS: Record<string, { name: string; color?: string; face?: () => ReactNode }> = {}
+
 export const Ico = {
   voiceOn: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor" fillOpacity=".25" /><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12" /></svg>,
   voiceOff: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor" fillOpacity=".25" /><path d="M17 9.5l5 5M22 9.5l-5 5" /></svg>,
@@ -10,6 +15,8 @@ export const Ico = {
 }
 
 export function Face({ who }: { who: string }) {
+  const sp = SPEAKERS[who]
+  if (sp?.face) return <>{sp.face()}</>
   if (who === 'NEX') return (
     <svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#1a2440" /><circle cx="32" cy="38" r="17" fill="#f0c49c" /><path d="M14 33c0-14 9-20 18-20s19 6 19 19c-4-6-8-9-13-10l-3 5-3-5c-5 1-12 5-18 11z" fill="#3a2314" /><ellipse cx="26" cy="39" rx="3.4" ry="4.2" fill="#fff" /><ellipse cx="38" cy="39" rx="3.4" ry="4.2" fill="#fff" /><circle cx="26.5" cy="39.5" r="2.2" fill="#3a2314" /><circle cx="38.5" cy="39.5" r="2.2" fill="#3a2314" /><path d="M28 47q4 3 8 0" stroke="#8a3b2e" strokeWidth="1.8" fill="none" strokeLinecap="round" /><rect x="15" y="54" width="34" height="12" rx="6" fill="#1f3366" /></svg>
   )

@@ -61,7 +61,8 @@ function NovaActive() {
     // posição alvo: atrás e à direita do ombro do NEX
     const yaw = RT.playerYaw
     const side = RT.novaTalking > 0 ? 0.9 : 0.75
-    want.set(RT.player.x + Math.cos(yaw) * -side + Math.sin(yaw) * -0.35, RT.player.y + 1.75 + Math.sin(t * 1.7) * 0.07, RT.player.z - Math.sin(yaw) * -side + Math.cos(yaw) * -0.35)
+    if (RT.novaPos) want.set(RT.novaPos.x, RT.novaPos.y + Math.sin(t * 1.7) * 0.07, RT.novaPos.z)
+    else want.set(RT.player.x + Math.cos(yaw) * -side + Math.sin(yaw) * -0.35, RT.player.y + 1.75 + Math.sin(t * 1.7) * 0.07, RT.player.z - Math.sin(yaw) * -side + Math.cos(yaw) * -0.35)
     if (!s.init) s.init = true
     else if (RT.nova.distanceTo(want) > 18) RT.nova.copy(want)
     RT.nova.lerp(want, 1 - Math.exp(-dt * 3.2))

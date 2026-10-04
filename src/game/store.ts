@@ -12,7 +12,7 @@ export interface Objective { text: string; target?: Vec3; area?: string }
 export interface Shot { pos: Vec3; look: Vec3; dur?: number; fov?: number; cut?: boolean; to?: Vec3; lookTo?: Vec3 }
 
 interface DialogState { lines: Line[]; i: number; ambient: boolean; resolve: () => void }
-interface Banner { kind: 'discovery' | 'fragment' | 'core' | 'quest' | 'area'; title: string; sub?: string; cat?: Cat }
+interface Banner { kind: 'discovery' | 'fragment' | 'core' | 'quest' | 'area' | 'memory'; title: string; sub?: string; cat?: Cat }
 
 export interface Settings { voice: boolean; music: number; sfx: number; quality: 'auto' | 'low' | 'high'; reduced: boolean; sens: number }
 

@@ -10,7 +10,7 @@ function pick() {
 }
 if (synth) { pick(); synth.onvoiceschanged = pick }
 
-const TIMBRE: Record<string, { pitch: number; rate: number }> = {
+export const TIMBRE: Record<string, { pitch: number; rate: number }> = {
   NOVA: { pitch: 1.45, rate: 1.06 },
   NEX: { pitch: 1.15, rate: 1.1 },
   ENGINE: { pitch: 0.3, rate: 0.82 },

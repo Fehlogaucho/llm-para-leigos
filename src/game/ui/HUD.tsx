@@ -148,7 +148,7 @@ export function Banners() {
     return () => clearTimeout(id)
   }, [b])
   if (!b) return null
-  const K: Record<string, string> = { discovery: 'CONCEITO DESCOBERTO', fragment: 'FRAGMENTO', core: 'NÚCLEO RECUPERADO', quest: 'SIDE QUEST', area: '' }
+  const K: Record<string, string> = { discovery: 'CONCEITO DESCOBERTO', fragment: 'FRAGMENTO', core: 'NÚCLEO RECUPERADO', quest: 'SIDE QUEST', area: '', memory: 'MEMÓRIA RECUPERADA' }
   const cat = b.cat ? CAT_INFO[b.cat] : null
   return (
     <div className={'banner ' + b.kind} key={b.title + b.kind} style={cat ? { borderColor: cat.color, boxShadow: `0 0 40px ${cat.color}55` } : undefined}>

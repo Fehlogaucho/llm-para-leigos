@@ -75,13 +75,13 @@ const matCache: Record<string, THREE.Material> = {}
 const m = (k: string, f: () => THREE.Material) => matCache[k] || (matCache[k] = f())
 const sand = () => m('sand', () => { const t = stoneTiles('sandTiles', '#f2cf86', '#cf9a4c', 3); const map = t.map.clone(); map.repeat.set(3, 3); map.needsUpdate = true; return toon({ map }) })
 const terracotta = () => m('terracotta', () => { const t = stoneTiles('terraTiles', '#e48a5a', '#a84e2c', 5); const map = t.map.clone(); map.repeat.set(3, 3); map.needsUpdate = true; return toon({ map }) })
-const mosaic = () => m('mosaic', () => { const t = stoneTiles('mosaicTiles', '#4f86c6', '#e8c46a', 8); const map = t.map.clone(); map.repeat.set(2, 2); map.needsUpdate = true; return toon({ map }) })
+export const mosaic = () => m('mosaic', () => { const t = stoneTiles('mosaicTiles', '#4f86c6', '#e8c46a', 8); const map = t.map.clone(); map.repeat.set(2, 2); map.needsUpdate = true; return toon({ map }) })
 const glyphMat = () => m('glyph', () => toon({ map: glyphTex() }))
 const turquoise = () => m('turq', () => toon({ color: '#3fb6b0' }))
 const palmLeaf = () => m('palm', () => toon({ color: '#3fae4a', side: THREE.DoubleSide }))
 const palmTrunk = () => m('palmTrunk', () => toon({ color: '#a97a44' }))
 const parchment = () => m('parch', () => toon({ map: moonSketch(), side: THREE.DoubleSide }))
-const clay = () => m('clayM', () => toon({ map: clayTex() }))
+export const clay = () => m('clayM', () => toon({ map: clayTex() }))
 const amphora = () => m('amph', () => toon({ color: '#c8683a' }))
 const scrollMat = () => m('scroll', () => toon({ color: '#efdcae' }))
 
@@ -100,7 +100,7 @@ export function EraPlaque({ position, rotY = 0, date, place, color = '#ffd27a' }
     </group>
   )
 }
-function Obelisk({ position, h = 6 }: { position: V3; h?: number }) {
+export function Obelisk({ position, h = 6 }: { position: V3; h?: number }) {
   return (
     <group position={position}>
       <Solid><mesh position={[0, 0.3, 0]} material={MAT.stoneDark()} castShadow><boxGeometry args={[1.3, 0.6, 1.3]} /></mesh></Solid>
@@ -109,7 +109,7 @@ function Obelisk({ position, h = 6 }: { position: V3; h?: number }) {
     </group>
   )
 }
-function Palm({ position, s = 1, lean = 0.2, rot = 0 }: { position: V3; s?: number; lean?: number; rot?: number }) {
+export function Palm({ position, s = 1, lean = 0.2, rot = 0 }: { position: V3; s?: number; lean?: number; rot?: number }) {
   const segs = 6
   const leaves = useMemo(() => {
     const sh = new THREE.Shape(); sh.moveTo(0, 0); sh.quadraticCurveTo(0.35, 0.9, 0.1, 2.0); sh.quadraticCurveTo(-0.2, 0.9, 0, 0)
@@ -131,7 +131,7 @@ function Palm({ position, s = 1, lean = 0.2, rot = 0 }: { position: V3; s?: numb
     </group>
   )
 }
-function Amphora({ position, s = 1 }: { position: V3; s?: number }) {
+export function Amphora({ position, s = 1 }: { position: V3; s?: number }) {
   return (
     <group position={position} scale={s}>
       <Solid><mesh position={[0, 0.5, 0]} material={amphora()} castShadow scale={[1, 1.3, 1]}><sphereGeometry args={[0.32, 14, 12]} /></mesh></Solid>
@@ -143,7 +143,7 @@ function Amphora({ position, s = 1 }: { position: V3; s?: number }) {
   )
 }
 /** Estante de rolos de papiro (como na Biblioteca de Alexandria). */
-function ScrollRack({ position, rotY = 0 }: { position: V3; rotY?: number }) {
+export function ScrollRack({ position, rotY = 0 }: { position: V3; rotY?: number }) {
   return (
     <group position={position} rotation={[0, rotY, 0]}>
       <Solid><mesh position={[0, 1.1, -0.2]} material={MAT.woodDark()} castShadow><boxGeometry args={[2.2, 2.2, 0.15]} /></mesh></Solid>

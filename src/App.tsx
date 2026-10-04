@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { G, hasSave, useGame } from './game/store'
 import { Game } from './game/Game'
 import { initAudio, playTheme, SFX } from './game/engine/audio'
-import { LEVELS } from './game/levels/registry'
+import { LEVELS, resolveLevel } from './game/levels/registry'
 import { VOICE } from './game/engine/voice'
 
 function Title() {
@@ -11,7 +11,7 @@ function Title() {
   const start = (fresh: boolean) => {
     initAudio(); SFX.play('open')
     if (fresh) G().resetProgress()
-    const lv = fresh ? 'quarto' : (LEVELS[G().level] ? G().level : 'quarto')
+    const lv = fresh ? 'quarto' : resolveLevel(G().level)
     useGame.setState({ screen: 'game', level: '', loading: lv, levelReady: null })
   }
   useEffect(() => {
@@ -19,7 +19,7 @@ function Title() {
     addEventListener('pointerdown', first)
     return () => removeEventListener('pointerdown', first)
   }, [])
-  const L = LEVELS[level]
+  const L = LEVELS[resolveLevel(level)]
   return (
     <div className="title">
       <div className="bg" style={{ backgroundImage: 'url(/img/origens.webp)' }} />

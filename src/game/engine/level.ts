@@ -34,6 +34,6 @@ export function useLevel(o: LevelOpts) {
       await new Promise<void>((res) => { const t = () => { if (ac.signal.aborted) return; if (!G().loading) res(); else requestAnimationFrame(t) }; t() })
       for (const s of o.scripts || []) runScript(s, ac.signal)
     })()
-    return () => { ac.abort(); setLevelSignal(null); INPUT.tapTarget = null; INPUT.tapUse = null; RT.frozen = false; RT.lookAt = null; RT.novaLook = null; RT.nexScale = 1; RT.nexSpin = 0 }
+    return () => { ac.abort(); setLevelSignal(null); INPUT.tapTarget = null; INPUT.tapUse = null; RT.frozen = false; RT.lookAt = null; RT.novaLook = null; RT.nexScale = 1; RT.nexSpin = 0; RT.novaPos = null }
   }, [])
 }

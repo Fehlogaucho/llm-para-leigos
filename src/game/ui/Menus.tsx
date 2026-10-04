@@ -29,7 +29,7 @@ function Codex({ close }: { close: () => void }) {
   const [tab, setTab] = useState<'all' | Cat | 'mapa'>('all')
   const found = CODEX_LIST.filter((e) => codex[e.id])
   const [sel, setSel] = useState<string | null>(found[found.length - 1]?.id || null)
-  const list = CODEX_LIST.filter((e) => (tab === 'all' || tab === 'mapa' || e.cat === tab) && e.phase <= Math.max(1, maxPhase()))
+  const list = CODEX_LIST.filter((e) => (!e.old || codex[e.id]) && (tab === 'all' || tab === 'mapa' || e.cat === tab) && e.phase <= Math.max(1, maxPhase()))
   const e = sel ? CODEX_LIST.find((x) => x.id === sel) : null
   return (
     <>
@@ -83,11 +83,13 @@ function Entry({ e, lv }: { e: CodexEntry; lv: number }) {
 function ConceptMap({ codex, onPick }: { codex: Record<string, number>; onPick: (id: string) => void }) {
   const nodes = useMemo(() => {
     const byArea: Record<string, CodexEntry[]> = {}
-    CODEX_LIST.filter((e) => e.phase >= 1).forEach((e) => { (byArea[e.phase + '|' + e.area] ||= []).push(e) })
-    const cols = Object.keys(byArea)
+    CODEX_LIST.filter((e) => e.phase >= 1 && (!e.old || codex[e.id])).forEach((e) => { (byArea[e.phase + '|' + e.area] ||= []).push(e) })
+    // áreas com muitos verbetes viram várias colunas (até 6 por coluna)
+    const cols: CodexEntry[][] = []
+    for (const k of Object.keys(byArea)) for (let i = 0; i < byArea[k].length; i += 6) cols.push(byArea[k].slice(i, i + 6))
     const pos: Record<string, { x: number; y: number; e: CodexEntry }> = {}
-    cols.forEach((k, ci) => byArea[k].forEach((e, ri) => { pos[e.id] = { x: 60 + ci * 120, y: 60 + ri * 64 + (ci % 2) * 26, e } }))
-    return { pos, w: 60 + cols.length * 120, h: 60 + Math.max(...cols.map((k) => byArea[k].length)) * 64 + 40, cols }
+    cols.forEach((col, ci) => col.forEach((e, ri) => { pos[e.id] = { x: 60 + ci * 120, y: 60 + ri * 64 + (ci % 2) * 26, e } }))
+    return { pos, w: 60 + cols.length * 120, h: 60 + Math.max(1, ...cols.map((c) => c.length)) * 64 + 40, cols }
   }, [])
   return (
     <div style={{ overflow: 'auto', maxHeight: '64vh', borderRadius: 14, background: '#070b16', border: '1px solid rgba(255,255,255,.08)' }}>

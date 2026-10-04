@@ -72,6 +72,7 @@ export function Marker({ id, y = 1.9, color = '#ffd27a' }: { id: string; y?: num
   const g = useRef<THREE.Group>(null!)
   const ring = useRef<THREE.Mesh>(null!)
   const near = useGame((s) => s.prompt?.id === id)
+  const hide = useGame((s) => s.focus || !!s.cine)
   useFrame(() => {
     const t = RT.time
     g.current.position.y = y + Math.sin(t * 2.4) * 0.08
@@ -81,7 +82,7 @@ export function Marker({ id, y = 1.9, color = '#ffd27a' }: { id: string; y?: num
     if (ring.current) { const m = ring.current.material as THREE.MeshBasicMaterial; m.opacity = near ? 0.75 : 0.28 + Math.sin(t * 2) * 0.08 }
   })
   return (
-    <>
+    <group visible={!hide}>
       <group ref={g}>
         <mesh geometry={markGeo} userData={{ noCollide: true }}>
           <meshStandardMaterial color={color} emissive={color} emissiveIntensity={2.5} toneMapped={false} />
@@ -90,7 +91,7 @@ export function Marker({ id, y = 1.9, color = '#ffd27a' }: { id: string; y?: num
       <mesh ref={ring} geometry={ringGeo} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.03, 0]} userData={{ noCollide: true }}>
         <meshBasicMaterial color={color} transparent opacity={0.3} depthWrite={false} toneMapped={false} />
       </mesh>
-    </>
+    </group>
   )
 }
 

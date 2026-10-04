@@ -20,7 +20,7 @@ export interface PhaseDef { n: number; name: string; title: string; core?: strin
 
 export const PHASES: PhaseDef[] = [
   { n: 0, name: 'Prólogo', title: 'A Language Engine', desc: 'A máquina que responde, mas esqueceu por quê.' },
-  { n: 1, name: 'Fase 1', title: 'As Origens', core: 'MATRIX', desc: 'Observar, contar, representar, criar regras, lidar com a incerteza, automatizar, computar e chegar às matrizes.' },
+  { n: 1, name: 'Fase 1', title: 'As Origens', core: 'MATRIX', desc: 'Uma linha do tempo de 5.500 anos: fichas, tabelas, algoritmos, chances, zero e um, o menor erro, programas, matrizes, a próxima palavra, bits e neurônios.' },
   { n: 2, name: 'Fase 2', title: 'A Máquina das Palavras', core: 'TOKEN', desc: 'Linguagem, tokens, contexto e prompts.' },
   { n: 3, name: 'Fase 3', title: 'O Próximo Token', core: 'PROBABILITY', desc: 'Probabilidades, logits, softmax, temperatura e sampling.' },
   { n: 4, name: 'Fase 4', title: 'O Espaço das Ideias', core: 'EMBEDDING', desc: 'Embeddings, vetores e similaridade.' },
@@ -46,53 +46,24 @@ defineLevel({
 defineLevel({
   id: 'prologo', phase: 0, badge: 'P', short: 'Prólogo', title: 'A Language Engine', kicker: 'PRÓLOGO', sub: 'A máquina que esqueceu', theme: 'lab', img: '/img/origens.webp',
   tip: 'No celular: arraste o círculo para andar, ou toque no chão. Arraste a tela para girar a câmera.',
-  next: 'p1a1', load: () => import('./prologo/Prologo'),
+  next: 'p1', load: () => import('./prologo/Prologo'),
 })
+/* Fase 1: um só ambiente (as antigas Áreas 1–7 ficam guardadas em p1/, fora da campanha). */
 defineLevel({
-  id: 'p1a1', phase: 1, badge: '1·1', short: 'Área 1 · Observatório', title: 'O Observatório', kicker: 'FASE 1 · ÁREA 1', sub: 'Observar e medir', theme: 'observatorio', img: '/img/eras.webp',
-  tip: 'Objetos com um losango dourado podem ser usados. Chegue perto e toque em “Usar”.',
-  quests: [{ id: 'q_ceu', name: 'O Céu em Números' }, { id: 'q_mapa', name: 'O Mapa do Céu' }, { id: 'q_relogio', name: 'O Relógio' }, { id: 'q_abaco', name: 'O Ábaco' }, { id: 'q_hist', name: 'História dos Calculadores' }],
-  next: 'p1a2', load: () => import('./p1/Observatorio'),
-})
-
-defineLevel({
-  id: 'p1a2', phase: 1, badge: '1·2', short: 'Área 2 · Vale dos Números', title: 'O Vale dos Números', kicker: 'FASE 1 · ÁREA 2', sub: 'Representar quantidade', theme: 'vale', img: '/img/eras.webp',
-  tip: 'Muitos objetos, uma ideia: cada grupo é uma quantidade. Procure os pedestais.',
-  quests: [{ id: 'q_quant', name: 'A Quantidade' }, { id: 'q_mil', name: 'Mil é Diferente de Dez' }, { id: 'q_escondido', name: 'O Número Escondido' }, { id: 'q_sistemas', name: 'Sistemas Numéricos' }, { id: 'q_binario', name: 'O Mundo Binário' }],
-  next: 'p1a3', load: () => import('./p1/Vale'),
-})
-defineLevel({
-  id: 'p1a3', phase: 1, badge: '1·3', short: 'Área 3 · Jardim da Lógica', title: 'O Jardim da Lógica', kicker: 'FASE 1 · ÁREA 3', sub: 'Se → então', theme: 'jardim', img: '/img/eras.webp',
-  tip: 'No jardim, tudo obedece a regras. Observe o que acontece quando você mexe em algo.',
-  quests: [{ id: 'q_porta', name: 'A Porta Condicional' }, { id: 'q_e', name: 'E' }, { id: 'q_ou', name: 'OU' }, { id: 'q_nao', name: 'NÃO' }, { id: 'q_regras', name: 'A Máquina de Regras' }],
-  next: 'p1a4', load: () => import('./p1/Jardim'),
-})
-defineLevel({
-  id: 'p1a4', phase: 1, badge: '1·4', short: 'Área 4 · Câmara da Probabilidade', title: 'A Câmara da Probabilidade', kicker: 'FASE 1 · ÁREA 4', sub: 'Incerteza e previsão', theme: 'prob', img: '/img/eras.webp',
-  tip: 'Aqui nada é certo. Mas dá para ver as chances: quanto mais luz, mais provável.',
-  quests: [{ id: 'q_dados', name: 'Os Dados' }, { id: 'q_caminho', name: 'O Caminho Mais Provável' }, { id: 'q_futuro', name: 'O Futuro Incerto' }, { id: 'q_grafico', name: 'Gráfico Vivo' }],
-  next: 'p1a5', load: () => import('./p1/Probabilidade'),
-})
-defineLevel({
-  id: 'p1a5', phase: 1, badge: '1·5', short: 'Área 5 · Oficina das Máquinas', title: 'A Oficina das Máquinas', kicker: 'FASE 1 · ÁREA 5', sub: 'Automação', theme: 'oficina', img: '/img/origens.webp',
-  tip: 'Engrenagens, cartões e vapor: máquinas que seguem regras sozinhas.',
-  quests: [{ id: 'q_soma', name: 'A Soma Automática' }, { id: 'q_repeticao', name: 'Repetição' }, { id: 'q_cartao', name: 'O Cartão Perfurado' }, { id: 'q_decisao', name: 'A Máquina de Decisão' }],
-  next: 'p1a6', load: () => import('./p1/Oficina'),
-})
-defineLevel({
-  id: 'p1a6', phase: 1, badge: '1·6', short: 'Área 6 · Sala da Computação', title: 'A Sala da Computação', kicker: 'FASE 1 · ÁREA 6', sub: 'Bits e processamento', theme: 'computacao', img: '/img/origens.webp',
-  tip: 'Este corredor atravessa a história: do relé ao data center. Tudo vira 0 e 1.',
-  quests: [{ id: 'q_bit', name: 'O Bit' }, { id: 'q_byte', name: 'Bytes' }, { id: 'q_imagem', name: 'Imagem em Números' }, { id: 'q_som', name: 'Som em Números' }, { id: 'q_texto', name: 'Texto em Números' }],
-  next: 'p1a7', load: () => import('./p1/Computacao'),
-})
-defineLevel({
-  id: 'p1a7', phase: 1, badge: '1·7', short: 'Área 7 · Câmara da Matriz', title: 'A Câmara da Matriz', kicker: 'FASE 1 · ÁREA 7', sub: 'Representação matricial', theme: 'matriz', img: '/img/origens.webp',
-  tip: 'A conclusão da Fase 1: números organizados em linhas e colunas podem representar o mundo.',
-  quests: [{ id: 'q_construa', name: 'Construa a Matriz' }, { id: 'q_mimagem', name: 'Matriz como Imagem' }, { id: 'q_mmapa', name: 'Matriz como Mapa' }, { id: 'q_mvetor', name: 'Matriz × Vetor' }],
-  next: 'p2a1', load: () => import('./p1/Matriz'),
+  id: 'p1', phase: 1, badge: '1', short: 'Fase 1 · Linha do Tempo', title: 'A Linha do Tempo', kicker: 'FASE 1 · AS ORIGENS', sub: 'A matemática por trás da LLM', theme: 'observatorio', img: '/img/eras.webp',
+  tip: 'Em cada marco da trilha, toque no console: quem inventou a ideia aparece e conta a história. Toque na faixa da memória (no alto) para reler tudo.',
+  quests: [{ id: 'qx_fichas', name: 'Quem descobriu as fichas?' }, { id: 'qx_tabela', name: 'Por que “matriz”?' }, { id: 'qx_chances', name: 'O triângulo de Pascal' }, { id: 'qx_programa', name: 'Babbage e suas máquinas' }],
+  next: 'p2a1', load: () => import('./p1/Linha'),
 })
 defineLevel({
   id: 'p2a1', phase: 2, badge: '2·1', short: 'Fase 2 · Em breve', title: 'A Cidade das Representações', kicker: 'FASE 2', sub: 'Em construção', theme: 'cidade', img: '/img/origens.webp',
   tip: 'Você terminou a Fase 1! A Fase 2 está sendo construída.',
   load: () => import('./p2/EmBreve'),
 })
+
+/** Saves antigos (Áreas 1–7 da Fase 1) continuam na nova Fase 1. */
+export function resolveLevel(id: string) {
+  if (LEVELS[id]) return id
+  if (/^p1a\d/.test(id)) return 'p1'
+  return 'quarto'
+}

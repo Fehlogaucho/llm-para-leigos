@@ -4,7 +4,7 @@ import { RT } from '../engine/runtime'
 import { VOICE } from '../engine/voice'
 import { SFX } from '../engine/audio'
 import { INPUT } from '../engine/input'
-import { Face } from './Icons'
+import { Face, SPEAKERS } from './Icons'
 
 const NAMES: Record<string, string> = { NOVA: 'NOVA', NEX: 'NEX', ENGINE: 'LANGUAGE ENGINE', HALLUCINO: 'HALLUCINO', SISTEMA: '' }
 
@@ -85,12 +85,13 @@ export function Dialogue() {
   }
 
   if (!d || !line) return null
-  const name = NAMES[line.who] ?? line.who
+  const sp = SPEAKERS[line.who]
+  const name = NAMES[line.who] ?? sp?.name ?? line.who
   return (
     <div className={'dlg' + (d.ambient ? ' ambient' : '')} onClick={d.ambient ? undefined : onTap} role="dialog" aria-live="polite">
       <div className="face"><Face who={line.who} /></div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        {name && <div className={'who ' + line.who}>{name}</div>}
+        {name && <div className={'who ' + line.who} style={sp?.color ? { color: sp.color } : undefined}>{name}</div>}
         <div className="say">{full.slice(0, shown)}</div>
         {line.choices && !typing && (
           <div className="choices">

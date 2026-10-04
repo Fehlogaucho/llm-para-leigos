@@ -26,6 +26,7 @@ export const RT = {
   gestureT: 0,
   nexScale: 1, // encolher o NEX (abertura)
   nexSpin: 0,
+  novaPos: null as THREE.Vector3 | null, // lugar fixo para a NOVA (cenas com câmera parada)
 }
 
 export interface Interact {
