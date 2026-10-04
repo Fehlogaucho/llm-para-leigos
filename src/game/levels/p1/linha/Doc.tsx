@@ -6,7 +6,9 @@ import { RT } from '../../../engine/runtime'
 import { Ico } from '../../../ui/Icons'
 import { QUICK, type Ctx } from '../../../engine/script'
 import { PEOPLE, STOPS, PIPELINE, WORD_WHO, type Doc, type Ask, type Game } from './stops'
-import { PersonFace } from './people'
+import { PersonFace, PersonAvatar } from './people'
+import { PhotoModal } from './Photo'
+import { PHOTOS } from './photos'
 import { GAMES } from './Games'
 
 /* =========================================================
@@ -41,7 +43,7 @@ export function DocView({ doc, onDone }: { doc: Doc; onDone: () => void }) {
         <h2>{doc.title}</h2>
         {P && (
           <div className="author">
-            <span className="pf"><PersonFace who={doc.who!} /></span>
+            <span className="pf"><PersonAvatar who={doc.who!} /></span>
             <span><div className="nm">{P.name}</div><div className="rl">escreveu este documento</div></span>
           </div>
         )}
@@ -62,7 +64,7 @@ export function DocView({ doc, onDone }: { doc: Doc; onDone: () => void }) {
 function WhoChip({ who }: { who?: string }) {
   const P = who ? PEOPLE[who] : null
   if (!P) return null
-  return <div className="who-chip"><span className="pf"><PersonFace who={who!} /></span><span style={{ color: P.color }}>{P.name}</span></div>
+  return <div className="who-chip"><span className="pf"><PersonAvatar who={who!} /></span><span style={{ color: P.color }}>{P.name}</span></div>
 }
 
 /** Pergunta de múltipla escolha: errar mostra uma dica, acertar explica. */
@@ -204,13 +206,14 @@ function TimelinePanel() {
             return (
               <div key={s.id} className={'it' + (on ? '' : ' lock')}>
                 <span className="yr">{s.year}</span>
-                <span className="pf"><PersonFace who={s.who} /></span>
+                <span className="pf">{on ? <PersonAvatar who={s.who} /> : <PersonFace who={s.who} />}</span>
                 <span style={{ minWidth: 0 }}>
                   <div className="nm">{on ? s.doc.title : '???'}</div>
                   <div className="sub">{on ? <><span style={{ color: P.color }}>{P.name}</span> · <span style={{ color: 'var(--gold-2)' }}>{s.word}</span></> : 'coberto pela névoa'}</div>
                 </span>
                 {on && (
                   <span className="acts">
+                    {PHOTOS[s.who] && <button className="btn small ghost" onClick={() => { SFX.play('open'); G().setOverlay(OV, <PhotoModal who={s.who} back={() => G().setOverlay(OV, <TimelinePanel />)} />) }}>Imagem</button>}
                     <button className="btn small" onClick={() => readAgain(s.doc, () => G().setOverlay(OV, <TimelinePanel />))}>Reler</button>
                     {s.extra && <button className="btn small ghost" onClick={() => readExtra(s.id, () => G().setOverlay(OV, <TimelinePanel />))}>+ Extra</button>}
                   </span>

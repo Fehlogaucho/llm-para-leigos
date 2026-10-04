@@ -283,3 +283,24 @@ canvas { display: block; touch-action: none; }
 .bigidea .count { position: relative; font-family: var(--f-mono); font-size: clamp(26px, 7vw, 54px); font-weight: 900; color: #bff3ff; text-shadow: 0 0 20px rgba(89,215,255,.7), 0 2px 10px #000; line-height: 1.25; }
 .bigidea .word { position: relative; font-family: var(--f-title); font-size: clamp(44px, 12vw, 110px); font-weight: 900; letter-spacing: .08em; color: #fff3d6; text-shadow: 0 0 40px rgba(255,210,122,.8), 0 0 90px rgba(89,215,255,.5); animation: wordIn 1.8s cubic-bezier(.2,1,.3,1); }
 @keyframes wordIn { from { opacity: 0; transform: scale(.6); letter-spacing: .5em; filter: blur(8px); } }
+/* ---------- Fase 1: imagens reais ---------- */
+.photo-frame { position: absolute; left: 50%; top: calc(62px + var(--safe-t)); transform: translateX(-50%); width: min(400px, calc(100vw - 20px)); animation: photoIn .55s cubic-bezier(.2,1.2,.4,1); }
+@keyframes photoIn { from { opacity: 0; transform: translate(-50%, -14px) scale(.94); } }
+.photo-card { position: relative; padding: 9px 9px 8px; border-radius: 12px; background: linear-gradient(180deg, #4a3418, #2a1c0c); border: 3px solid #c99a3e; box-shadow: 0 12px 40px rgba(0,0,0,.6), inset 0 0 0 1px rgba(255,226,163,.35); }
+.photo-card .mat { position: relative; display: grid; place-items: center; width: 100%; min-height: 150px; max-height: min(40vh, 360px); padding: 8px; border: 0; border-radius: 4px; background: #efe2c4; box-shadow: inset 0 0 12px rgba(80,50,10,.35); overflow: hidden; cursor: zoom-in; }
+.photo-card.big .mat { max-height: min(56vh, 520px); }
+.photo-card .mat img { display: block; max-width: 100%; max-height: calc(min(40vh, 360px) - 16px); object-fit: contain; transition: opacity .45s; box-shadow: 0 2px 8px rgba(0,0,0,.35); }
+.photo-card.big .mat img { max-height: calc(min(56vh, 520px) - 16px); }
+.photo-card .ld { position: absolute; inset: 0; display: grid; place-items: center; color: #6a4a20; font-weight: 800; font-size: 13px; }
+.photo-card .zoom { position: absolute; right: 12px; bottom: 10px; padding: 2px 8px; border-radius: 999px; background: rgba(30,20,8,.65); color: #ffe2a3; font-size: 11px; font-weight: 800; pointer-events: none; }
+.photo-card .fb { display: flex; flex-direction: column; align-items: center; gap: 8px; color: #6a4a20; font-weight: 800; font-size: 13px; text-align: center; padding: 10px; }
+.photo-card .fbface { width: 90px; height: 90px; border-radius: 50%; overflow: hidden; border: 3px solid #c99a3e; }
+.photo-card .fbface svg { width: 100%; height: 100%; display: block; }
+.photo-card .cap { display: flex; flex-direction: column; gap: 1px; padding: 7px 4px 0; text-align: center; color: #f6ead0; }
+.photo-card .cap b { font-family: var(--f-title); font-size: 15px; color: #ffe2a3; }
+.photo-card .cap span { font-size: 12.5px; font-weight: 700; opacity: .9; }
+.photo-card .cap a { font-size: 11px; font-weight: 700; color: #9fe0ff; text-decoration: none; margin-top: 2px; }
+.photo-zoom { position: fixed; inset: 0; z-index: 45; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 16px; background: rgba(4,6,12,.94); cursor: zoom-out; animation: fade .25s; }
+.photo-zoom img { max-width: 100%; max-height: calc(100vh - 80px); object-fit: contain; box-shadow: 0 10px 50px rgba(0,0,0,.7); }
+.photo-zoom span { color: #e9e2d0; font-weight: 800; font-size: 13px; }
+@media (max-height: 520px) { .photo-frame { width: min(300px, 46vw); left: auto; right: 10px; transform: none; animation: none; } .photo-card .mat { max-height: 46vh; } .photo-card .mat img { max-height: calc(46vh - 16px); } }

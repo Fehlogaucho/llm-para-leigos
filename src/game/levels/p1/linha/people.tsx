@@ -1,11 +1,12 @@
 import * as THREE from 'three'
-import { useMemo, useRef } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { RT } from '../../../engine/runtime'
 import { G } from '../../../store'
 import { TIMBRE } from '../../../engine/voice'
 import { SPEAKERS } from '../../../ui/Icons'
 import { PEOPLE, type Person } from './stops'
+import { PHOTOS } from './photos'
 
 /* =========================================================
    Os inventores: retrato (diálogo e documentos), voz e o
@@ -48,6 +49,23 @@ export function PersonFace({ who }: { who: string }) {
   )
 }
 
+/** Avatar: o retrato real (Wikimedia Commons) por cima do desenho; se a foto não carregar, fica o desenho. */
+export function PersonAvatar({ who }: { who: string }) {
+  const p = PHOTOS[who]
+  const [k, setK] = useState(0)
+  const [ok, setOk] = useState(false)
+  const base = <PersonFace who={who} />
+  if (!p || !p.portrait) return base
+  const list = p.srcs.flatMap((s) => [s.thumb, s.full])
+  return (
+    <span style={{ position: 'relative', display: 'block', width: '100%', height: '100%' }}>
+      {base}
+      {k < list.length && <img src={list[k]} alt="" draggable={false} onError={() => { setOk(false); setK(k + 1) }} onLoad={() => setOk(true)}
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: p.pos, opacity: ok ? 1 : 0, transition: 'opacity .4s' }} />}
+    </span>
+  )
+}
+
 /* registra nomes, cores, retratos e vozes */
 const VOICES: Record<string, { pitch: number; rate: number }> = {
   ESCRIBA: { pitch: 0.75, rate: 0.95 }, LIUHUI: { pitch: 0.9, rate: 0.98 }, KHWARIZMI: { pitch: 0.8, rate: 0.96 }, PASCAL: { pitch: 0.95, rate: 1.04 },
@@ -55,7 +73,7 @@ const VOICES: Record<string, { pitch: number; rate: number }> = {
   MARKOV: { pitch: 0.7, rate: 0.95 }, SHANNON: { pitch: 1.0, rate: 1.1 }, ROSENBLATT: { pitch: 0.95, rate: 1.06 }, COMERCIANTE: { pitch: 0.82, rate: 1.02 },
 }
 for (const [k, p] of Object.entries(PEOPLE)) {
-  SPEAKERS[k] = { name: p.name.toUpperCase(), color: p.color, face: () => <PersonFace who={k} /> }
+  SPEAKERS[k] = { name: p.name.toUpperCase(), color: p.color, face: () => <PersonAvatar who={k} /> }
   TIMBRE[k] = VOICES[k]
 }
 

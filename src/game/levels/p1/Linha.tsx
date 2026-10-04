@@ -16,6 +16,7 @@ import { holo } from './linha/people'
 import { openDoc, openAsk, openGame, openPipeline, MemoryStrip, memFlag, readExtra, readAgain, extraQuest, OV } from './linha/Doc'
 import { LinhaWorld, Console, STOP_Z, SIDE, HOLO_P, USE_P, STAND_P, EXTRA_P, CORE, CORE_USE, PORTAL_USE, VILLAGE, type V3 } from './linha/World'
 import { graosTalk, graosHint, graosMesa, BIG } from './linha/Graos'
+import { showPhoto, PH } from './linha/Photo'
 
 /* =========================================================
    FASE 1 · AS ORIGENS — A LINHA DO TEMPO DA MEMÓRIA
@@ -53,6 +54,7 @@ async function runStop(c: Ctx, i: number) {
     SFX.play('chime')
     await c.wait(1.3)
     await c.say(s.intro.map((t) => ({ who: s.who, text: t })))
+    await showPhoto(c, s.who)
     await c.say({ who: 'NEX', text: s.nex })
     await c.say({ who: s.who, text: DOC_LINE[i % DOC_LINE.length] })
     await openDoc(c, s.doc)
@@ -281,7 +283,7 @@ export default function Linha() {
   const spawn: V3 = f.l1_final ? [0, 0.1, CORE_USE[2] + 1] : last >= 0 ? [0, 0.1, STOP_Z(last) + 1] : [0, 0.1, 9]
   useLevel({ spawn, yaw: Math.PI, scripts: [main], minY: -10 })
   useOverlay('l1mem', <MemoryStrip />, [])
-  useEffect(() => () => { G().setOverlay(OV, null); G().setOverlay(BIG, null) }, []) // fecha painéis abertos ao sair da fase
+  useEffect(() => () => { G().setOverlay(OV, null); G().setOverlay(BIG, null); G().setOverlay(PH, null) }, []) // fecha painéis abertos ao sair da fase
   return (
     <>
       <SkyDome preset="night" custom={SKY} />

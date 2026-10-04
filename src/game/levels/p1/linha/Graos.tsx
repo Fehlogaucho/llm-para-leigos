@@ -8,6 +8,7 @@ import type { Ctx } from '../../../engine/script'
 import { STOPS } from './stops'
 import { holo, PersonFace } from './people'
 import { show, openDoc } from './Doc'
+import { showPhoto } from './Photo'
 import { GRAIN, RECORDS, VALUES, type GK } from './Village'
 import { VILLAGE as V, type V3 } from './layout'
 
@@ -545,6 +546,7 @@ export async function graosMesa(c: Ctx, finish: (c: Ctx) => Promise<void>) {
       { who: 'LIUHUI', text: 'Você acabou de descobrir o resultado de uma experiência que nunca aconteceu.' },
       ...s.intro.map((t) => ({ who: s.who, text: t })),
     ])
+    await showPhoto(c, s.who)
     await c.say({ who: 'NEX', text: s.nex })
     await c.say({ who: s.who, text: 'Anotei a história deste método. Leia comigo.' })
     await openDoc(c, s.doc)
