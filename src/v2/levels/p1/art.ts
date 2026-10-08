@@ -68,6 +68,18 @@ export function lamppost(color: string, on: boolean) {
     return S(p, 5, 39)
   })
 }
+/** Pilarete de pedra com uma vela acesa (borda da trilha). */
+export function bollard(f: number) {
+  return memo('boll:' + (f % 3), () => {
+    const p = new Pix(12, 26)
+    p.rect(3, 10, 6, 15, hex('#6a6080')); p.rect(3, 10, 2, 15, hex('#8a80a0')); p.rect(8, 10, 1, 15, hex('#4a4060'))
+    p.rect(2, 9, 8, 2, hex('#c8a040'))
+    p.rect(5, 5, 2, 4, hex('#f2ead8'))
+    const fl = [[6, 1], [5, 2], [6, 2]][f % 3]
+    p.px(6, 4, hex('#ffd27a')); p.px(fl[0], fl[1] + 1, hex('#ffb35a')); p.px(6, 3, hex('#fff2c0'))
+    return S(p, 6, 25)
+  })
+}
 export function lectern(read: boolean) {
   return memo(`lec:${read}`, () => {
     const p = new Pix(22, 30)

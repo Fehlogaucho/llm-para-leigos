@@ -9,19 +9,20 @@ import type { Sprite, Pose } from '../engine/runtime'
    ========================================================= */
 export interface Look {
   skin: string; hair: string
-  style: 'spiky' | 'short' | 'long' | 'bald' | 'curly'
+  style: 'spiky' | 'short' | 'long' | 'bald' | 'curly' | 'messy'
   top: string; inner?: string // casaco e camisa por dentro
   legs: string; shoes: string
   robe?: boolean; dress?: boolean
-  acc?: 'beard' | 'longbeard' | 'turban' | 'hat' | 'cap' | 'sideburns' | 'glasses' | 'straw' | 'wig' | 'bun' | 'none'
+  acc?: 'beard' | 'shortbeard' | 'longbeard' | 'turban' | 'hat' | 'cap' | 'sideburns' | 'glasses' | 'straw' | 'wig' | 'bun' | 'none'
   accColor?: string
   bag?: string // mochila (NEX)
+  roll?: string // saco de dormir enrolado em cima da mochila
   belt?: string
 }
 
 export const W = 22, H = 32, AX = 11, AY = 31
 
-export const NEX: Look = { skin: '#f0c49c', hair: '#3a2314', style: 'spiky', top: '#1f3366', inner: '#e9e2d0', legs: '#b49c72', shoes: '#4a3324', bag: '#7b4a2a' }
+export const NEX: Look = { skin: '#e8b088', hair: '#4a2a1a', style: 'messy', acc: 'shortbeard', top: '#2c4f9e', inner: '#ece6da', legs: '#2c2c38', shoes: '#7a4a2a', bag: '#8a5a34', roll: '#c8a070' }
 
 /** Visual de cada pessoa da Fase 1. */
 export const LOOKS: Record<string, Look> = {
@@ -53,6 +54,8 @@ export function personPix(L: Look, view: View, frame = 0, pose: Pose = 'idle'): 
   const bob = walking && frame % 2 === 1 ? -1 : 0
   const armsUp = pose === 'cheer' || pose === 'scared'
   const by = bob // deslocamento do corpo
+  // ---- saco de dormir aparecendo atrás dos ombros (de frente) ----
+  if (L.roll && view === 'f') { const r = C(L.roll), rd = C(darker(L.roll, 0.3)); p.ellipse(4.5, 16 + by, 2, 2.4, r); p.ellipse(17.5, 16 + by, 2, 2.4, r); p.px(4, 16 + by, rd); p.px(17, 16 + by, rd) }
   // ---- pernas e sapatos ----
   const liftL = walking && frame === 1 ? 1 : 0, liftR = walking && frame === 3 ? 1 : 0
   if (L.robe || L.dress) {
@@ -78,8 +81,12 @@ export function personPix(L: Look, view: View, frame = 0, pose: Pose = 'idle'): 
   if (!L.robe && !L.dress) p.rect(7, 23 + by, 8, 1, legsD)
   // mochila (de costas aparece inteira; de frente, só as alças)
   if (L.bag) {
-    if (view === 'b') { p.rect(8, 17 + by, 6, 6, C(L.bag)); p.rect(8, 17 + by, 6, 1, C(lighter(L.bag, 0.2))); p.rect(9, 20 + by, 4, 2, C(darker(L.bag, 0.25))) }
-    else { p.rect(8, 17 + by, 1, 4, C(L.bag)); p.rect(13, 17 + by, 1, 4, C(L.bag)) }
+    const b = C(L.bag), bl = C(lighter(L.bag, 0.18)), bd = C(darker(L.bag, 0.28))
+    if (view === 'b') {
+      p.rect(6, 17 + by, 10, 9, b); p.rect(6, 17 + by, 10, 1, bl); p.rect(15, 17 + by, 1, 9, bd)
+      p.rect(7, 18 + by, 8, 3, bl); p.rect(10, 21 + by, 2, 1, C('#e8c060')); p.rect(7, 23 + by, 3, 2, bd); p.rect(12, 23 + by, 3, 2, bd)
+      if (L.roll) { const r = C(L.roll), rd = C(darker(L.roll, 0.3)); p.ellipse(11, 15.5 + by, 7, 2.2, r); p.rect(5, 15 + by, 12, 1, C(lighter(L.roll, 0.2))); p.px(4, 15 + by, rd); p.px(17, 16 + by, rd); p.rect(8, 14 + by, 1, 4, bd); p.rect(13, 14 + by, 1, 4, bd) }
+    } else { p.rect(8, 17 + by, 1, 5, bd); p.rect(13, 17 + by, 1, 5, bd) }
   }
   // ---- braços ----
   const swing = walking ? (frame === 1 ? 1 : frame === 3 ? -1 : 0) : 0
@@ -130,6 +137,17 @@ export function personPix(L: Look, view: View, frame = 0, pose: Pose = 'idle'): 
     // bochechas
     p.px(7, hy + 3, hex(mix(L.skin, '#ff7a7a', 0.45))); p.px(15, hy + 3, hex(mix(L.skin, '#ff7a7a', 0.45)))
   }
+  // cabelo bagunçado (NEX): tufos em cima e nos lados
+  if (L.style === 'messy') {
+    p.ellipse(11, hy - 3.6, 7.2, 3.8, hair)
+    for (const [x, y, rx, ry] of [[6, hy - 5, 2.2, 2], [10, hy - 7, 2.6, 2], [14.5, hy - 6, 2.4, 2.2], [17, hy - 2.5, 1.6, 2.2], [5, hy - 1.5, 1.6, 2.2]] as number[][]) p.ellipse(x, y, rx, ry, hair)
+    if (view === 'f') {
+      // mechas caindo na testa e sobre as orelhas
+      for (const [x, y] of [[7, hy], [9, hy], [13, hy], [15, hy], [16, hy]] as number[][]) p.px(x, y, hair)
+      p.rect(4, hy - 1, 2, 3, hair); p.rect(17, hy - 1, 1, 2, hair)
+    } else { p.ellipse(11, hy + 1, 6.6, 5.2, hair); for (const x of [6, 9, 12, 15]) p.px(x, hy + 6, hair) }
+    p.px(8, hy - 6, hairL); p.px(9, hy - 7, hairL); p.px(13, hy - 6, hairL); p.px(7, hy - 4, hairL); p.px(14, hy - 4, hairD); p.px(11, hy - 4, hairD)
+  }
   // espetos do NEX
   if (L.style === 'spiky') {
     p.poly([[6, hy - 3], [7.5, hy - 8], [10, hy - 4]], hair)
@@ -140,6 +158,16 @@ export function personPix(L: Look, view: View, frame = 0, pose: Pose = 'idle'): 
   // ---- acessórios ----
   const A = L.accColor || '#1c1c22'
   switch (L.acc) {
+    case 'shortbeard': if (view === 'f') {
+      const bd = hair, bdl = hairL
+      const rows: [number, number, number][] = [[2, 5, 5], [2, 17, 17], [3, 5, 6], [3, 16, 17], [4, 5, 17], [5, 6, 16], [6, 8, 14]]
+      for (const [dy, x0, x1] of rows) for (let x = x0; x <= x1; x++) p.px(x, hy + dy, bd)
+      p.rect(10, hy + 3, 3, 1, bd) // bigode
+      const open = pose === 'scared' || pose === 'cheer'
+      p.rect(10, hy + 4, 3, open ? 2 : 1, hex(open ? '#5a1a1a' : '#7a3a2a'))
+      if (pose === 'cheer') p.rect(10, hy + 4, 3, 1, hex('#f2ead8'))
+      p.px(7, hy + 4, bdl); p.px(14, hy + 5, bdl)
+    } break
     case 'beard': if (view === 'f') { p.poly([[6, hy + 1], [16.5, hy + 1], [15, hy + 6], [11, hy + 7], [7, hy + 6]], hair); p.rect(10, hy + 3, 3, 1, hex(mix(L.skin, L.hair, 0.3))) } break
     case 'longbeard': if (view === 'f') { p.poly([[6, hy + 1], [16.5, hy + 1], [15, hy + 8], [11, hy + 10], [7, hy + 8]], hair); p.rect(10, hy + 3, 3, 1, hex('#5a2a1a')); for (let y = hy + 5; y < hy + 9; y += 2) p.px(11, y, hairD) } break
     case 'turban': p.ellipse(11, hy - 4, 7, 4, C(A)); p.rect(4, hy - 3, 14, 1, hex('#3fb6b0')); p.px(11, hy - 5, hex('#e8b65a')); p.px(9, hy - 6, hex('#ffffff')) ; break
@@ -188,22 +216,38 @@ export function personSprite(id: string, L: Look, dir: { x: number; y: number },
 }
 
 /* ---------- NOVA ---------- */
-export function novaPix(blink: boolean, talk: boolean): Pix {
-    const p = new Pix(18, 18)
-    p.ellipse(9, 9, 7, 7, hex('#eef1f6'))
-    p.ellipse(7.5, 6.5, 3, 2.5, hex('#ffffff'))
-    for (let y = 0; y < 18; y++) for (let x = 0; x < 18; x++) { const dx = x + 0.5 - 9, dy = y + 0.5 - 9; if (dx * dx + dy * dy < 49 && dx + dy > 6) p.px(x, y, hex('#b8c0d0')) }
-    p.ellipse(9, 9.5, 6, 3, hex('#0c1220'))
-    const eye = hex('#59d7ff')
-    if (blink) { p.rect(5, 10, 3, 1, eye); p.rect(11, 10, 3, 1, eye) }
-    else { p.rect(5, 8, 3, 3, eye); p.rect(11, 8, 3, 3, eye); p.px(5, 8, hex('#e8fbff')); p.px(11, 8, hex('#e8fbff')) }
-    if (talk) p.rect(8, 11, 3, 1, hex('#9ff0ff'))
-    p.rect(0, 8, 2, 3, hex('#3fb8ff')); p.rect(16, 8, 2, 3, hex('#3fb8ff'))
-    p.outline(hex(OUT))
-    return p
+/** NOVA: robozinho guia (cabeça grande com visor, antena, “orelhas” azuis, ∞ no peito e propulsor). */
+export function novaPix(blink: boolean, talk: boolean, flame = 0, off = false): Pix {
+  const p = new Pix(22, 30)
+  const shell = hex('#ece4d4'), shellD = hex('#c8bca8'), shellL = hex('#fffaf0'), seam = hex('#a89c88')
+  const blue = hex('#3fb8ff'), blueL = hex('#bff3ff'), blueD = hex('#1a5aa8'), visor = hex('#0c1a3a')
+  // propulsor
+  if (!off) { const f = flame % 3; p.poly([[8, 24], [14, 24], [11, 29 - (f === 1 ? 1 : 0)]], blue); p.poly([[9.5, 24], [12.5, 24], [11, 27 - f % 2]], blueL) }
+  // corpo
+  p.ellipse(11, 21, 5, 4, shell); p.rect(7, 21, 9, 2, shellD); p.px(8, 19, shellL)
+  // ∞ no peito
+  p.px(9, 21, blue); p.px(10, 20, blue); p.px(10, 22, blue); p.px(11, 21, blue); p.px(12, 20, blue); p.px(12, 22, blue); p.px(13, 21, blue)
+  // bracinhos
+  p.ellipse(5.5, 21, 1.6, 2.2, shellD); p.ellipse(16.5, 21, 1.6, 2.2, shellD)
+  // antena
+  p.rect(10, 1, 2, 4, seam); p.rect(10, 0, 2, 2, off ? blueD : blue); p.px(10, 0, off ? blue : blueL)
+  // cabeça
+  p.ellipse(11, 10.5, 8.6, 7.2, shell)
+  for (let y = 3; y < 18; y++) for (let x = 2; x < 20; x++) { const dx = (x + 0.5 - 11) / 8.6, dy = (y + 0.5 - 10.5) / 7.2; if (dx * dx + dy * dy <= 1 && dx * 0.6 + dy > 0.62) p.px(x, y, shellD) }
+  p.px(6, 5, shellL); p.px(7, 4, shellL); p.px(8, 4, shellL)
+  // orelhas (fones)
+  for (const ex of [2, 20]) { p.ellipse(ex, 11, 2.2, 3, blueD); p.ellipse(ex, 11, 1.2, 1.8, off ? blueD : blue) }
+  // visor e olhos
+  p.poly([[5, 8], [17, 8], [18, 11], [17, 14.5], [5, 14.5], [4, 11]], visor)
+  const eye = off ? blueD : blue
+  if (blink || off) { p.rect(6, 11, 3, 1, eye); p.rect(13, 11, 3, 1, eye) }
+  else { p.rect(6, 10, 3, 3, eye); p.rect(13, 10, 3, 3, eye); p.px(6, 10, blueL); p.px(13, 10, blueL) }
+  if (talk) p.rect(10, 13, 2, 1, blueL)
+  p.outline(hex(OUT))
+  return p
 }
-export function novaSprite(blink: boolean, talk: boolean): Sprite {
-  return memo(`nova:${blink ? 1 : 0}:${talk ? 1 : 0}`, () => spr(novaPix(blink, talk), 9, 17))
+export function novaSprite(blink: boolean, talk: boolean, flame = 0, off = false): Sprite {
+  return memo(`nova:${blink ? 1 : 0}:${talk ? 1 : 0}:${flame % 3}:${off ? 1 : 0}`, () => spr(novaPix(blink, talk, flame, off), 11, off ? 24 : 27))
 }
 
 /* ---------- retrato (para o diálogo) ---------- */
@@ -217,7 +261,7 @@ export function portraitURL(id: string, bg = '#101a30', ring?: string): string {
   p.rect(0, 0, 24, 24, hex(bg))
   if (ring) p.ellipse(12, 13, 11, 11, hex(mix(ring, bg, 0.7)))
   if (L) { const body = personPix(L, 'f', 0, 'idle'); p.blit(body, 1, 2) }
-  else if (id === 'NOVA') { p.ellipse(12, 12, 10, 10, hex('#1a2a48')); p.blit(novaPix(false, false), 3, 3) }
+  else if (id === 'NOVA') { p.ellipse(12, 12, 10, 10, hex('#1a2a48')); p.blit(novaPix(false, false), 1, 2) }
   const cv = p.canvas()
   const url = cv.toDataURL()
   urls.set(k, url)

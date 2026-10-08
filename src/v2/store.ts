@@ -11,7 +11,7 @@ export type Who = 'NEX' | 'NOVA' | 'ENGINE' | 'HALLUCINO' | 'SISTEMA' | string
 export type Cat = 'fundamento' | 'curiosidade' | 'deepdive' | 'historia'
 
 export interface Choice { label: string; next?: Line[]; flag?: string }
-export interface Line { who: Who; text: string; choices?: Choice[] }
+export interface Line { who: Who; text: string; choices?: Choice[]; mood?: string }
 export interface Objective { text: string; target?: P2 }
 /** Plano de câmera: vai até pos (centro da tela), com zoom 1 ou 2. cut = começa já ali. */
 export interface Shot { pos: P2; zoom?: number; dur?: number; cut?: boolean; h?: number }

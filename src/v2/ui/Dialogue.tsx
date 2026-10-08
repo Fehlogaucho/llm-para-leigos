@@ -89,7 +89,7 @@ export function Dialogue() {
   const name = NAMES[line.who] ?? sp?.name ?? line.who
   return (
     <div className={'dlg' + (d.ambient ? ' ambient' : '')} onClick={d.ambient ? undefined : onTap} role="dialog" aria-live="polite">
-      <div className="face"><Face who={line.who} /></div>
+      <div className="face"><Face who={line.who} text={line.text} mood={line.mood} /></div>
       <div style={{ flex: 1, minWidth: 0 }}>
         {name && <div className={'who ' + line.who} style={sp?.color ? { color: sp.color } : undefined}>{name}</div>}
         <div className="say">{full.slice(0, shown)}</div>

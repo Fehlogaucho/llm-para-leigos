@@ -39,23 +39,23 @@ export const LEVEL_ORDER: string[] = []
 export function defineLevel(d: LevelDef) { LEVELS[d.id] = d; LEVEL_ORDER.push(d.id) }
 
 defineLevel({
-  id: 'quarto', phase: 0, badge: 'P', short: 'Prólogo · O Quarto', title: 'Uma Pergunta', kicker: 'PRÓLOGO', sub: 'Como você funciona?', theme: 'lab', img: '/img/origens.webp',
+  id: 'quarto', phase: 0, badge: 'P', short: 'Prólogo · O Quarto', title: 'Uma Pergunta', kicker: 'PRÓLOGO', sub: 'Como você funciona?', theme: 'lab', img: '/img/v2/mundo.webp',
   tip: 'Chegue perto do computador e toque em “Usar”.',
   next: 'prologo', load: () => import('./prologo/Quarto'),
 })
 defineLevel({
-  id: 'prologo', phase: 0, badge: 'P', short: 'Prólogo', title: 'A Language Engine', kicker: 'PRÓLOGO', sub: 'A máquina que esqueceu', theme: 'lab', img: '/img/origens.webp',
+  id: 'prologo', phase: 0, badge: 'P', short: 'Prólogo', title: 'A Language Engine', kicker: 'PRÓLOGO', sub: 'A máquina que esqueceu', theme: 'lab', img: '/img/v2/mundo.webp',
   tip: 'No celular: arraste o círculo para andar, ou toque no chão onde quer ir.',
   next: 'p1', load: () => import('./prologo/Prologo'),
 })
 defineLevel({
-  id: 'p1', phase: 1, badge: '1', short: 'Fase 1 · Linha do Tempo', title: 'A Linha do Tempo', kicker: 'FASE 1 · AS ORIGENS', sub: 'A matemática por trás da LLM', theme: 'observatorio', img: '/img/eras.webp',
+  id: 'p1', phase: 1, badge: '1', short: 'Fase 1 · Linha do Tempo', title: 'A Linha do Tempo', kicker: 'FASE 1 · AS ORIGENS', sub: 'A matemática por trás da LLM', theme: 'observatorio', img: '/img/v2/fundamentos.webp',
   tip: 'Em cada marco da trilha, toque no console: quem inventou a ideia aparece e conta a história. Toque na faixa da memória (no alto) para reler tudo.',
   quests: [{ id: 'qx_fichas', name: 'Quem descobriu as fichas?' }, { id: 'qx_tabela', name: 'Por que “matriz”?' }, { id: 'qx_chances', name: 'O triângulo de Pascal' }, { id: 'qx_programa', name: 'Babbage e suas máquinas' }],
   next: 'p2a1', load: () => import('./p1/Linha'),
 })
 defineLevel({
-  id: 'p2a1', phase: 2, badge: '2·1', short: 'Fase 2 · Em breve', title: 'A Cidade das Representações', kicker: 'FASE 2', sub: 'Em construção', theme: 'cidade', img: '/img/origens.webp',
+  id: 'p2a1', phase: 2, badge: '2·1', short: 'Fase 2 · Em breve', title: 'A Cidade das Representações', kicker: 'FASE 2', sub: 'Em construção', theme: 'cidade', img: '/img/v2/portais.webp',
   tip: 'Você terminou a Fase 1! A Fase 2 está sendo construída.',
   load: () => import('./p2/EmBreve'),
 })

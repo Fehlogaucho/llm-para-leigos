@@ -317,7 +317,7 @@ export default function build(): Scene {
     },
     overlay: () => null,
     onExit: () => { G().setOverlay('qchat', null); G().setOverlay('whiteflash', null); resetFX() },
-    novaZ: 30,
+    novaZ: 9,
     init: () => { G().setOverlay('qchat', <ChatScreen />); G().setOverlay('whiteflash', <WhiteFlash />) },
   } as Scene
 }

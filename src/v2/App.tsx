@@ -10,9 +10,9 @@ import { Pix } from './engine/pix'
 /** NEX e NOVA grandes, em pixel art, na tela inicial. */
 function Hero() {
   const url = useMemo(() => {
-    const p = new Pix(46, 34)
-    p.blit(personPix(NEX, 'f', 0, 'idle'), 4, 2)
-    p.blit(novaPix(false, false), 27, 3)
+    const p = new Pix(50, 34)
+    p.blit(personPix(NEX, 'f', 0, 'idle'), 3, 2)
+    p.blit(novaPix(false, false), 26, 4)
     return p.canvas().toDataURL()
   }, [])
   return <img className="hero" src={url} alt="NEX e NOVA" draggable={false} />
@@ -35,7 +35,7 @@ function Title() {
   const L = LEVELS[resolveLevel(level)]
   return (
     <div className="title px">
-      <div className="bg" style={{ backgroundImage: 'url(/img/origens.webp)' }} />
+      <div className="bg" style={{ backgroundImage: 'url(/img/v2/mundo.webp)' }} />
       <div className="shade" />
       <div className="logo">
         <Hero />

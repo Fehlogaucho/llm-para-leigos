@@ -46,7 +46,7 @@ async function runStop(c: Ctx, i: number) {
   await walkTo(c, st)
   c.freeze(true)
   RT.lookAt = hp
-  RT.novaPos = { x: NOVA_P(i)[0], y: NOVA_P(i)[1], z: 32 }
+  RT.novaPos = { x: NOVA_P(i)[0], y: NOVA_P(i)[1], z: 10 }
   c.focus([(st[0] + hp[0]) / 2, (st[1] + hp[1]) / 2 + 0.6], 2, portrait() ? 30 : 22)
   try {
     SFX.play('whoosh')
@@ -397,6 +397,8 @@ export default function build(): Scene {
     add({ x, y: 13.7, sprite: A.lamppost('#ffd27a', true), shadow: 3 })
     add({ x, y: 13.9, layer: 'ground', blend: 'lighter', sprite: glow(16, '#ffd27a', 0.18) })
   }
+  // pilaretes com vela na borda da frente
+  for (let x = 6; x < X_END; x += 5) { if (STOPS.some((_, i) => Math.abs(x - PLAQUE_P(i)[0]) < 1.5 && PLAQUE_P(i)[1] > 15)) continue; add({ x: x + 0.5, y: 18.5, sprite: () => A.bollard(anim(6) + x), shadow: 3 }) }
   // cristais da frente (baixos)
   for (let x = 9; x < X_END; x += 7) add({ x: x + 0.4, y: 18.4, z: 2, sprite: crystal(['#9fe9ff', '#c8a8ff', '#ffd27a'][x % 3], 0.6), shadow: 3 })
   // névoa entre os marcos
@@ -449,7 +451,7 @@ export default function build(): Scene {
         if (Math.abs(wy - 15.5) < 0.05) c = line
         else if (Math.abs(wy - 15.5) < 0.1) c = lineD
         for (let i = 0; i < STOPS.length; i++) if (Math.abs(wx - XC(i)) < 0.06 && Math.abs(wy - 15.5) < 0.45) c = gold
-        if (Math.abs(wy - 14.08) < 0.05 && Math.abs((wx % 2) - 1) < 0.08) c = stud
+        if (Math.abs(wy - 14.06) < 0.05 || Math.abs(wy - 16.94) < 0.05) c = Math.abs((wx % 3) - 1.5) < 0.09 ? stud : gold
       }
       if (c) p.px(tx - 16 + px, ty + py, c)
     }
@@ -467,10 +469,11 @@ export default function build(): Scene {
   return {
     w: W, h: H, ground, things, blockers, noWalk, paint,
     cliff: { a: '#5a4a7a', b: '#3e3260', depth: 38 },
+    falls: { density: 0.07, color: '#7fd8ff' },
     spawn: { pos: spawn, dir: [1, 0] },
     bg: skyBg({ top: '#0a0c2a', mid: '#2c2a6e', bottom: '#9a72c0', stars: 120, islands: 6, cloud: '#6a5aa8', seed: 7 }),
     scripts: [main],
-    novaZ: 30,
+    novaZ: 9,
     init: () => {
       RT.novaOn = !!flag('nova') || true
       G().setOverlay('l1mem', <MemoryStrip />)

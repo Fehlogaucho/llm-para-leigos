@@ -31,6 +31,18 @@ export function dataRainBg(top: string, bottom: string, color = '#2a6aa8') {
       for (let i = 0; i < N; i++) { g.fillStyle = mixc(top, bottom, i / (N - 1)); g.fillRect(0, Math.floor((i * h) / N), w, Math.ceil(h / N) + 1) }
     }
     ctx.drawImage(grad, 0, 0)
+    // torres de dados ao longe (colunas escuras com sinais acesos)
+    const tx = (cam.x - cam.y) * 16 * 0.03
+    for (let i = 0; i < 14; i++) {
+      const bw = 10 + Math.floor(hash2(i, 9, 2) * 12), bh = 50 + Math.floor(hash2(i, 8, 2) * 150)
+      const x = Math.floor((((i * 61 + hash2(i, 7, 2) * 40 - tx) % (w + 80)) + w + 80) % (w + 80)) - 40, y = h - bh
+      ctx.fillStyle = '#0a1228'; ctx.fillRect(x, y, bw, bh)
+      ctx.fillStyle = '#16244a'; ctx.fillRect(x, y, 2, bh)
+      for (let yy = y + 4; yy < h - 4; yy += 6) for (let xx = x + 3; xx < x + bw - 2; xx += 4) {
+        const on = hash2(xx, yy, Math.floor(t * 0.7 + i)) < 0.12
+        if (on) { ctx.fillStyle = hash2(xx, yy, 3) < 0.7 ? '#3fb8ff' : '#9a7aff'; ctx.fillRect(xx, yy, 2, 2) }
+      }
+    }
     const px = (cam.x - cam.y) * 16 * 0.05
     for (const cl of cols) {
       const x = Math.floor((((cl.x * w * 1.3 - px) % w) + w) % w)

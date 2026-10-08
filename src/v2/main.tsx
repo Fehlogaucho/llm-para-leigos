@@ -9,6 +9,7 @@ import '@fontsource/jetbrains-mono/700.css'
 import '../styles.css'
 import './v2.css'
 import App from './App'
+import { preloadFaces } from './ui/Icons'
 import { IS_TOUCH, useGame } from './store'
 import { RT, INTERACTS, FOCUS } from './engine/runtime'
 import { INPUT } from './engine/input'
@@ -16,6 +17,7 @@ import { gotoLevel } from './engine/script'
 import { findPath } from './engine/world'
 
 if (IS_TOUCH) document.documentElement.classList.add('touch')
+setTimeout(preloadFaces, 1500)
 // ganchos para testes automáticos
 ;(window as any).__pf = {
   useGame, RT, INTERACTS, INPUT, FOCUS, gotoLevel,

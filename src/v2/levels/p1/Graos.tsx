@@ -420,7 +420,7 @@ const shotBaskets = (c: Ctx) => shot(c, [V.baskets[1][0], V.baskets[1][1] + 0.8]
 const shotScale = (c: Ctx) => shot(c, [V.scale[0] - 0.4, V.scale[1] + 0.6], 20)
 const shotTable = (c: Ctx) => shot(c, [V.table[0] + 1.2, V.table[1] + 1.6], 14)
 const shotLiu = (c: Ctx) => shot(c, [V.liu[0] - 1.2, V.liu[1] + 1.6], 20)
-const NOVA_AT = (p: P2) => { RT.novaPos = { x: p[0] - 1.6, y: p[1] + 0.6, z: 30 } }
+const NOVA_AT = (p: P2) => { RT.novaPos = { x: p[0] - 1.4, y: p[1] + 0.5, z: 10 } }
 
 /** Cenas 1 a 3: a vila, os três registros e a pergunta impossível. */
 export async function graosTalk(c: Ctx) {

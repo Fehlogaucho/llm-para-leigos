@@ -54,6 +54,8 @@ export interface Scene {
   paint?: (p: import('./pix').Pix, x: number, y: number, tx: number, ty: number) => void
   /** Casa com chão mas onde não se anda (água, plantação…). */
   noWalk?: (x: number, y: number) => boolean
+  /** Cachoeiras de dados caindo das bordas (densidade 0..1 e cor). */
+  falls?: { density: number; color: string }
   /** Chamado quando a fase fica pronta (overlays etc.). */
   init?: () => void
 }

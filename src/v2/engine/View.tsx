@@ -16,6 +16,19 @@ import { playTheme } from './audio'
    tela pequena ampliada por um número inteiro (pixels nítidos).
    ========================================================= */
 const CH = 16 // casas por pedaço de chão pré-desenhado
+interface Fall { x: number; y: number; len: number; w: number; seed: number }
+/** Escolhe pontos das bordas da frente para as cachoeiras de dados. */
+function findFalls(sc: Scene): Fall[] {
+  const out: Fall[] = []
+  if (!sc.falls) return out
+  for (let y = 0; y < sc.h; y++) for (let x = 0; x < sc.w; x++) {
+    if (!sc.ground(x, y)) continue
+    const left = !(y + 1 < sc.h && sc.ground(x, y + 1)), right = !(x + 1 < sc.w && sc.ground(x + 1, y))
+    if (left && hash2(x, y, 41) < sc.falls.density) out.push({ x: x + 0.5, y: y + 1, len: 70 + Math.floor(hash2(x, y, 42) * 110), w: 5 + Math.floor(hash2(x, y, 43) * 6), seed: x * 7 + y })
+    else if (right && hash2(x, y, 44) < sc.falls.density) out.push({ x: x + 1, y: y + 0.5, len: 70 + Math.floor(hash2(x, y, 45) * 110), w: 5 + Math.floor(hash2(x, y, 46) * 6), seed: x * 5 + y })
+  }
+  return out
+}
 interface Chunk { img: HTMLCanvasElement; ox: number; oy: number; w: number; h: number }
 
 /** Desenha o chão (e os penhascos das bordas) em pedaços. */
@@ -128,7 +141,7 @@ function nearestInteract(): Interact | null {
 export function GameView() {
   const ref = useRef<HTMLCanvasElement>(null!)
   const level = useGame((s) => s.level)
-  const st = useRef({ chunks: [] as Chunk[], sc: null as Scene | null })
+  const st = useRef({ chunks: [] as Chunk[], sc: null as Scene | null, falls: [] as Fall[] })
 
   /* ----- carregar a fase ----- */
   useEffect(() => {
@@ -146,6 +159,7 @@ export function GameView() {
       RT.scene = sc
       st.current.sc = sc
       st.current.chunks = buildChunks(sc)
+      st.current.falls = findFalls(sc)
       RT.player.x = sc.spawn.pos[0]; RT.player.y = sc.spawn.pos[1]
       if (sc.spawn.dir) RT.dir = { x: sc.spawn.dir[0], y: sc.spawn.dir[1] }
       RT.cam.x = RT.player.x; RT.cam.y = RT.player.y; RT.cam.zoom = 1; RT.cam.h = 14
@@ -245,7 +259,7 @@ export function GameView() {
       if (RT.novaOn) {
         const np = RT.novaPos
         const dl = Math.hypot(RT.dir.x, RT.dir.y) || 1, fx = RT.dir.x / dl, fy = RT.dir.y / dl
-        const tx = np ? np.x : RT.player.x - fx * 0.9 + fy * 0.7, ty = np ? np.y : RT.player.y - fy * 0.9 - fx * 0.7
+        const tx = np ? np.x : RT.player.x - fx * 0.8 + fy * 0.8, ty = np ? np.y : RT.player.y - fy * 0.8 - fx * 0.8
         const tz = (np?.z ?? sc.novaZ ?? 30) + Math.sin(RT.time * 2.2) * 2.5
         const k = 1 - Math.exp(-dt * (np ? 4 : 3))
         RT.nova.x += (tx - RT.nova.x) * k; RT.nova.y += (ty - RT.nova.y) * k; RT.nova.z += (tz - RT.nova.z) * k
@@ -289,6 +303,25 @@ export function GameView() {
         if (ch.ox > vx1 || ch.ox + ch.w < vx0 || ch.oy > vy1 || ch.oy + ch.h < vy0) continue
         ctx.drawImage(ch.img, ch.ox, ch.oy)
       }
+      // cachoeiras de dados caindo das bordas
+      if (sc.falls) {
+        const D = sc.cliff?.depth ?? 0
+        ctx.fillStyle = sc.falls.color
+        for (const f of st.current.falls) {
+          const P = iso(f.x, f.y), x0 = Math.round(P.sx - f.w / 2), y0 = Math.round(P.sy) + 2
+          if (x0 > vx1 || x0 + f.w < vx0 || y0 > vy1 || y0 + D + f.len < vy0) continue
+          for (let c = 0; c < f.w; c++) {
+            const sp = 22 + ((c * 13 + f.seed) % 9) * 3, off = (RT.time * sp + c * 17 + f.seed * 3) % 9
+            for (let yy = -off; yy < D + f.len; yy += 9) {
+              if (yy < 0) continue
+              const k = 1 - yy / (D + f.len)
+              ctx.globalAlpha = Math.max(0, k) * (c === 0 || c === f.w - 1 ? 0.35 : 0.7)
+              ctx.fillRect(x0 + c, y0 + Math.round(yy), 1, 4)
+            }
+          }
+        }
+        ctx.globalAlpha = 1
+      }
       const drawSprite = (s: Sprite, x: number, y: number, a = 1, sc2 = 1, blend?: GlobalCompositeOperation) => {
         if (a <= 0.01) return
         ctx.globalAlpha = Math.min(1, a)
@@ -330,9 +363,9 @@ export function GameView() {
       // a NOVA
       if (RT.novaOn) {
         const blink = (RT.time % 3.7) < 0.12
-        const s = novaSprite(blink, RT.novaTalking > 0 && Math.floor(RT.time * 8) % 2 === 0)
+        const s = novaSprite(blink, RT.novaTalking > 0 && Math.floor(RT.time * 8) % 2 === 0, Math.floor(RT.time * 12))
         const P = iso(RT.nova.x, RT.nova.y, RT.nova.z), G0 = iso(RT.nova.x, RT.nova.y, 0)
-        list.push({ x0: RT.nova.x - 0.2, x1: RT.nova.x + 0.2, y0: RT.nova.y - 0.2, y1: RT.nova.y + 0.2, s0: P.sx - 10, s1: P.sx + 10, t0: P.sy - 18, t1: G0.sy + 2, draw: () => { drawSprite(shadow(4), G0.sx, G0.sy, 0.45); drawSprite(s, P.sx, P.sy) } })
+        list.push({ x0: RT.nova.x - 0.2, x1: RT.nova.x + 0.2, y0: RT.nova.y - 0.2, y1: RT.nova.y + 0.2, s0: P.sx - 12, s1: P.sx + 12, t0: P.sy - 30, t1: G0.sy + 2, draw: () => { drawSprite(shadow(4), G0.sx, G0.sy, 0.45); drawSprite(s, P.sx, P.sy) } })
       }
       for (const d of depthSort(list)) d.draw()
       for (const f of tops) f()

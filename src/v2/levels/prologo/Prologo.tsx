@@ -1,6 +1,6 @@
 import { Pix, hex, hash2, darker, lighter, mix } from '../../engine/pix'
 import { box, boxPix, cyl, glow, label, memo, spr, OUT } from '../../art/core'
-import { portalSprite, crystal, ringSprite } from '../../art/fx'
+import { portalSprite, crystal, ringSprite, brainSprite } from '../../art/fx'
 import { novaSprite } from '../../art/person'
 import { RT, addInteract, gesture, burst, type Scene, type Thing } from '../../engine/runtime'
 import { SFX, playTheme } from '../../engine/audio'
@@ -71,7 +71,7 @@ const pillar = (on: boolean, f: number) => memo(`pro:pil:${on}:${f}`, () => box(
 }))
 const pylon = (on: boolean) => memo(`pro:py:${on}`, () => box(0.6, 0.6, 18, '#2a3048', { top: on ? '#7fe3ff' : '#2a5a7a' }))
 const pedestal = () => memo('pro:ped', () => cyl(9, 14, '#3a4060', '#7fe3ff'))
-function dormantNova() { return memo('pro:dnova', () => { const s = novaSprite(true, false); return s }) }
+function dormantNova() { return novaSprite(true, false, 0, true) }
 
 /* ---------- frases que aparecem no ar ---------- */
 const PHRASES = ['“Olá.”', '“Quem é você?”', '“Conte uma história.”', '“Explique…”', '“Por quê?”', '“Qual é a capital do Brasil?”', '“Me ajude com…”', '“O que é isso?”', '“Traduza…”', '“Resuma…”']
@@ -147,8 +147,8 @@ async function main(c: Ctx) {
   // ---- a NOVA acorda ----
   RT.lookAt = PED
   await c.cinematic([{ pos: [PED[0] + 1, PED[1]], h: 20, zoom: 2, dur: 1.8 }], false)
-  RT.nova.x = PED[0]; RT.nova.y = PED[1]; RT.nova.z = 24
-  RT.novaPos = { x: PED[0] + 0.6, y: PED[1] + 0.8, z: 34 }
+  RT.nova.x = PED[0]; RT.nova.y = PED[1]; RT.nova.z = 15
+  RT.novaPos = { x: PED[0] + 0.7, y: PED[1] + 0.9, z: 12 }
   RT.novaOn = true
   c.setFlag('nova', 1)
   SFX.play('chime')
@@ -201,6 +201,8 @@ export default function build(): Scene {
     T({ x: 0, y: 0, pos: () => { const a = a0 + RT.time * 0.4; return { x: 12 + Math.cos(a) * 1.4, y: 5.5 + Math.sin(a) * 1.4, z: ENG.h + 22 + Math.sin(RT.time * 2 + i) * 4 } }, sprite: crystal(i % 2 ? '#c8a8ff' : '#7fe3ff', 0.8), alpha: () => 0.4 + S.on * 0.6 })
   }
   T({ x: 12, y: 5.5, z: ENG.h, layer: 'top', blend: 'lighter', sprite: glow(30, '#3fc4ff', 0.5), alpha: () => 0.15 + S.on * 0.85 })
+  // o cérebro em holograma acima da máquina (fraco enquanto ela não lembra)
+  T({ x: 12, y: 5.5, z: ENG.h + 40, layer: 'top', blend: 'lighter', pos: () => ({ x: 12, y: 5.5, z: ENG.h + 40 + Math.sin(RT.time * 1.2) * 3 }), sprite: () => brainSprite(fr(), '#3fc4ff'), alpha: () => (S.on > 0.5 ? 0.85 + Math.sin(RT.time * 3) * 0.1 : 0.25 + (Math.random() < 0.05 ? 0.3 : 0)) })
   T({ x: 12, y: 8.6, layer: 'ground', blend: 'lighter', sprite: glow(44, '#3fc4ff', 0.3), alpha: () => 0.3 + S.on * 0.7 })
   // pilares (atrás) e postes baixos (na frente)
   for (let i = 0; i < 12; i++) {
@@ -210,7 +212,7 @@ export default function build(): Scene {
   }
   // pedestal da NOVA
   T({ x: PED[0], y: PED[1], solid: false, sprite: pedestal(), shadow: 0 })
-  T({ x: PED[0], y: PED[1], z: 22, hidden: () => !!flag('nova'), sprite: dormantNova() })
+  T({ x: PED[0], y: PED[1] + 0.05, z: 15, hidden: () => !!flag('nova'), sprite: dormantNova() })
   // frases no ar
   for (const it of ITEMS) {
     T({ x: 0, y: 0, hidden: () => S.phrases <= 0.01, pos: () => { const a = it.a + RT.time * it.sp, r = it.r * (0.6 + S.phrases * 0.4); return { x: 12 + Math.cos(a) * r, y: 5.5 + Math.sin(a) * r * 0.9, z: it.z + Math.sin(RT.time + it.a) * 3 } }, sprite: label(it.t, it.col, '#0a2040'), alpha: () => S.phrases })
@@ -235,8 +237,9 @@ export default function build(): Scene {
     cliff: { a: '#2c3048', b: '#1c1f30', depth: 44 },
     spawn: { pos: flag('pro_portal') ? [PORTAL_USE[0] - 1.5, PORTAL_USE[1] + 1.5] : SPAWN, dir: [-1, -1] },
     bg: dataRainBg('#03050c', '#0c1430', '#2a6aa8'),
+    falls: { density: 0.1, color: '#3fb8ff' },
     scripts: [main],
-    novaZ: 30,
+    novaZ: 9,
     paint: (p, x, y, tx, ty) => {
       // círculos e raios de circuito em volta da máquina
       for (let py = 0; py < 16; py++) for (let px = 0; px < 32; px++) {

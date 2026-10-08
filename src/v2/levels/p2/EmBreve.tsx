@@ -48,7 +48,7 @@ export default function build(): Scene {
     spawn: { pos: [C[0], C[1] + 2], dir: [-1, -1] },
     bg: skyBg({ top: '#0a0c2a', mid: '#2c2a6e', bottom: '#9a72c0', stars: 110, islands: 4, cloud: '#6a5aa8', seed: 21, city: true }),
     scripts: [main],
-    novaZ: 30,
+    novaZ: 9,
     init: () => { RT.novaOn = true; if (!G().flags.nova) G().setFlag('nova') },
   }
 }

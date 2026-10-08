@@ -79,3 +79,30 @@ export function ringSprite(color: string, frame: number): Sprite {
     return spr(p, Math.round(c), Math.round(c))
   })
 }
+
+/** Cérebro em holograma (o “pensamento” da Language Engine). Para desenhar com brilho somado. */
+export function brainSprite(frame: number, color = '#3fc4ff'): Sprite {
+  const f = frame % 8
+  return memo(`brain:${color}:${f}`, () => {
+    const W = 44, H = 34, p = new Pix(W, H)
+    const c = hex(color), cl = hex(lighter(color, 0.55)), cd = hex(mix(color, '#0a1030', 0.55))
+    const inBrain = (x: number, y: number) => {
+      const u = (x + 0.5 - 22) / 19, v = (y + 0.5 - 14) / 11.5
+      const lobe = u * u + v * v <= 1
+      const cere = ((x + 0.5 - 30) / 7) ** 2 + ((y + 0.5 - 24) / 4.5) ** 2 <= 1 // cerebelo
+      return lobe || cere
+    }
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      if (!inBrain(x, y)) continue
+      const edge = !inBrain(x - 1, y) || !inBrain(x + 1, y) || !inBrain(x, y - 1) || !inBrain(x, y + 1)
+      // dobras: curvas senoidais
+      const fold = Math.abs(Math.sin(x * 0.42 + Math.sin(y * 0.6) * 1.6) * 3 - (y % 7) + 3) < 0.7 && y < 24
+      const split = Math.abs(y - (14 + Math.sin(x * 0.3) * 1.5)) < 0.6 && x > 6 && x < 34
+      const pulse = (x + y * 2 + f * 5) % 23 === 0
+      p.px(x, y, ((edge || pulse) ? cl : fold || split ? c : cd) & (edge ? 0xffffffff : 0xb0ffffff))
+    }
+    // tronco
+    p.rect(19, 25, 4, 8, cd); p.rect(20, 25, 1, 8, c)
+    return spr(p, 22, H - 1)
+  })
+}
