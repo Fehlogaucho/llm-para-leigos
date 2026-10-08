@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { G, useGame, type Line } from '../store'
 import { RT } from '../engine/runtime'
-import { VOICE } from '../engine/voice'
+import { VOICE, preloadLines } from '../engine/voice'
 import { SFX } from '../engine/audio'
 import { INPUT } from '../engine/input'
 import { Face, SPEAKERS } from './Icons'
@@ -18,6 +18,9 @@ export function Dialogue() {
   const full = line?.text || ''
   const typing = shown < full.length
 
+  // carrega as vozes gravadas das próximas falas
+  useEffect(() => { if (d) preloadLines(d.lines) }, [d?.lines])
+
   // nova fala
   useEffect(() => {
     if (!d || !line) { RT.novaTalking = 0; RT.nexTalking = 0; return }
@@ -30,13 +33,15 @@ export function Dialogue() {
     return () => { clearTimeout(st.current.timer) }
   }, [d?.lines, d?.i])
 
-  // máquina de escrever
+  // máquina de escrever (com voz gravada, no ritmo da fala e sem os bipes)
+  const dur = line && voiceOn ? VOICE.duration(full, line.who) : 0
   useEffect(() => {
     if (!d || !typing) return
+    const per = dur ? Math.max(14, Math.min(70, (dur * 820) / Math.max(1, full.length))) : 13
     const id = setTimeout(() => {
-      setShown((n) => Math.min(full.length, n + 2))
-      if (shown % 6 === 0) SFX.play(line?.who === 'NEX' ? 'nex' : 'talk')
-    }, 26)
+      setShown((n) => Math.min(full.length, n + 1))
+      if (!dur && shown % 6 === 0) SFX.play(line?.who === 'NEX' ? 'nex' : 'talk')
+    }, per)
     return () => clearTimeout(id)
   }, [d, shown, typing, full])
 

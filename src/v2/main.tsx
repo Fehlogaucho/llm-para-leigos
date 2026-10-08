@@ -15,12 +15,13 @@ import { RT, INTERACTS, FOCUS } from './engine/runtime'
 import { INPUT } from './engine/input'
 import { gotoLevel } from './engine/script'
 import { findPath } from './engine/world'
+import { VOICE } from './engine/voice'
 
 if (IS_TOUCH) document.documentElement.classList.add('touch')
 setTimeout(preloadFaces, 1500)
 // ganchos para testes automáticos
 ;(window as any).__pf = {
-  useGame, RT, INTERACTS, INPUT, FOCUS, gotoLevel,
+  useGame, RT, INTERACTS, INPUT, FOCUS, gotoLevel, VOICE,
   walkTo: (x: number, y: number) => { if (!RT.scene) return false; const p = findPath(RT.scene, [RT.player.x, RT.player.y], [x, y]); if (p) RT.path = p; return !!p },
 }
 

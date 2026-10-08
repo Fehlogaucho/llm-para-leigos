@@ -28,6 +28,14 @@ export function initAudio() {
   applyVolumes()
   useGame.subscribe((s, p) => { if (s.settings !== p.settings) applyVolumes() })
 }
+/** Saída para as vozes gravadas (sem eco, direto no volume geral). */
+let voiceGain: GainNode | null = null
+export function voiceOut(): { ctx: AudioContext; out: AudioNode } | null {
+  if (!ctx) return null
+  if (ctx.state === 'suspended') ctx.resume()
+  if (!voiceGain) { voiceGain = ctx.createGain(); voiceGain.gain.value = 1; voiceGain.connect(master) }
+  return { ctx, out: voiceGain }
+}
 function applyVolumes() {
   if (!ctx) return
   const st = G().settings

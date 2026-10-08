@@ -13,7 +13,8 @@ Há três versões no mesmo site:
 - Arte em `src/v2/art/`: `core.ts` (pisos, blocos, cilindros, brilhos, pinturas de parede), `person.ts` (NEX, NOVA, inventores, holograma, retratos), `sky.ts` (céus), `fx.ts` (portal, névoa, cristais).
 - Fases em `src/v2/levels/` (registro em `registry.ts`; cada fase exporta `build(): Scene`): `prologo/Quarto.tsx` (quarto + chat), `prologo/Prologo.tsx` (salão da Language Engine), `p1/Linha.tsx` (Linha do Tempo, 11 marcos ao longo de x; posições em `p1/layout.ts`, peças em `p1/art.ts`), `p1/Graos.tsx` (O Mistério dos Três Grãos: painéis e roteiros da vila), `p1/Doc.tsx`/`Games.tsx`/`Photo.tsx` (documentos, brincadeiras, imagens reais), `p2/EmBreve.tsx`.
 - Conteúdo em `src/v2/content/` (`stops.ts`, `photos.ts`, `codex.ts`) — cópias do conteúdo da 3D; mudanças de texto vão aqui.
-- Interface em `src/v2/ui/` (HUD, diálogo, menus, carregamento). Ganchos de teste em `window.__pf` (inclui `walkTo(x, y)`).
+- Interface em `src/v2/ui/` (HUD, diálogo, menus, carregamento). Ganchos de teste em `window.__pf` (inclui `walkTo(x, y)` e `VOICE`).
+- Vozes gravadas: `tools/voz/gerar_piper.py` lê as falas (`{ who, text }` e escolhas) dos arquivos passados, gera um mp3 por fala em `public/audio/voz/` (nome = hash FNV-1a de "QUEM|texto") e atualiza `index.json`. `src/v2/engine/voice.ts` toca o arquivo se existir; senão usa a voz do navegador. Timbre de cada personagem e pronúncias ficam no script. Hoje só o prólogo tem voz (Piper, voz pt-br-edresson-low, baixada do GitHub do Piper v0.0.2). Se mudar o texto de uma fala, gere de novo.
 
 ## Geral
 - Documentos de design em `docs/` (GDD Master v3, narrativa v2.1, produção da Fase 1) e guia técnico da 3D em `docs/AREA_GUIDE.md`.
