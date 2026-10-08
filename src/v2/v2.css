@@ -1,0 +1,20 @@
+/* Versão 2D em pixel art: a tela do jogo e retoques de interface. */
+.pixcv { position: fixed; left: 0; top: 0; image-rendering: pixelated; image-rendering: crisp-edges; touch-action: none; }
+.pxface { width: 100%; height: 100%; display: block; image-rendering: pixelated; object-fit: cover; }
+.title.px .hero { width: min(300px, 62vw); image-rendering: pixelated; display: block; margin: 0 auto 6px; filter: drop-shadow(0 6px 0 rgba(0,0,0,.35)); animation: heroBob 2.4s ease-in-out infinite; }
+@keyframes heroBob { 50% { transform: translateY(-6px); } }
+/* painéis com cara de pixel art: cantos menores e sombra dura */
+.dlg, .obj, .banner:not(.area), .sheet, .toast, .prompt .lbl { border-radius: 10px; box-shadow: 0 4px 0 rgba(0,0,0,.45); }
+.dlg .face { border-radius: 8px; }
+.dlg.ambient .face { border-radius: 6px; }
+/* tela do computador do quarto (prólogo) */
+.chat { position: absolute; left: 50%; top: calc(64px + var(--safe-t)); transform: translateX(-50%); width: min(560px, calc(100vw - 24px)); background: #0f1424; border: 3px solid #2a3046; border-radius: 6px; box-shadow: 0 0 0 3px #0a0c14, 0 0 40px rgba(80,140,255,.35); font-family: var(--f-body); overflow: hidden; pointer-events: none; }
+.chat .bar { display: flex; justify-content: space-between; padding: 8px 12px; background: #18213d; color: #9fe9ff; font-size: 14px; }
+.chat .bar span { color: #5a6a9a; font-weight: 700; }
+.chat .msgs { padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; min-height: 120px; }
+.chat .msg { max-width: 82%; padding: 8px 12px; border-radius: 12px; background: #232c4a; color: #eef3ff; font-size: 15px; line-height: 1.4; font-weight: 600; align-self: flex-start; }
+.chat .msg.me { background: #2f6bd8; align-self: flex-end; }
+.chat .input { padding: 10px 14px; background: #18213d; color: #5a6a9a; font-size: 13px; font-weight: 700; }
+.chat.glitch { animation: chatGlitch .12s steps(2) infinite; filter: drop-shadow(3px 0 0 rgba(255,60,90,.7)) drop-shadow(-3px 0 0 rgba(60,220,255,.7)); }
+@keyframes chatGlitch { 0% { transform: translate(-50%, 0); } 50% { transform: translate(calc(-50% + 6px), -3px) skewX(4deg); } 100% { transform: translate(calc(-50% - 5px), 2px); } }
+.touch .chat { top: calc(70px + var(--safe-t)); }

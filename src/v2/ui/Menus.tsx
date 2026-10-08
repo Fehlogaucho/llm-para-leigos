@@ -165,18 +165,17 @@ function Settings({ close }: { close: () => void }) {
       <div className="set-row"><label>Leitura em voz alta</label><div className="seg"><button className={s.voice ? 'on' : ''} onClick={() => set({ voice: true })}>Ligada</button><button className={!s.voice ? 'on' : ''} onClick={() => { set({ voice: false }); VOICE.stop() }}>Desligada</button></div></div>
       <div className="set-row"><label>Música</label><input type="range" min={0} max={1} step={0.05} value={s.music} onChange={(e) => set({ music: +e.target.value })} /></div>
       <div className="set-row"><label>Efeitos</label><input type="range" min={0} max={1} step={0.05} value={s.sfx} onChange={(e) => set({ sfx: +e.target.value })} /></div>
-      <div className="set-row"><label>Qualidade gráfica</label><div className="seg">{(['auto', 'low', 'high'] as const).map((q) => <button key={q} className={s.quality === q ? 'on' : ''} onClick={() => set({ quality: q })}>{q === 'auto' ? 'Automática' : q === 'low' ? 'Leve' : 'Alta'}</button>)}</div></div>
-      <div className="set-row"><label>Sensibilidade da câmera</label><input type="range" min={0.4} max={2} step={0.1} value={s.sens} onChange={(e) => set({ sens: +e.target.value })} /></div>
+      <div className="set-row"><label>Tamanho dos pixels</label><div className="seg">{(['grande', 'auto', 'pequeno'] as const).map((q) => <button key={q} className={s.pixel === q ? 'on' : ''} onClick={() => set({ pixel: q })}>{q === 'auto' ? 'Normal' : q === 'grande' ? 'Grandes' : 'Pequenos'}</button>)}</div></div>
       <div className="set-row" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 6 }}>
         <label>Como jogar</label>
         <div style={{ fontSize: 14, color: 'var(--muted)', lineHeight: 1.5 }}>
-          Celular: arraste o círculo para andar ou toque no chão; arraste a tela para girar a câmera; pinça para aproximar.<br />
-          Computador: WASD ou setas para andar, Shift para correr, arraste o mouse para girar, roda para aproximar, E para usar, clique no chão para ir até lá.
+          Celular: arraste o círculo para andar ou toque no chão onde quer ir; toque nos objetos com losango para usar.<br />
+          Computador: WASD ou setas para andar, Shift para correr, E para usar, clique no chão para ir até lá.
         </div>
       </div>
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 16 }}>
         <button className="btn" onClick={() => { close(); useGame.setState({ screen: 'title' }) }}>Tela inicial</button>
-        <a className="btn ghost" href="/" style={{ textDecoration: 'none' }}>Versão 2D (pixel art)</a>
+        <a className="btn ghost" href="/3d/" style={{ textDecoration: 'none' }}>Versão 3D</a>
         <a className="btn ghost" href="/classico/" style={{ textDecoration: 'none' }}>Versão clássica</a>
         {!confirm ? <button className="btn ghost" onClick={() => setConfirm(true)}>Recomeçar do zero</button> : <button className="btn" style={{ borderColor: '#ff7a7a' }} onClick={() => { G().resetProgress(); close(); useGame.setState({ screen: 'title' }) }}>Apagar progresso? Toque para confirmar</button>}
       </div>
