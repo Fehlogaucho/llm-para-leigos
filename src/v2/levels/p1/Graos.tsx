@@ -1,3 +1,4 @@
+import { useActivity } from '../../engine/metrics'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { G, useGame } from '../../store'
 import { SFX } from '../../engine/audio'
@@ -72,6 +73,7 @@ type Step = 'org' | 'same' | 'diff' | 'math' | 'pick' | 'sub' | 'rev'
 const FACTS: Record<string, string> = { BM: '[B] = [M] + 5', MF: '[M] + [F] = 7', M: '[M] = 4,25', B: '[B] = 9,25', F: '[F] = 2,75' }
 
 export function MesaView({ onDone }: { onDone: () => void }) {
+  useActivity('p1:graos-mesa')
   const [step, setStep] = useState<Step>('org')
   const [facts, setFacts] = useState<string[]>([])
   const addFact = (k: string) => setFacts((f) => (f.includes(k) ? f : [...f, k]))
@@ -334,6 +336,7 @@ function Rev({ done }: { done: () => void }) {
 
 /* ---------- cena 10: a balança ---------- */
 export function BalancaView({ onDone }: { onDone: () => void }) {
+  useActivity('p1:graos-balanca')
   const [hint, setHint] = useState(false)
   const q = useQuiz(1, () => {})
   return (

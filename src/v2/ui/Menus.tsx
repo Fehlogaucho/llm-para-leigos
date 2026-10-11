@@ -1,3 +1,5 @@
+import { PilotSettings, PilotTest } from './Pilot'
+import { METRICS } from '../engine/metrics'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { G, useGame, type Cat } from '../store'
 import { CODEX_LIST, CAT_INFO, type CodexEntry } from '../content/codex'
@@ -47,7 +49,7 @@ function Codex({ close }: { close: () => void }) {
             {list.map((x) => {
               const lv = codex[x.id] || 0
               return (
-                <button key={x.id} className={'cx-item' + (sel === x.id ? ' on' : '') + (lv ? '' : ' locked')} onClick={() => lv && setSel(x.id)} disabled={!lv}>
+                <button key={x.id} className={'cx-item' + (sel === x.id ? ' on' : '') + (lv ? '' : ' locked')} onClick={() => { if (lv) { setSel(x.id); METRICS.codexEntry(x.id) } }} disabled={!lv}>
                   <span className="ic" style={{ background: CAT_INFO[x.cat].color }} />
                   <span><div className="nm">{lv ? x.title : '???'}</div><div className="ar">{x.area}</div></span>
                 </button>
@@ -166,9 +168,14 @@ function Settings({ close }: { close: () => void }) {
     <>
       <div className="head"><h2>Menu</h2><button className="icon-btn close" onClick={close} aria-label="Fechar">{Ico.close}</button></div>
       <div className="set-row"><label>Leitura em voz alta</label><div className="seg"><button className={s.voice ? 'on' : ''} onClick={() => set({ voice: true })}>Ligada</button><button className={!s.voice ? 'on' : ''} onClick={() => { set({ voice: false }); VOICE.stop() }}>Desligada</button></div></div>
+      <div className="set-row"><label>Volume da voz</label><input type="range" min={0} max={1} step={0.05} value={s.voiceVol ?? 1} onChange={(e) => set({ voiceVol: +e.target.value })} aria-label="Volume da voz" /></div>
       <div className="set-row"><label>Música</label><input type="range" min={0} max={1} step={0.05} value={s.music} onChange={(e) => set({ music: +e.target.value })} /></div>
       <div className="set-row"><label>Efeitos</label><input type="range" min={0} max={1} step={0.05} value={s.sfx} onChange={(e) => set({ sfx: +e.target.value })} /></div>
+      <div className="set-row"><label>Tamanho do texto</label><div className="seg">{(['normal', 'grande', 'maior'] as const).map((q) => <button key={q} className={s.text === q ? 'on' : ''} onClick={() => set({ text: q })}>{q === 'normal' ? 'Normal' : q === 'grande' ? 'Grande' : 'Maior'}</button>)}</div></div>
+      <div className="set-row"><label>Movimento</label><div className="seg"><button className={!s.reduced ? 'on' : ''} onClick={() => set({ reduced: false })}>Normal</button><button className={s.reduced ? 'on' : ''} onClick={() => set({ reduced: true })}>Reduzido</button></div></div>
+      <div className="set-row"><label>Contraste</label><div className="seg"><button className={!s.contrast ? 'on' : ''} onClick={() => set({ contrast: false })}>Normal</button><button className={s.contrast ? 'on' : ''} onClick={() => set({ contrast: true })}>Alto</button></div></div>
       <div className="set-row"><label>Tamanho dos pixels</label><div className="seg">{(['grande', 'auto', 'pequeno'] as const).map((q) => <button key={q} className={s.pixel === q ? 'on' : ''} onClick={() => set({ pixel: q })}>{q === 'auto' ? 'Normal' : q === 'grande' ? 'Grandes' : 'Pequenos'}</button>)}</div></div>
+      <PilotSettings on={!!s.pilot} set={(v) => set({ pilot: v })} open={(k) => { useGame.setState({ menu: null }); G().setOverlay('pilot', <PilotTest kind={k} onDone={() => G().setOverlay('pilot', null)} />) }} />
       <div className="set-row" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 6 }}>
         <label>Como jogar</label>
         <div style={{ fontSize: 14, color: 'var(--muted)', lineHeight: 1.5 }}>

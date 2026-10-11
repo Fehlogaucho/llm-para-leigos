@@ -308,7 +308,8 @@ export function GameView() {
       sc.bg(ctx, W, H, RT.time, { x: cam.x, y: cam.y })
       const zoom = cam.zoom
       const c0 = iso(cam.x, cam.y, cam.h)
-      const shx = cam.shake ? (Math.random() - 0.5) * cam.shake * 8 : 0, shy = cam.shake ? (Math.random() - 0.5) * cam.shake * 6 : 0
+      const shk = G().settings.reduced ? 0 : cam.shake
+      const shx = shk ? (Math.random() - 0.5) * shk * 8 : 0, shy = shk ? (Math.random() - 0.5) * shk * 6 : 0
       const ox = Math.round(W / 2 - Math.round(c0.sx) * zoom + shx), oy = Math.round(H / 2 - Math.round(c0.sy) * zoom + shy)
       ctx.setTransform(zoom, 0, 0, zoom, ox, oy)
       // vista visível em pixels do mundo

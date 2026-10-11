@@ -1,10 +1,11 @@
+import { METRICS, useActivity } from '../../engine/metrics'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { SFX } from '../../engine/audio'
 import { VOICE } from '../../engine/voice'
 import { G } from '../../store'
 import { MINI, lmTokenize, softmax, pct, LM_BOS, LM_EOS, LM_UNK } from '../../content/llm'
-import { SpeakerChip } from '../p2/games'
-import { SENTS, NAMES, babyName, chosenMask, chosen, memOf, hasWrong, LAB, buildModel, trainModel, EXAM, PREFS } from './lab'
+import { SpeakerChip, ScrollHere } from '../p2/games'
+import { SENTS, NAMES, babyName, chosenMask, chosen, memOf, hasWrong, LAB, buildModel, trainModel, EXAM, EXAM_PASS, PREFS } from './lab'
 
 /* =========================================================
    As estações do Laboratório (Fase 3): escolher os dados,
@@ -48,7 +49,7 @@ function Dados({ win, won }: P) {
     if (n < 6) { SFX.play('error'); setMsg('Escolha pelo menos 6 frases. Com pouco texto, a LLM aprende pouco.'); return }
     setF('p3_mask', mask)
     SFX.play('success')
-    win(<>{babyName()} vai estudar <b>{n} frases</b>. Uma LLM só sabe o que estava nos <b>dados de treino</b>: as grandes leem trilhões de palavras de livros, sites e conversas.{hasWrong(mask) ? <> Você incluiu uma <b>frase errada</b>… vamos ver o que acontece!</> : <> E sem frases erradas: ótimo!</>}</>)
+    win(<>{babyName()} vai estudar <b>{n} frases</b>. Uma LLM aprende os padrões dos <b>dados de treino</b>, certos ou errados: as grandes leem trilhões de palavras de livros, sites e conversas.{hasWrong(mask) ? <> Você incluiu uma <b>frase errada</b>… vamos ver o que acontece!</> : <> E sem frases erradas: ótimo!</>}</>)
   }
   return (
     <>
@@ -80,7 +81,7 @@ function Tokens3({ win, won }: P) {
   const pairs = sents.reduce((a, s) => a + lmTokenize(s).length + 1, 0)
   const [mem, setMem] = useState<number | null>(null)
   const pick = (k: number) => { if (won) return; SFX.play('bead'); setMem(k) }
-  useEffect(() => { if (mem && !won) { setF('p3_mem', mem); win(<>Vocabulário pronto: <b>{vocab.length} tokens</b> e <b>{pairs} exemplos</b> de “começo → próxima palavra”. A memória (a <b>janela de contexto</b>) ficou em <b>{mem} token{mem > 1 ? 's' : ''}</b>. As LLMs de verdade olham milhares!</>) } }, [mem])
+  useEffect(() => { if (mem && !won) { setF('p3_mem', mem); win(<>Vocabulário pronto: <b>{vocab.length} tokens</b> e <b>{pairs} exemplos</b> de “começo → próxima palavra”. A memória (a <b>janela de contexto</b>) ficou em <b>{mem} token{mem > 1 ? 's' : ''}</b>. As LLMs de verdade olham milhares de tokens, às vezes centenas de milhares!</>) } }, [mem])
   return (
     <>
       <p className="lead">O vocabulário de {babyName()}: cada token novo ganha um número (ID). <b>⟨início⟩</b> e <b>⟨fim⟩</b> marcam onde a frase começa e termina.</p>
@@ -99,8 +100,10 @@ function Tokens3({ win, won }: P) {
 }
 
 /* ---------- 3. Forja de treino ---------- */
+const GUESS_LOSS = ['Vai cair', 'Vai subir', 'Vai ficar igual']
 function Forja({ win, won }: P) {
   const [, force] = useState(0)
+  const [guess, setGuess] = useState<number | null>(() => (G().flags.p3_ep ? 0 : null))
   const busy = useRef(0)
   // a LLM nasce aqui, com as frases e a memória escolhidas (pesos aleatórios)
   useState(() => { if (!G().flags.p3_ep || !LAB.model) buildModel() })
@@ -120,10 +123,22 @@ function Forja({ win, won }: P) {
     busy.current = requestAnimationFrame(step)
   }
   useEffect(() => () => cancelAnimationFrame(busy.current), [])
-  useEffect(() => { if (!won && ep >= 30 && !busy.current) win(<>Depois de <b>{ep} épocas</b>, o erro caiu de <b>{LAB.losses[0].toFixed(2).replace('.', ',')}</b> para <b>{loss.toFixed(2).replace('.', ',')}</b>. A cada exemplo, {babyName()} chutou a próxima palavra, mediu o erro (a <b>perda</b>) e ajustou os {m.params} pesos um pouquinho. Ninguém escreveu as regras!</>) }, [ep, busy.current])
+  useEffect(() => { if (!won && ep >= 30 && !busy.current) win(<>Depois de <b>{ep} épocas</b>, o erro caiu de <b>{LAB.losses[0].toFixed(2).replace('.', ',')}</b> para <b>{loss.toFixed(2).replace('.', ',')}</b>{guess !== null && guess !== 0 ? <> (seu palpite foi “{GUESS_LOSS[guess].toLowerCase()}”)</> : guess === 0 ? <>, como você previu</> : null}. A cada exemplo, {babyName()} chutou a próxima palavra, mediu o erro (a <b>perda</b>) e ajustou os {m.params} pesos um pouquinho. Ninguém escreveu as regras! Mas atenção: o erro costuma cair com sobe-e-desce, e erro baixo nos exemplos do treino não prova que ela aprendeu. Pode ser decoreba: a Sala de Teste vai mostrar.</>) }, [ep, busy.current])
   return (
     <>
       <p className="lead">{babyName()} tem <b>{m.V} tokens</b> no vocabulário, <b>{m.pairs.length} exemplos</b> para estudar e <b>{m.params} pesos</b> (memória de {m.win}: embeddings de 3 números → 12 neurônios → uma chance para cada token). Treine pelo menos 30 épocas.</p>
+      <div className="card ficha">
+        <b>📋 Ficha técnica</b>
+        <div className="fx"><span>{babyName()}</span><span>{m.V} tokens · {m.params} pesos · {m.pairs.length} exemplos · memória de {m.win}</span></div>
+        <div className="fx"><span>Uma LLM moderna</span><span>dezenas de milhares de tokens · bilhões de pesos · trilhões de tokens de treino · milhares de tokens de memória</span></div>
+        <div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--muted)', marginTop: 4 }}>A sua é uma mini-rede neural de verdade, mas sem atenção e sem camadas empilhadas. Serve para ver as ideias funcionando, não para competir com as grandes.</div>
+      </div>
+      {guess === null && (
+        <div className="card" style={{ marginTop: 8 }}>
+          <div style={{ fontWeight: 900, marginBottom: 6 }}>Palpite: o que vai acontecer com o erro quando {babyName()} treinar?</div>
+          <div className="row" style={{ gap: 6 }}>{GUESS_LOSS.map((o, i) => <button key={o} className="chipbtn" style={{ padding: '0 12px', fontSize: 14 }} onClick={() => { SFX.play('click'); setGuess(i) }}>{o}</button>)}</div>
+        </div>
+      )}
       <div className="row" style={{ alignItems: 'stretch', gap: 10 }}>
         <div className="card" style={{ flex: '1 1 240px' }}>
           <div style={{ fontWeight: 900, fontSize: 13, color: 'var(--muted)' }}>ERRO DO TREINO (PERDA)</div>
@@ -135,7 +150,7 @@ function Forja({ win, won }: P) {
           <Bars items={top} hi="Brasília" />
         </div>
       </div>
-      {!won && <div className="foot"><button className="btn" onClick={() => run(10)} disabled={!!busy.current}>Treinar 10 épocas</button><button className="btn primary" onClick={() => run(50)} disabled={!!busy.current}>Treinar 50 épocas</button></div>}
+      {!won && <div className="foot"><button className="btn" onClick={() => run(10)} disabled={!!busy.current || guess === null}>Treinar 10 épocas</button><button className="btn primary" onClick={() => run(50)} disabled={!!busy.current || guess === null}>Treinar 50 épocas</button></div>}
       {won && ep < 300 && <div className="foot"><button className="btn small ghost" onClick={() => run(50)}>Continuar treinando (+50)</button></div>}
     </>
   )
@@ -161,7 +176,25 @@ function Teste({ win, won }: P) {
   const isBR = txt.trim() === STARTS[0]
   const brTop = isBR ? top[0]?.t : null
   useEffect(() => { if (isBR && stage >= 6 && brTop === 'Brasília') setOkBR(true) }, [isBR, stage, brTop])
-  useEffect(() => { if (okBR && !won) win(<>{babyName()} respondeu <b>Brasília</b>! Você viu os 7 passos de uma LLM de verdade: <b>tokens → IDs → memória → embeddings → neurônios → chances → escolha</b>. A sua é minúscula; as grandes têm bilhões de pesos e milhares de tokens de memória.</>) }, [okBR])
+  const [gGuess, setGGuess] = useState<number | null>(null)
+  const [gAns, setGAns] = useState<number | null>(null)
+  const sents = chosen()
+  const GEN = [
+    { s: 'A capital da França é', want: 'Paris' },
+    { s: 'A Itália fica na', want: 'Europa' },
+    { s: 'A capital da Espanha é', want: 'Madri' },
+  ].map((g) => {
+    const t = m.top(lmTokenize(g.s), 1)[0]
+    const seen = sents.some((x) => x.startsWith(g.s + ' '))
+    const unk = lmTokenize(g.s).filter((w) => m.id(w) === 2)
+    return { ...g, got: t?.t || '?', p: t?.p || 0, seen, unk }
+  })
+  const esp = GEN[2]
+  const pickGen = (i: number) => {
+    if (gAns === 1 || won) return
+    setGAns(i); SFX.play(i === 1 ? 'success' : 'error')
+    if (i === 1) win(<>{babyName()} acertou <b>Brasília</b> e passou pelos 7 passos: <b>tokens → IDs → memória → embeddings → neurônios → chances → escolha</b>. Mas, para “Espanha”, uma palavra que nunca leu, respondeu <b>“{esp.got}”</b> com {pct(esp.p)} de chance. Frase fluente, confiante e errada: uma <b>alucinação</b>. Por isso se testa com exemplos novos: é assim que se vê se uma LLM <b>generaliza</b> ou só decorou. As grandes erram bem menos, mas também erram assim.</>)
+  }
   const retrain = (opts: { mem?: number; noWrong?: boolean }) => {
     SFX.play('whoosh')
     let mask = chosenMask()
@@ -206,12 +239,51 @@ function Teste({ win, won }: P) {
           </>}
         </div>
       )}
-      {!won && <div className="foot"><button className="btn primary" onClick={() => { SFX.play('click'); setStage(Math.min(6, stage + 1)) }} disabled={stage >= 6}>{stage < 6 ? `Passo ${stage + 2}: ${STAGES[stage + 1]} ▸` : 'Teste “A capital do Brasil é”'}</button></div>}
+      {okBR && (
+        <div className="card" style={{ marginTop: 8, borderColor: 'var(--gold)' }}>
+          <ScrollHere />
+          <div style={{ fontWeight: 900 }}>✓ Brasília! Agora, o teste de verdade: frases que {babyName()} talvez nunca tenha lido.</div>
+          {gGuess === null ? (
+            <>
+              <div style={{ fontWeight: 800, fontSize: 14, margin: '6px 0' }}>Palpite: ela vai acertar frases novas?</div>
+              <div className="row" style={{ gap: 6, justifyContent: 'flex-start' }}>{['Sim, todas', 'Algumas sim, outras não', 'Nenhuma'].map((o, i) => <button key={o} className="chipbtn" style={{ padding: '0 12px', fontSize: 14 }} onClick={() => { SFX.play('click'); setGGuess(i) }}>{o}</button>)}</div>
+            </>
+          ) : (
+            <>
+              <div style={{ display: 'grid', gap: 6, marginTop: 8 }}>
+                {GEN.map((g) => {
+                  const ok = g.got === g.want
+                  return (
+                    <div key={g.s} className="gen">
+                      <span className="tag2" style={{ color: g.seen ? '#7ef0a0' : '#ffb35a' }}>{g.seen ? '📗 VISTA NO TREINO' : g.unk.length ? '📕 PALAVRA NUNCA VISTA' : '📙 FRASE NOVA'}</span>
+                      <span style={{ fontWeight: 800 }}>{g.s} <b style={{ color: ok ? 'var(--green)' : '#ff9a8a' }}>{g.got} {ok ? '✓' : '✗'}</b> <small className="mono">({pct(g.p)})</small></span>
+                      {!ok && <small style={{ color: 'var(--muted)', fontWeight: 700 }}>O certo seria “{g.want}”.{g.unk.length ? ` “${g.unk.join(', ')}” virou ⟨?⟩: ela nunca leu essa palavra.` : ''}</small>}
+                    </div>
+                  )
+                })}
+              </div>
+              <ScrollHere />
+              <div style={{ fontWeight: 900, margin: '10px 0 6px' }}>O que esse teste mostra?</div>
+              <div style={{ display: 'grid', gap: 6 }}>
+                {['Que ela entende o mundo, já que acertou o Brasil', 'Que ela vai bem no que parece com o treino e pode errar com confiança no que é novo', 'Que ela nunca erra'].map((o, i) => <button key={i} className={'opt' + (gAns === i ? (i === 1 ? ' right' : ' wrong') : '')} style={{ margin: 0 }} onClick={() => pickGen(i)}>{gAns === i ? (i === 1 ? '✓ ' : '✗ ') : ''}{o}</button>)}
+              </div>
+              {gAns !== null && gAns !== 1 && <div className="bad">✗ Olhe a frase da Espanha: ela respondeu com confiança uma coisa que nunca leu. Acertar o que já viu não prova entendimento.</div>}
+            </>
+          )}
+        </div>
+      )}
+      {!won && !okBR && <div className="foot"><button className="btn primary" onClick={() => { SFX.play('click'); setStage(Math.min(6, stage + 1)) }} disabled={stage >= 6}>{stage < 6 ? `Passo ${stage + 2}: ${STAGES[stage + 1]} ▸` : 'Teste “A capital do Brasil é”'}</button></div>}
     </>
   )
 }
 
-/* ---------- 5a. Prompt × ajuste fino ---------- */
+/* ---------- 5a. Prompt × ajuste fino (e RAG) ---------- */
+const TECH = ['Prompt', 'RAG', 'Ajuste fino']
+const CASES = [
+  { q: 'A LLM precisa responder sobre o regulamento novo da sua faculdade, que muda todo semestre.', a: 1, why: 'Isso: o RAG busca o documento atual e põe no contexto, sem treinar de novo.', no: ['Dá para colar o regulamento no prompt, mas ele muda todo semestre: melhor um buscador que traga sempre o documento atual (RAG).', '', 'Treinar de novo a cada semestre seria caro, e a LLM ainda poderia misturar regras velhas e novas.'] },
+  { q: 'Só nesta conversa, você quer que ela responda como um pirata.', a: 0, why: 'Isso: uma instrução no prompt basta e vale só para esta conversa.', no: ['', 'Não precisa buscar documento nenhum: é só um pedido de estilo para esta conversa.', 'Treinar mudaria a LLM para todo mundo, para sempre. Exagero para uma conversa!'] },
+  { q: 'Uma empresa quer que a LLM escreva sempre no estilo dos seus documentos, em milhares de conversas.', a: 2, why: 'Isso: treinar com exemplos muda os pesos e vale para todas as conversas (com risco de efeitos colaterais).', no: ['Daria para pedir no prompt toda vez, mas em milhares de conversas o ajuste fino deixa o estilo fixo na própria LLM.', 'O RAG traz informação, mas não muda o jeito de escrever da LLM em todas as conversas.', ''] },
+]
 function Ajuste({ win, won }: P) {
   const base = useRef(MINI.pretrained())
   const [W, setW] = useState(() => MINI.copy(base.current))
@@ -227,7 +299,9 @@ function Ajuste({ win, won }: P) {
   const fine = () => { if (won) return; SFX.play('bead'); const w = MINI.copy(W); MINI.step(w, MINI.K[0].x, SP, 0.7); setW(w); setSteps(steps + 1); if (MINI.probs(w, MINI.K[0].x)[SP] > 0.5) setTried((t) => ({ ...t, f: true })) }
   const undo = () => { SFX.play('click'); setW(MINI.copy(base.current)); setSteps(0) }
   useEffect(() => { if (prompt) setTried((t) => ({ ...t, p: true })) }, [prompt])
-  useEffect(() => { if (tried.p && tried.f && !won) win(<>O <b>prompt</b> mudou a resposta sem mexer em nenhum peso: ele só vale para aquela conversa. O <b>ajuste fino</b> treinou de novo e mudou os pesos, a própria LLM. E veja o efeito colateral: até a pergunta da França ficou um pouco mais “São Paulo”.</>) }, [tried])
+  const [cls, setCls] = useState<(number | null)[]>([null, null, null])
+  const okCls = CASES.every((c, i) => cls[i] === c.a)
+  useEffect(() => { if (tried.p && tried.f && okCls && !won) win(<>O <b>prompt</b> mudou a resposta sem mexer em nenhum peso: vale só para aquela conversa. O <b>RAG</b> também só muda o contexto, trazendo documentos. O <b>ajuste fino</b> treinou de novo e mudou os pesos, a própria LLM, com efeito colateral: até a pergunta da França ficou um pouco mais “São Paulo”. Quanto mais passos e piores os exemplos, maior o risco.</>) }, [tried, okCls])
   return (
     <>
       <p className="lead">Uma LLM grande, já treinada, responde <b>Brasília</b>. Num jogo de faz de conta, queremos que ela diga <b>São Paulo</b>. Experimente os dois jeitos.</p>
@@ -256,7 +330,23 @@ function Ajuste({ win, won }: P) {
       <div style={{ fontWeight: 800, fontSize: 13.5, display: 'grid', gap: 2 }}>
         <span style={{ color: tried.p ? 'var(--green)' : undefined }}>{tried.p ? '✓' : '○'} Testar o prompt</span>
         <span style={{ color: tried.f ? 'var(--green)' : undefined }}>{tried.f ? '✓' : '○'} Fazer o ajuste fino até São Paulo passar de 50%</span>
+        <span style={{ color: okCls ? 'var(--green)' : undefined }}>{okCls ? '✓' : '○'} Escolher a técnica certa para cada situação</span>
       </div>
+      {tried.p && tried.f && (
+        <div className="card" style={{ marginTop: 10 }}>
+          <ScrollHere />
+          <div style={{ fontWeight: 900, marginBottom: 6 }}>Qual técnica usar? Prompt, RAG ou ajuste fino?</div>
+          {CASES.map((c, i) => (
+            <div key={i} style={{ marginBottom: 10 }}>
+              <div style={{ fontWeight: 800, fontSize: 14 }}>{i + 1}. {c.q}</div>
+              <div className="row" style={{ gap: 6, justifyContent: 'flex-start', marginTop: 4 }}>
+                {TECH.map((t, k) => <button key={t} className={'chipbtn' + (cls[i] === k ? ' on' : '')} style={{ padding: '0 12px', fontSize: 14, borderColor: cls[i] === k ? (k === c.a ? 'var(--green)' : '#ff9a8a') : undefined }} onClick={() => { if (cls[i] === c.a) return; SFX.play(k === c.a ? 'success' : 'error'); setCls((x) => x.map((v, j) => (j === i ? k : v))) }}>{cls[i] === k ? (k === c.a ? '✓ ' : '✗ ') : ''}{t}</button>)}
+              </div>
+              {cls[i] !== null && <div style={{ fontSize: 13, fontWeight: 700, marginTop: 3, color: cls[i] === c.a ? 'var(--green)' : '#ff9a8a' }}>{cls[i] === c.a ? c.why : c.no[cls[i]!]}</div>}
+            </div>
+          ))}
+        </div>
+      )}
     </>
   )
 }
@@ -278,7 +368,7 @@ function Prefs({ win, won }: P) {
       <p className="lead">{babyName()} escreveu duas respostas. Qual é a melhor? <span className="chip" style={{ color: 'var(--gold-2)', marginLeft: 6 }}>{k + 1} DE 3</span></p>
       <div className="card"><b>Pergunta:</b> {P1.q}</div>
       <div style={{ display: 'grid', gap: 8, marginTop: 8 }}>
-        {[P1.a, P1.b].map((t, i) => <button key={i} className={'opt' + (pick === i ? (i === P1.best ? ' right' : ' wrong') : '')} style={{ margin: 0 }} onClick={() => choose(i)}>{i === 0 ? '🅰' : '🅱'} {t}</button>)}
+        {[P1.a, P1.b].map((t, i) => <button key={i} className={'opt' + (pick === i ? (i === P1.best ? ' right' : ' wrong') : '')} style={{ margin: 0 }} onClick={() => choose(i)}>{pick === i ? (i === P1.best ? '✓ ' : '✗ ') : ''}{i === 0 ? '🅰' : '🅱'} {t}</button>)}
       </div>
       {pick !== null && <div className={pick === P1.best ? 'ok' : 'bad'} style={{ textAlign: 'left' }}>{pick === P1.best ? '👍 ' + P1.why : 'Hum… será? Pense: essa resposta é verdadeira, útil e segura?'}</div>}
       {pick !== null && !won && <div className="foot"><button className="btn primary" onClick={next}>{pick !== P1.best ? 'Tentar de novo' : k < PREFS.length - 1 ? 'Próxima ▸' : 'Concluir ▸'}</button></div>}
@@ -293,14 +383,15 @@ function Prova({ win, won }: P) {
   const [show, setShow] = useState<number | null>(null)
   const done = k >= EXAM.length
   const score = ans.filter((a, i) => a === EXAM[i].a).length
-  useEffect(() => { if (done && score >= 7 && !won) { setF('p3_nota', score); win(<>Você acertou <b>{score} de 10</b>! {babyName()} está formada, e você também: agora sabe como uma LLM funciona do começo ao fim.</>) } }, [done])
+  useEffect(() => { if (done) METRICS.exam(ans, EXAM.map((q) => q.a), EXAM.map((_, i) => 'q' + (i + 1))) }, [done])
+  useEffect(() => { if (done && score >= EXAM_PASS && !won) { setF('p3_nota', score); win(<>Você acertou <b>{score} de {EXAM.length}</b>! {babyName()} está formada, e você também: agora sabe como uma LLM funciona do começo ao fim.</>) } }, [done])
   if (done) {
     return (
       <>
-        <div className="stat" style={{ fontSize: 26 }}>{score} / 10</div>
-        {score < 7 && <p className="lead" style={{ textAlign: 'center' }}>Quase! Precisa de 7 acertos. Veja as explicações e tente de novo.</p>}
+        <div className="stat" style={{ fontSize: 26 }}>{score} / {EXAM.length}</div>
+        {score < EXAM_PASS && <p className="lead" style={{ textAlign: 'center' }}>Quase! Precisa de {EXAM_PASS} acertos. Veja as explicações e tente de novo.</p>}
         <div style={{ display: 'grid', gap: 5 }}>{EXAM.map((q, i) => <div key={i} className="card" style={{ padding: '6px 10px', fontSize: 13.5, fontWeight: 700, borderColor: ans[i] === q.a ? 'rgba(79,209,139,.5)' : 'rgba(255,122,122,.5)' }}>{ans[i] === q.a ? '✓' : '✗'} {q.q} <span style={{ color: 'var(--muted)' }}>{q.why}</span></div>)}</div>
-        {score < 7 && <div className="foot"><button className="btn primary" onClick={() => { setK(0); setAns([]); setShow(null) }}>Tentar de novo</button></div>}
+        {score < EXAM_PASS && <div className="foot"><button className="btn primary" onClick={() => { setK(0); setAns([]); setShow(null) }}>Tentar de novo</button></div>}
       </>
     )
   }
@@ -310,8 +401,8 @@ function Prova({ win, won }: P) {
     <>
       <div style={{ display: 'flex', gap: 3, margin: '0 0 10px' }}>{EXAM.map((_, i) => <i key={i} style={{ flex: 1, height: 6, borderRadius: 3, background: i < ans.length ? (ans[i] === EXAM[i].a ? 'var(--green)' : '#ff7a7a') : i === k ? 'var(--gold)' : 'rgba(255,255,255,.12)' }} />)}</div>
       <p className="lead">{k + 1}. {Q.q}</p>
-      {Q.o.map((o, i) => <button key={i} className={'opt' + (show !== null && i === Q.a ? ' right' : '') + (show === i && i !== Q.a ? ' wrong' : '')} onClick={() => pick(i)}>{o}</button>)}
-      {show !== null && <div className={show === Q.a ? 'ok' : 'bad'} style={{ textAlign: 'left' }}>{Q.why}</div>}
+      {Q.o.map((o, i) => <button key={i} className={'opt' + (show !== null && i === Q.a ? ' right' : '') + (show === i && i !== Q.a ? ' wrong' : '')} onClick={() => pick(i)}>{show !== null && i === Q.a ? '✓ ' : show === i ? '✗ ' : ''}{o}</button>)}
+      {show !== null && <div className={show === Q.a ? 'ok' : 'bad'} style={{ textAlign: 'left' }}>{show === Q.a ? '✓ ' : '✗ '}{Q.why}</div>}
       {show !== null && <div className="foot"><button className="btn primary" onClick={() => { SFX.play('click'); setShow(null); setK(k + 1) }}>{k < EXAM.length - 1 ? 'Próxima ▸' : 'Ver a nota ▸'}</button></div>}
     </>
   )
@@ -333,16 +424,17 @@ export function NameView({ onDone }: { onDone: () => void }) {
 }
 /** Diploma (fim da formatura). */
 export function DiplomaView({ onDone }: { onDone: () => void }) {
-  const nota = G().flags.p3_nota || 7
+  const nota = G().flags.p3_nota || EXAM_PASS
   useEffect(() => { VOICE.speak(`Diploma de LLM. ${babyName()} se formou com ${nota} acertos.`, 'NOVA') }, [])
   return (
     <div className="doc-wrap" onPointerDown={(e) => e.stopPropagation()}>
       <div className="doc" style={{ textAlign: 'center' }}>
         <div className="meta">LABORATÓRIO DA LANGUAGE ENGINE</div>
         <h2 style={{ fontSize: 'clamp(22px, 6vw, 32px)' }}>🎓 Diploma de LLM</h2>
-        <p style={{ fontSize: 16 }}>Certificamos que <b style={{ color: '#8a5a1a' }}>{babyName()}</b> leu os dados, aprendeu seus pesos, passou nos testes e se formou com <b>{nota} acertos em 10</b>, treinada por <b>NEX</b> e por você.</p>
+        <p style={{ fontSize: 16 }}>Certificamos que <b style={{ color: '#8a5a1a' }}>{babyName()}</b> leu os dados, aprendeu seus pesos, passou nos testes e se formou com <b>{nota} acertos em {EXAM.length}</b>, treinada por <b>NEX</b> e por você.</p>
         <div style={{ fontSize: 44, margin: '6px 0' }}>🏆</div>
-        <p style={{ fontSize: 14 }}>Tokens · IDs · memória · embeddings · neurônios · chances · escolha · treino · ajuste · alinhamento</p>
+        <p style={{ fontSize: 14 }}>Tokens · IDs · memória · embeddings · neurônios · chances · escolha · treino · teste · ajuste · alinhamento</p>
+        <p style={{ fontSize: 12.5, color: '#7a5a32' }}>Uma mini-rede neural de {LAB.model?.params ?? 'algumas centenas de'} pesos, treinada no seu navegador.</p>
         <div className="nav" style={{ justifyContent: 'center' }}><button className="btn primary" onClick={() => { VOICE.stop(); onDone() }}>Que orgulho! ▸</button></div>
       </div>
     </div>
@@ -363,7 +455,8 @@ export function P3GameView({ game, onDone }: { game: string; onDone: () => void 
   const okRef = useRef<HTMLDivElement>(null)
   useEffect(() => { if (msg) setTimeout(() => okRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }), 60) }, [msg])
   const G1 = P3GAMES[game]
-  const win = (m: ReactNode) => { if (!msg) { setMsg(m); SFX.play('discover') } }
+  useActivity('p3:' + game)
+  const win = (m: ReactNode) => { if (!msg) { setMsg(m); SFX.play('discover'); METRICS.done('p3:' + game) } }
   return (
     <div className="doc-wrap" onPointerDown={(e) => e.stopPropagation()}>
       <div className="gm">

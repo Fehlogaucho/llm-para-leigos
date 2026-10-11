@@ -1,3 +1,5 @@
+import { PilotTest } from '../../ui/Pilot'
+import { METRICS } from '../../engine/metrics'
 import { useEffect, useRef, useState } from 'react'
 import { Pix, hex, hash2, darker, lighter, mix } from '../../engine/pix'
 import { box, boxPix, spr, memo, wallDecal, glow, cyl, OUT } from '../../art/core'
@@ -230,7 +232,7 @@ async function main(c: Ctx) {
     { pos: [3.6, 3.2], zoom: 1, h: 16, dur: 3.2 },
   ])
   c.freeze(false)
-  FX.flash = 1; SFX.play('stone')
+  FX.flash = G().settings.reduced ? 0 : 1; SFX.play('stone')
   emoteNex('!', 1)
   await c.say([
     { who: 'NEX', text: 'Que tempestade… Sem chance de sair hoje.' },
@@ -265,7 +267,7 @@ async function main(c: Ctx) {
   const ans = c.flag('q_ask2') ? 'Não exatamente. Por dentro, eu funciono prevendo a próxima palavra, uma de cada vez, usando' : 'Boa pergunta! Por dentro, eu funciono prevendo a próxima palavra, uma de cada vez, usando'
   await typeOn(c, false, ans, 30, ans.length - 8)
   // o raio
-  FX.flash = 1.4; SFX.play('stone'); SFX.play('whoosh')
+  FX.flash = G().settings.reduced ? 0 : 1.4; SFX.play('stone'); SFX.play('whoosh')
   FX.glitch = 1; FX.sparks = true; FX.v++
   RT.cam.shake = 1
   SFX.play('error')
@@ -309,8 +311,9 @@ const MODE = { fim: false }
 async function epilogue(c: Ctx) {
   resetFX()
   const nome = babyName()
-  const old = 'Boa pergunta! Por dentro, eu funciono prevendo a próxima palavra, uma de cada vez, usando'
-  FX.msgs = [{ me: false, text: 'Oi, NEX! Eu sou a Language Engine, uma IA de linguagem. Pergunte o que quiser.' }, { me: true, text: 'Como você funciona?' }]
+  const ask2 = !!c.flag('q_ask2')
+  const old = ask2 ? 'Não exatamente. Por dentro, eu funciono prevendo a próxima palavra, uma de cada vez, usando' : 'Boa pergunta! Por dentro, eu funciono prevendo a próxima palavra, uma de cada vez, usando'
+  FX.msgs = [{ me: false, text: 'Oi, NEX! Eu sou a Language Engine, uma IA de linguagem. Pergunte o que quiser.' }, { me: true, text: ask2 ? 'Você pensa como eu?' : 'Como você funciona?' }]
   FX.white = 1; FX.v++
   playTheme('lab')
   c.freeze(true)
@@ -340,7 +343,7 @@ async function epilogue(c: Ctx) {
   await c.wait(0.8)
   FX.open = true; FX.v++; SFX.play('open')
   await c.wait(0.8)
-  const rest = ' tudo o que você viu lá dentro! Eu corto o seu texto em tokens e troco cada um por um número. Cada número vira um vetor de significado. Na atenção, eu descubro quais palavras importam. Os vetores sobem por dezenas de camadas de pesos, que eu aprendi no treino, errando e ajustando. No fim, cada palavra possível ganha uma chance, e eu escolho uma com cuidado. Uma palavra de cada vez.'
+  const rest = ' tudo o que você viu lá dentro! Eu corto o seu texto em tokens e troco cada um por um número. Cada número puxa um vetor, uma lista de números aprendida no treino. Na atenção, faço contas para ver quais palavras ajudam a entender as outras. Os vetores sobem por dezenas de camadas de pesos, ajustados no treino, errando e ajustando. No fim, cada palavra possível ganha uma chance, e um sorteio controlado escolhe uma. Uma palavra de cada vez.'
   await typeOn(c, false, old + rest, 55, undefined, old.length)
   FX.msgs.push({ me: false, text: old + rest }); FX.typing = null; FX.v++
   await c.wait(0.6)
@@ -349,6 +352,12 @@ async function epilogue(c: Ctx) {
   await typeOn(c, false, ty, 40)
   FX.msgs.push({ me: false, text: ty }); FX.typing = null; FX.v++
   await c.say({ who: 'NEX', text: 'Ninguém vai acreditar nessa história…' })
+  const honest = ask2
+    ? 'E respondendo a sua pergunta: não, eu não penso nem sinto como você. Lá dentro, eu “lembrava” e “esquecia” só para contar a história. Ah, e eu posso errar com toda a confiança: para o que for importante, confira em fontes confiáveis.'
+    : 'Uma última dica: eu posso errar, mesmo parecendo confiante. Para o que for importante, confira em fontes confiáveis.'
+  await typeOn(c, false, honest, 40)
+  FX.msgs.push({ me: false, text: honest }); FX.typing = null; FX.v++
+  await c.wait(0.4)
   RT.pose = 'type'; RT.poseT = 999
   const me = 'Obrigado, Engine. Amanhã eu volto com mais perguntas!'
   await typeOn(c, true, me, 22)
@@ -382,9 +391,10 @@ function Credits() {
         </div>
         <p style={{ fontWeight: 800 }}>Obrigado por jogar! 💙</p>
         <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+          {G().settings.pilot && !METRICS.data.pos && <button className="btn primary" onClick={() => { close(); G().setOverlay('pilot', <PilotTest kind="pos" onDone={() => G().setOverlay('pilot', null)} />) }}>Avaliação final (modo piloto)</button>}
           <button className="btn" onClick={() => { close(); useGame.setState({ menu: 'codex' }) }}>Abrir o Codex</button>
           <button className="btn" onClick={() => { close(); useGame.setState({ menu: 'map' }) }}>Mapa da jornada</button>
-          <button className="btn primary" onClick={close}>Ficar no quarto</button>
+          <button className={'btn' + (G().settings.pilot && !METRICS.data.pos ? '' : ' primary')} onClick={close}>Ficar no quarto</button>
         </div>
       </div>
     </div>

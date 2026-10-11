@@ -13,7 +13,7 @@ import { show, OV } from '../p1/Doc'
 import { walkTo, fallIn, pulses } from '../common'
 import { registerRobot } from '../robots'
 import { P3GameView, NameView, DiplomaView } from './games'
-import { babyName, buildModel, restoreModel, babble, STATIONS } from './lab'
+import { babyName, buildModel, restoreModel, babble, STATIONS, EXAM, EXAM_PASS } from './lab'
 import * as A from './art'
 import * as A2 from '../p2/art'
 
@@ -69,7 +69,7 @@ function babyLine(): string {
 /* ---------- uma estação ---------- */
 const PRE: Record<string, (n: string) => { who: string; text: string }[]> = {
   dados: (n) => [
-    { who: 'SINAPSE', text: 'Uma LLM só aprende o que está nos textos do treino. As grandes leem trilhões de palavras. A nossa vai ler um punhado de frases.' },
+    { who: 'SINAPSE', text: 'Uma LLM aprende com os textos do treino: o que estiver lá, certo ou errado, molda o que ela vai dizer. As grandes leem trilhões de palavras. A nossa vai ler um punhado de frases.' },
     { who: 'SINAPSE', text: `Escolha as frases que ${n} vai estudar. Cuidado: se tiver frase errada, ela aprende errado também!` },
   ],
   tokens: (n) => [
@@ -78,18 +78,18 @@ const PRE: Record<string, (n: string) => { who: string; text: string }[]> = {
   ],
   forja: (n) => [
     { who: 'SINAPSE', text: `Hora do treino! Na Forja, ${n} vai ler cada exemplo, chutar a próxima palavra, medir o erro e ajustar os pesos.` },
-    { who: 'SINAPSE', text: 'Uma passada por todos os exemplos se chama época. Aperte o botão e acompanhe o erro caindo.' },
+    { who: 'SINAPSE', text: 'Uma passada por todos os exemplos se chama época. Antes de apertar o botão, dê um palpite: o que vai acontecer com o erro?' },
   ],
   teste: (n) => [
     { who: 'SINAPSE', text: `Agora, a Sala de Teste. Escreva o começo de uma frase e veja, passo a passo, como ${n} escolhe a próxima palavra.` },
-    { who: 'SINAPSE', text: 'O desafio: ela tem que completar “A capital do Brasil é” com Brasília.' },
+    { who: 'SINAPSE', text: 'O desafio: ela tem que completar “A capital do Brasil é” com Brasília. Depois, vamos ver como ela se sai com frases que nunca leu.' },
   ],
   ajuste: () => [
-    { who: 'SINAPSE', text: 'Depois do treino, as LLMs ainda passam por ajustes. Primeiro: qual a diferença entre pedir no prompt e fazer um ajuste fino?' },
+    { who: 'SINAPSE', text: 'Depois do treino, as LLMs ainda passam por ajustes. Primeiro: qual a diferença entre pedir no prompt, buscar documentos com RAG e fazer um ajuste fino?' },
   ],
   prova: (n) => [
     { who: 'SINAPSE', text: `Chegou o grande dia: a Formatura! Para ${n} se formar, você responde a prova final.` },
-    { who: 'SINAPSE', text: 'Sete acertos em dez e o diploma é de vocês. Boa sorte!' },
+    { who: 'SINAPSE', text: `São ${EXAM.length} perguntas. Com ${EXAM_PASS} acertos, o diploma é de vocês. Boa sorte!` },
   ],
 }
 async function runStation(c: Ctx, i: number) {
@@ -124,7 +124,7 @@ async function runStation(c: Ctx, i: number) {
 }
 async function after(c: Ctx, i: number, n: string) {
   switch (ST[i].id) {
-    case 'dados': await c.say([{ who: 'BEBE', text: 'Fra… ses? ' + babyLine() }, { who: 'SINAPSE', text: 'Ela ainda não entende nada: só guardou os textos. Agora vamos cortar tudo em tokens.' }]); break
+    case 'dados': await c.say([{ who: 'BEBE', text: 'Fra… ses? ' + babyLine() }, { who: 'SINAPSE', text: 'Por enquanto ela só recebeu os textos: ainda não aprendeu nada com eles. Agora vamos cortar tudo em tokens.' }]); break
     case 'tokens': await c.say([{ who: 'NOVA', text: 'As LLMs de verdade olham milhares de tokens para trás. A nossa é pequenininha!' }, { who: 'SINAPSE', text: 'Vocabulário pronto. Agora, o mais importante: o treino!' }]); break
     case 'forja': {
       c.focus([POD[0], POD[1] + 1], 2, 30)
@@ -136,7 +136,7 @@ async function after(c: Ctx, i: number, n: string) {
       ])
       break
     }
-    case 'teste': await c.say([{ who: 'SINAPSE', text: 'Funciona! Tokens, IDs, memória, embeddings, neurônios, chances e a escolha. É uma LLM de verdade… só que bem pequena.' }, { who: 'BEBE', text: 'Eu… sei… Brasília!' }]); break
+    case 'teste': await c.say([{ who: 'SINAPSE', text: 'Funciona! Mas viu a Espanha? Ela acerta o que parece com o treino e inventa o resto com toda a confiança. As LLMs grandes erram bem menos, mas também podem errar assim.' }, { who: 'BEBE', text: 'Brasília eu sei! Espanha… eu chutei.' }]); break
     case 'ajuste': await c.say([{ who: 'BEBE', text: 'Obrigada! Agora eu sei: melhor dizer a verdade, ajudar de verdade e não fazer mal a ninguém.' }, { who: 'SINAPSE', text: 'Ela está pronta. Só falta a formatura!' }]); break
     case 'prova': await graduation(c, n); break
   }
@@ -157,7 +157,7 @@ async function graduation(c: Ctx, n: string) {
     { who: 'ENGINE', text: 'MATRIX, TRANSFORMER e agora CREATOR. Todos os meus núcleos estão de volta. Eu lembro de tudo!' },
     { who: 'ENGINE', text: 'Você me ajudou a lembrar como eu funciono. Agora é minha vez de ajudar você: posso te levar de volta para casa.' },
     { who: 'NEX', text: `Para casa? Mas… e a NOVA? E a ${n}?` },
-    { who: 'NOVA', text: 'A gente mora aqui dentro, NEX. Mas toda vez que você conversar com uma IA, lembre: tem tokens, vetores, atenção e muitos pesos trabalhando por você.' },
+    { who: 'NOVA', text: 'A gente mora aqui dentro, NEX. Mas toda vez que você conversar com uma IA, lembre: tem tokens, vetores, atenção e muitos pesos trabalhando. E ela pode errar com toda a confiança, então confira o que for importante.' },
     { who: 'SINAPSE', text: `E eu cuido da ${n}. Ela vai continuar estudando!` },
     { who: 'BEBE', text: 'Tchau, NEX! Volte para me visitar!' },
   ])
@@ -307,7 +307,7 @@ export default function build(): Scene {
   // portal para casa
   add({ x: PORTAL_P[0], y: PORTAL_P[1], hidden: () => !flag('p3_done'), sprite: () => portalSprite(anim(8), '#ffd27a'), shadow: 0 })
   add({ x: PORTAL_P[0], y: PORTAL_P[1] + 0.6, layer: 'ground', blend: 'lighter', hidden: () => !flag('p3_done'), sprite: glow(30, '#ffd27a', 0.35) })
-  addInteract({ id: 'p3_portal', x: PORTAL_USE[0], y: PORTAL_USE[1], r: 1.5, mz: 60, color: '#ffd27a', label: 'Voltar para casa', enabled: () => !!flag('p3_done'), use: () => start('p3_portal', async (c) => { c.objective(null); c.goto('fim') }) })
+  addInteract({ id: 'p3_portal', x: PORTAL_USE[0], y: PORTAL_USE[1], r: 1.5, mz: 60, color: '#ffd27a', label: 'Voltar para casa', enabled: () => !!flag('p3_done'), use: () => start('p3_portal', async (c) => { c.objective(null); c.setFlag('p3_saida'); c.goto('fim') }) })
 
   /* ---------- habitantes ---------- */
   const npcs: Npc[] = []

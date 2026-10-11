@@ -33,7 +33,7 @@ let voiceGain: GainNode | null = null
 export function voiceOut(): { ctx: AudioContext; out: AudioNode } | null {
   if (!ctx) return null
   if (ctx.state === 'suspended') ctx.resume()
-  if (!voiceGain) { voiceGain = ctx.createGain(); voiceGain.gain.value = 1; voiceGain.connect(master) }
+  if (!voiceGain) { voiceGain = ctx.createGain(); voiceGain.gain.value = G().settings.voiceVol ?? 1; voiceGain.connect(master) }
   return { ctx, out: voiceGain }
 }
 function applyVolumes() {
@@ -41,6 +41,7 @@ function applyVolumes() {
   const st = G().settings
   music.gain.setTargetAtTime(st.music * 0.5, ctx.currentTime, 0.3)
   sfx.gain.setTargetAtTime(st.sfx * 0.7, ctx.currentTime, 0.1)
+  voiceGain?.gain.setTargetAtTime(st.voiceVol ?? 1, ctx.currentTime, 0.1)
 }
 
 const mtof = (m: number) => 440 * Math.pow(2, (m - 69) / 12)
@@ -74,8 +75,12 @@ function noise(t: number, dur: number, vol: number, f0: number, f1: number, q = 
   src.start(t); src.stop(t + dur)
 }
 
+/** Avisado a cada som de erro (métricas: tentativas por atividade). */
+let errorHook: (() => void) | null = null
+export function setErrorHook(f: () => void) { errorHook = f }
 export const SFX = {
   play(name: string) {
+    if (name === 'error') errorHook?.()
     if (!ctx) return
     const t = ctx.currentTime + 0.01
     switch (name) {

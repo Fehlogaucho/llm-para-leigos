@@ -1,3 +1,4 @@
+import { METRICS, useActivity } from '../../engine/metrics'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { G, useGame } from '../../store'
 import { VOICE } from '../../engine/voice'
@@ -20,6 +21,7 @@ const hasEmoji = (s: string) => /\p{Extended_Pictographic}/u.test(s)
 
 /** Documento em papel: páginas com ilustração, título e texto. */
 export function DocView({ doc, onDone }: { doc: Doc; onDone: () => void }) {
+  useActivity('doc:' + doc.title)
   const [i, setI] = useState(0)
   const pg = doc.pages[i]
   const P = doc.who ? PEOPLE[doc.who] : null
@@ -51,6 +53,9 @@ export function DocView({ doc, onDone }: { doc: Doc; onDone: () => void }) {
         <h3>{pg.h}</h3>
         <p>{pg.t}</p>
         {pg.h === 'E na LLM?' && <span className="tag">IDEIA QUE A LLM USA</span>}
+        {last && doc.note && <div className="doc-note"><b>🔍 O jogo simplificou</b>{doc.note}</div>}
+        {last && doc.src && <div className="doc-src"><b>📚 Fontes:</b> {doc.src}</div>}
+        {i === 0 && doc.pages.length > 1 && <div className="doc-skip">Pode fechar quando quiser: o documento fica guardado para reler depois.</div>}
         <div className="nav">
           <div className="dots">{doc.pages.map((_, k) => <i key={k} className={k === i ? 'on' : ''} />)}</div>
           {i > 0 && <button className="btn small" onClick={prev}>◂ Voltar</button>}
@@ -69,14 +74,16 @@ function WhoChip({ who }: { who?: string }) {
 
 /** Pergunta de múltipla escolha: errar mostra uma dica, acertar explica. */
 function AskView({ ask, who, onDone }: { ask: Ask; who: string; onDone: () => void }) {
+  const aid = 'p1:pergunta:' + who
+  useActivity(aid)
   const [tried, setTried] = useState<number[]>([])
   const [ok, setOk] = useState(false)
   const [sh, setSh] = useState(false)
   useEffect(() => { VOICE.speak(ask.q, who) }, [])
   const pick = (k: number) => {
     if (ok || tried.includes(k)) return
-    if (k === ask.a) { setOk(true); SFX.play('success'); VOICE.speak(ask.why, who) }
-    else { setTried((t) => [...t, k]); SFX.play('error'); setSh(false); requestAnimationFrame(() => setSh(true)) }
+    if (k === ask.a) { setOk(true); SFX.play('success'); VOICE.speak(ask.why, who); METRICS.done(aid) }
+    else { if (tried.length >= 1 && ask.hint) METRICS.hint(); setTried((t) => [...t, k]); SFX.play('error'); setSh(false); requestAnimationFrame(() => setSh(true)) }
   }
   return (
     <div className="doc-wrap" onPointerDown={(e) => e.stopPropagation()}>
@@ -84,9 +91,9 @@ function AskView({ ask, who, onDone }: { ask: Ask; who: string; onDone: () => vo
         <WhoChip who={who} />
         <h4>{ask.q}</h4>
         <div className={sh ? 'shake' : ''} style={{ marginTop: 10 }}>
-          {ask.opts.map((o, k) => <button key={k} className={'opt' + (ok && k === ask.a ? ' right' : '') + (tried.includes(k) ? ' wrong' : '')} onClick={() => pick(k)}>{o}</button>)}
+          {ask.opts.map((o, k) => <button key={k} className={'opt' + (ok && k === ask.a ? ' right' : '') + (tried.includes(k) ? ' wrong' : '')} onClick={() => pick(k)}>{ok && k === ask.a ? '✓ ' : tried.includes(k) ? '✗ ' : ''}{o}</button>)}
         </div>
-        {!ok && tried.length > 0 && <div className="bad">Quase! Pense de novo.</div>}
+        {!ok && tried.length > 0 && <div className="bad">{tried.length === 1 || !ask.hint ? 'Quase! Pense de novo.' : '💡 Dica: ' + ask.hint}</div>}
         {ok && <div className="ok">{ask.why}</div>}
         {ok && <div className="foot"><button className="btn primary" onClick={() => { VOICE.stop(); onDone() }}>Continuar ▸</button></div>}
       </div>
@@ -100,7 +107,8 @@ function GameView({ game, who, onDone }: { game: Game; who: string; onDone: () =
   const okRef = useRef<HTMLDivElement>(null)
   useEffect(() => { if (msg) setTimeout(() => okRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }), 60) }, [msg])
   const G1 = GAMES[game]
-  const win = (m: ReactNode) => { if (!msg) { setMsg(m); SFX.play('discover') } }
+  useActivity('p1:' + game)
+  const win = (m: ReactNode) => { if (!msg) { setMsg(m); SFX.play('discover'); METRICS.done('p1:' + game) } }
   return (
     <div className="doc-wrap" onPointerDown={(e) => e.stopPropagation()}>
       <div className="gm">
@@ -124,6 +132,7 @@ export const openDoc = (c: Ctx, doc: Doc) => show(c, (d) => <DocView doc={doc} o
 export const openAsk = (c: Ctx, ask: Ask, who: string) => show(c, (d) => <AskView ask={ask} who={who} onDone={d} />)
 export const openGame = (c: Ctx, game: Game, who: string) => show(c, (d) => <GameView game={game} who={who} onDone={d} />)
 export const openPipeline = (c: Ctx) => show(c, (d) => <PipelineView onDone={d} />)
+export const openMatch = (c: Ctx) => show(c, (d) => <MatchView onDone={d} />)
 
 /** Abre um documento fora de um roteiro (reler pela faixa de memórias). */
 export function readAgain(doc: Doc, after?: () => void) {
@@ -150,6 +159,7 @@ function WordChip({ w }: { w: string }) {
   return <span className="chip" style={{ color: col }}>{w}</span>
 }
 function PipelineView({ onDone }: { onDone: () => void }) {
+  useActivity('p1:caminho')
   const [k, setK] = useState(0)
   const p = PIPELINE[k]
   const last = k === PIPELINE.length - 1
@@ -164,10 +174,53 @@ function PipelineView({ onDone }: { onDone: () => void }) {
         <div className="row" style={{ justifyContent: 'flex-start', gap: 6, marginBottom: 10 }}>{p.words.map((w) => <WordChip key={w} w={w} />)}</div>
         <div className="card mono" style={{ fontSize: 'clamp(18px, 5vw, 26px)', fontWeight: 800, textAlign: 'center', color: last ? 'var(--gold-2)' : 'var(--cyan)', padding: '16px 10px' }} key={k}>{p.show}</div>
         <p className="lead" style={{ marginTop: 12 }}>{p.t}</p>
+        {last && <div className="simp">🔍 Versão simplificada: faltam peças importantes, como a atenção, que você vai conhecer na Fase 2. E os números daqui são só ilustrações.</div>}
         <div className="foot">
           {k > 0 && <button className="btn small" onClick={() => { SFX.play('click'); setK(k - 1) }}>◂ Voltar</button>}
           <button className="btn primary" onClick={() => { SFX.play('click'); if (last) { VOICE.stop(); onDone() } else setK(k + 1) }}>{last ? 'Entendi!' : 'Próximo passo ▸'}</button>
         </div>
+      </div>
+    </div>
+  )
+}
+
+/* ---------- desafio do final: ligue cada ideia antiga ao que ela faz na LLM ---------- */
+const PAIRS = [
+  { w: 'FICHAS', d: 'Cortar o texto em pedaços e trocar cada um por um número', hint: 'Lembre do pastor de Uruk: uma fichinha no lugar de cada ovelha.' },
+  { w: 'CHANCES', d: 'Dar uma chance para cada palavra que pode vir depois', hint: 'Lembre do Pascal: não dá para saber o próximo lance, mas dá para calcular as chances.' },
+  { w: 'MENOR ERRO', d: 'No treino, ajustar os números até errar menos', hint: 'Lembre do Gauss e de Ceres: ele ficou com o caminho que errava menos.' },
+  { w: 'PESOS', d: 'Os números que a LLM aprende e guarda', hint: 'Lembre do Perceptron: cada pista tinha um número que dizia quanto ela valia.' },
+  { w: 'PRÓXIMA PALAVRA', d: 'O trabalho de toda LLM: prever o que vem depois', hint: 'Lembre do Markov contando letras: o que veio antes ajuda a prever o que vem depois.' },
+]
+const MIX = [3, 0, 4, 1, 2]
+function MatchView({ onDone }: { onDone: () => void }) {
+  const [sel, setSel] = useState<number | null>(null)
+  const [ok, setOk] = useState<number[]>([])
+  const [msg, setMsg] = useState('')
+  const [sh, setSh] = useState(false)
+  const all = ok.length === PAIRS.length
+  useActivity('p1:ligar')
+  useEffect(() => { if (all) METRICS.done('p1:ligar') }, [all])
+  useEffect(() => { VOICE.speak('Ligue cada ideia antiga ao que ela faz dentro de uma LLM.', 'NOVA') }, [])
+  useEffect(() => () => VOICE.stop(), [])
+  const pickR = (j: number) => {
+    if (sel === null) { setMsg('Primeiro toque numa palavra da esquerda.'); return }
+    if (j === sel) { SFX.play('bead'); const nx = [...ok, j]; setOk(nx); setSel(null); setMsg(''); if (nx.length === PAIRS.length) SFX.play('success') }
+    else { SFX.play('error'); METRICS.hint(); setSh(false); requestAnimationFrame(() => setSh(true)); setMsg('💡 ' + PAIRS[sel].hint) }
+  }
+  return (
+    <div className="doc-wrap" onPointerDown={(e) => e.stopPropagation()}>
+      <div className="gm">
+        <div className="who-chip"><span style={{ color: '#8fe9ff' }}>DESAFIO DA MEMÓRIA CENTRAL</span></div>
+        <h4>Ligue cada ideia ao que ela faz na LLM</h4>
+        <p className="lead">Toque numa palavra recuperada e depois no que ela faz dentro de uma LLM.</p>
+        <div className={'match' + (sh ? ' shake' : '')}>
+          <div className="col">{PAIRS.map((p, i) => <button key={p.w} className={'opt' + (ok.includes(i) ? ' right' : '') + (sel === i ? ' sel' : '')} disabled={ok.includes(i)} onClick={() => { SFX.play('click'); setSel(i); setMsg('') }}>{ok.includes(i) ? '✓ ' : ''}<b>{p.w}</b></button>)}</div>
+          <div className="col">{MIX.map((j) => <button key={j} className={'opt' + (ok.includes(j) ? ' right' : '')} disabled={ok.includes(j)} onClick={() => pickR(j)}>{ok.includes(j) ? <>✓ <b>{PAIRS[j].w}:</b> </> : ''}{PAIRS[j].d}</button>)}</div>
+        </div>
+        <div className="bad">{msg}</div>
+        {all && <div className="ok">Tudo ligado! Ideias de milhares de anos viraram peças de uma LLM: fichas viraram tokens, chances viraram a escolha da próxima palavra e o menor erro virou o treino dos pesos.</div>}
+        {all && <div className="foot"><button className="btn primary" onClick={() => { VOICE.stop(); onDone() }}>Continuar ▸</button></div>}
       </div>
     </div>
   )

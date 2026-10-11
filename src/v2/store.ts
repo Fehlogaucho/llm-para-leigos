@@ -19,7 +19,7 @@ export interface Shot { pos: P2; zoom?: number; dur?: number; cut?: boolean; h?:
 interface DialogState { lines: Line[]; i: number; ambient: boolean; resolve: () => void }
 interface Banner { kind: 'discovery' | 'fragment' | 'core' | 'quest' | 'area' | 'memory' | 'station'; title: string; sub?: string; cat?: Cat }
 
-export interface Settings { voice: boolean; music: number; sfx: number; reduced: boolean; pixel: 'auto' | 'grande' | 'pequeno' }
+export interface Settings { voice: boolean; voiceVol: number; music: number; sfx: number; reduced: boolean; pixel: 'auto' | 'grande' | 'pequeno'; text: 'normal' | 'grande' | 'maior'; contrast: boolean; pilot: boolean }
 
 export interface Progress {
   level: string
@@ -35,6 +35,7 @@ export type Menu = null | 'codex' | 'map' | 'settings' | 'chapters'
 
 interface State extends Progress {
   screen: 'title' | 'game'
+  saveIssue: SaveIssue
   loading: string | null
   settings: Settings
   objective: Objective | null
@@ -72,13 +73,50 @@ function load<T>(k: string, d: T): T {
   try { const s = localStorage.getItem(k); if (s) return { ...d, ...JSON.parse(s) } } catch { /* sem armazenamento */ }
   return d
 }
+
+/* ---------- salvamento: ausente, incompleto ou inválido ----------
+   ausente → começa do zero; ilegível (JSON quebrado) → guarda uma cópia em
+   SAVE_BAD e começa do zero; incompleto ou com campos estranhos → aproveita
+   o que estiver certo e descarta o resto. Em todos os casos o jogo abre. */
+export type SaveIssue = null | 'corrompido' | 'consertado'
+export const SAVE_BAD = 'pf2d-save-v1-danificado'
+const isObj = (x: unknown): x is Record<string, unknown> => !!x && typeof x === 'object' && !Array.isArray(x)
+const numMap = (x: unknown) => { const o: Record<string, number> = {}; if (isObj(x)) for (const [k, v] of Object.entries(x)) if (typeof v === 'number' && Number.isFinite(v)) o[k] = v; return o }
+const strList = (x: unknown) => (Array.isArray(x) ? [...new Set(x.filter((v): v is string => typeof v === 'string'))] : [])
+/** Confere um progresso salvo e devolve só o que é válido (e se precisou consertar). */
+export function sanitizeProgress(raw: unknown): { p: Progress; fixed: boolean } {
+  const b = blank()
+  if (!isObj(raw)) return { p: b, fixed: true }
+  const quests: Progress['quests'] = {}
+  if (isObj(raw.quests)) for (const [k, v] of Object.entries(raw.quests)) if (v === 'active' || v === 'done') quests[k] = v
+  const p: Progress = {
+    level: typeof raw.level === 'string' && /^[a-z0-9_]{1,24}$/.test(raw.level) ? raw.level : b.level,
+    flags: numMap(raw.flags), codex: numMap(raw.codex), fragments: strList(raw.fragments), cores: strList(raw.cores), quests, visited: strList(raw.visited),
+  }
+  const fixed = JSON.stringify(p) !== JSON.stringify({ level: raw.level, flags: raw.flags ?? {}, codex: raw.codex ?? {}, fragments: raw.fragments ?? [], cores: raw.cores ?? [], quests: raw.quests ?? {}, visited: raw.visited ?? [] })
+  return { p, fixed }
+}
+function loadProgress(): { p: Progress; issue: SaveIssue } {
+  let txt: string | null = null
+  try { txt = localStorage.getItem(SAVE) } catch { return { p: blank(), issue: null } }
+  if (!txt) return { p: blank(), issue: null }
+  let raw: unknown
+  try { raw = JSON.parse(txt) } catch {
+    try { localStorage.setItem(SAVE_BAD, txt); localStorage.removeItem(SAVE) } catch { /* */ }
+    return { p: blank(), issue: 'corrompido' }
+  }
+  const { p, fixed } = sanitizeProgress(raw)
+  return { p, issue: fixed ? 'consertado' : null }
+}
+const loaded = loadProgress()
 const coarse = typeof matchMedia !== 'undefined' && matchMedia('(pointer: coarse)').matches
 const reduced = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches
-const defaultSettings: Settings = { voice: true, music: 0.55, sfx: 0.8, reduced, pixel: 'auto' }
+const defaultSettings: Settings = { voice: true, voiceVol: 1, music: 0.55, sfx: 0.8, reduced, pixel: 'auto', text: 'normal', contrast: false, pilot: false }
 
 let toastTimer: any = 0
 export const useGame = create<State>()((set, get) => ({
-  ...load<Progress>(SAVE, blank()),
+  ...loaded.p,
+  saveIssue: loaded.issue,
   screen: 'title',
   loading: null,
   settings: load<Settings>(SETS, defaultSettings),

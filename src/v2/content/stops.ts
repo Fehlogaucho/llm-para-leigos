@@ -24,8 +24,9 @@ export const PEOPLE: Record<string, Person> = {
 }
 
 export interface Page { h: string; t: string; ill?: string }
-export interface Doc { title: string; year: string; place: string; who?: string; pages: Page[] }
-export interface Ask { q: string; opts: string[]; a: number; why: string }
+/** note: o que o jogo simplificou (metáfora × vida real). src: de onde vem a história (fontes). */
+export interface Doc { title: string; year: string; place: string; who?: string; pages: Page[]; note?: string; src?: string }
+export interface Ask { q: string; opts: string[]; a: number; why: string; hint?: string }
 export type Game = 'tabela' | 'passos' | 'dados' | 'binario' | 'erro' | 'vetor' | 'proxima' | 'bits' | 'neuronio'
 export interface Stop {
   id: string; year: string; who: string
@@ -54,13 +55,15 @@ export const STOPS: Stop[] = [
     ],
     doc: {
       title: 'As fichas de barro', year: 'há ~5.500 anos', place: 'Uruk, Mesopotâmia (hoje, Iraque)', who: 'ESCRIBA', pages: [
-        { h: 'O problema', ill: '🐑🐑🐑🐑🐑🐑🐑', t: 'Um pastor leva 7 ovelhas para pastar. Na volta, como saber se alguma se perdeu? Ele não sabe contar até 7. Quase ninguém sabia!' },
+        { h: 'O problema', ill: '🐑🐑🐑🐑🐑🐑🐑', t: 'Um pastor leva 7 ovelhas para pastar. Na volta, como conferir se alguma se perdeu? Ainda não existia escrita para anotar nada.' },
         { h: 'A ideia', ill: '🐑 → 🟤', t: 'Para cada ovelha que sai, uma fichinha de barro vai para a bolsa. Na volta, sai uma ficha para cada ovelha que entra. Sobrou ficha? Falta ovelha!' },
-        { h: 'Do barro ao número', ill: '🟤🟤🟤 → ✍️', t: 'Depois, em vez de guardar as fichas, os escribas passaram a desenhá-las no barro. Esses desenhos são os números escritos mais antigos que conhecemos.' },
-        { h: 'E na LLM?', ill: '“gatinho” → [gat] [inho]', t: 'Os arqueólogos chamam essas fichinhas de tokens. Uma LLM faz igual: corta o texto em pedacinhos e troca cada um por uma ficha, um token. Ela nunca lê letras: lê fichas!' },
+        { h: 'Do barro ao número', ill: '🟤🟤🟤 → ✍️', t: 'Com o tempo, os escribas passaram a desenhar as fichas no barro, em vez de guardá-las. Para muitos arqueólogos, esses desenhos estão entre os primeiros números escritos.' },
+        { h: 'E na LLM?', ill: '“gatinho” → [gat] [inho]', t: 'Os arqueólogos chamam essas fichinhas de tokens. Uma LLM faz algo parecido: um programa, o tokenizador, corta o texto em pedaços e troca cada pedaço por um número. Esses pedaços também se chamam tokens.' },
       ],
+      note: 'No jogo, ficha = token. Na vida real, um token pode ser uma palavra inteira, um pedaço de palavra, um espaço ou uma pontuação. E cada LLM corta do seu jeito: o mesmo texto pode virar quantidades diferentes de tokens.',
+      src: 'Denise Schmandt-Besserat, Before Writing (1992). A ligação entre as fichas e os primeiros números escritos é muito aceita; outros detalhes da hipótese ainda são discutidos.',
     },
-    ask: { q: 'O pastor voltou e sobraram 2 fichas na bolsa. O que aconteceu?', opts: ['Ele ganhou 2 ovelhas', 'Faltam 2 ovelhas', 'As fichas quebraram'], a: 1, why: 'Cada ficha representa uma ovelha. Ficha sobrando quer dizer ovelha faltando.' },
+    ask: { q: 'O pastor voltou e sobraram 2 fichas na bolsa. O que aconteceu?', opts: ['Ele ganhou 2 ovelhas', 'Faltam 2 ovelhas', 'As fichas quebraram'], a: 1, why: 'Cada ficha representa uma ovelha. Ficha sobrando quer dizer ovelha faltando.', hint: 'Lembre: sai uma ficha da bolsa para cada ovelha que volta. Se sobrou ficha, quem não voltou?' },
     nex: 'Uma ficha para cada ovelha… É tipo contar nos dedos, só que com barro!',
     tease: 'A primeira ilha fica logo acima, depois da ponte: Mesopotâmia, há 5.500 anos. Dá até para ouvir ovelhas…',
     place: 'MESOPOTÂMIA',
@@ -71,23 +74,25 @@ export const STOPS: Stop[] = [
       title: 'Quem descobriu as fichas?', year: 'anos 1970', place: 'Oriente Médio', pages: [
         { h: 'Milhares de bolinhas', ill: '🔺⚪🟤', t: 'A arqueóloga Denise Schmandt-Besserat estudou milhares de fichinhas de barro achadas no Oriente Médio. Algumas têm mais de 9.000 anos!' },
         { h: 'Um formato para cada coisa', ill: '🔺 grão · 🟤 ovelha', t: 'As fichas tinham formatos diferentes para coisas diferentes: cones, esferas, discos. Cada formato representava um tipo de mercadoria.' },
-        { h: 'O envelope de barro', ill: '🥚 + marcas', t: 'As fichas eram guardadas em envelopes de barro. Por fora, desenhavam as fichas de dentro. Com o tempo, bastavam os desenhos: tinha nascido a escrita.' },
+        { h: 'O envelope de barro', ill: '🥚 + marcas', t: 'As fichas eram guardadas em envelopes de barro. Por fora, desenhavam as fichas de dentro. Com o tempo, bastavam os desenhos. Para ela, foi assim que a escrita começou; parte dos pesquisadores acha que a história foi mais complicada.' },
       ],
     },
   },
   {
-    id: 'tabela', year: '200 a.C.', who: 'LIUHUI', custom: 'graos',
+    id: 'tabela', year: '263', who: 'LIUHUI', custom: 'graos',
     intro: [
       'Eu sou Liu Hui. No ano 263, escrevi explicações para um livro que já era antigo: Os Nove Capítulos da Arte Matemática.',
       'O mistério dos três grãos está nesse livro. E o jeito que você resolveu é o mesmo que os calculistas usavam, com varetas de bambu.',
     ],
     doc: {
-      title: 'O mistério dos três grãos', year: 'há ~2.000 anos', place: 'China', who: 'LIUHUI', pages: [
-        { h: 'Um problema de 2.000 anos', ill: '📜🌾', t: 'O mistério dos três grãos é o primeiro problema do capítulo 8 do livro Os Nove Capítulos da Arte Matemática, escrito na China há uns 2.000 anos. Ninguém sabe quem foi o autor.' },
+      title: 'O mistério dos três grãos', year: 'livro de ~2.000 anos · comentário de 263', place: 'China', who: 'LIUHUI', pages: [
+        { h: 'Um problema de 2.000 anos', ill: '📜🌾', t: 'O mistério dos três grãos é o primeiro problema do capítulo 8 do livro Os Nove Capítulos da Arte Matemática, reunido na China há uns 2.000 anos a partir de textos ainda mais antigos. Ninguém sabe quem foram os autores.' },
         { h: 'O tabuleiro de varetas', ill: '│││ ││ │', t: 'Os calculistas punham cada registro numa coluna de um tabuleiro, com varetas de bambu. Varetas vermelhas eram números positivos; pretas, negativos. O lugar de cada vareta dizia o que ela era.' },
         { h: 'Eliminar, coluna por coluna', ill: '39 − 34 = 5', t: 'Igual a você: tirando um registro do outro, uma incógnita some. Repetindo, sobra uma só, e as outras aparecem em seguida. Na Europa, esse método só apareceu mais de mil anos depois. Hoje ele se chama eliminação de Gauss.' },
         { h: 'E na LLM?', ill: 'exemplos → pesos → previsão', t: 'Uma LLM resolve um mistério parecido, só que gigante: descobre bilhões de valores escondidos (os pesos) a partir de textos que já existem. Depois usa esses valores para prever o que nunca viu: a próxima palavra.' },
       ],
+      note: 'Na vida real, os pesos de uma LLM não saem de um sistema de equações exato: eles são ajustados aos poucos, no treino, até errar menos. A ideia em comum é descobrir valores escondidos a partir de exemplos.',
+      src: 'Os Nove Capítulos da Arte Matemática, cap. 8, problema 1, com o comentário de Liu Hui (263). Tradução: Shen Kangshen, John Crossley e Anthony Lun (1999).',
     },
     nex: 'Esse problema tem 2.000 anos? E eu resolvi igualzinho aos calculistas?',
     tease: 'A névoa abriu! Do outro lado da ponte tem uma vila da China antiga. Parece que um comerciante tem um mistério…',
@@ -116,6 +121,8 @@ export const STOPS: Stop[] = [
         { h: 'Meu nome virou palavra', ill: 'al-Khwarizmi → algoritmo', t: 'Na Europa, meu livro foi traduzido como “Algoritmi…”. E “algoritmo” passou a querer dizer qualquer receita de passos bem definidos. Outro livro meu, Al-jabr, deu nome à álgebra.' },
         { h: 'E na LLM?', ill: '🔁', t: 'Um computador só faz o que um algoritmo manda. Por dentro, uma LLM é um algoritmo enorme: os mesmos passos de conta, repetidos trilhões de vezes.' },
       ],
+      note: 'A diferença é que, numa LLM, ninguém escreve à mão os números que essas contas usam: eles são aprendidos no treino.',
+      src: 'Livro de aritmética de al-Khwarizmi, conhecido pela tradução latina Algoritmi de numero Indorum (séc. XII), e o livro Al-jabr (c. 820).',
     },
     game: 'passos',
     nex: 'Al-Khwarizmi… al-go-ritmo… ALGORITMO?!',
@@ -129,15 +136,17 @@ export const STOPS: Stop[] = [
     id: 'chances', year: '1654', who: 'PASCAL',
     intro: [
       'Bonjour! Eu sou Blaise Pascal. Em 1654, um amigo que adorava apostas me fez uma pergunta difícil.',
-      'Escrevi para o Pierre de Fermat pedindo ajuda. Das nossas cartas nasceu uma matemática nova.',
+      'Escrevi para o Pierre de Fermat pedindo ajuda. Nossas cartas viraram um marco da matemática das chances.',
     ],
     doc: {
       title: 'Calcular a sorte', year: '1654', place: 'França', who: 'PASCAL', pages: [
         { h: 'O problema', ill: '🎲🎲  ⏸️  💰 ?', t: 'Dois amigos apostam num jogo de dados, mas precisam parar no meio. Dar tudo para quem tem mais pontos não é justo. Como dividir o dinheiro?' },
         { h: 'A ideia', ill: '✉️ ⇄ ✉️', t: 'Nas cartas, eu e Fermat listamos tudo o que ainda poderia acontecer e contamos em quantos casos cada um ganharia.' },
-        { h: 'Nasce a probabilidade', ill: '3 em 4 = 75%', t: 'Assim, o dinheiro se divide pelas chances de cada um. Pela primeira vez, alguém fez contas com um futuro incerto: é a probabilidade.' },
+        { h: 'Nasce a probabilidade', ill: '3 em 4 = 75%', t: 'Assim, o dinheiro se divide pelas chances de cada um. Cardano e Galileu já tinham feito contas com dados; nós achamos um método geral. Dali cresceu a teoria da probabilidade.' },
         { h: 'E na LLM?', ill: 'azul 62% · escuro 21% · …', t: 'Uma LLM nunca tem certeza da próxima palavra. Ela calcula a chance de cada palavra possível e escolhe com base nisso.' },
       ],
+      note: 'Chance alta numa LLM quer dizer “combina com o que veio antes”, não “é verdade”. Uma resposta pode sair muito provável e estar errada.',
+      src: 'Cartas entre Pascal e Fermat (1654). Ian Hacking, The Emergence of Probability (1975).',
     },
     game: 'dados',
     nex: 'Matemática de apostas? Agora fiquei curioso.',
@@ -164,10 +173,11 @@ export const STOPS: Stop[] = [
     doc: {
       title: 'Tudo com 0 e 1', year: '1703', place: 'Alemanha', who: 'LEIBNIZ', pages: [
         { h: 'O problema', ill: '🖐️🖐️ = 10', t: 'Contamos com dez algarismos porque temos dez dedos. Mas uma máquina não tem dedos. Dá para contar com menos?' },
-        { h: 'A ideia', ill: '8 4 2 1 → 0101 = 5', t: 'Publiquei o sistema binário: só 0 e 1. Cada casa vale o dobro da anterior: 1, 2, 4, 8… O número 5 vira 101: um 4, nenhum 2 e um 1.' },
+        { h: 'A ideia', ill: '8 4 2 1 → 0101 = 5', t: 'Em 1703, escrevi sobre o sistema binário: só 0 e 1. Outros já tinham pensado nisso, mas meu texto espalhou a ideia. Cada casa vale o dobro da anterior: 1, 2, 4, 8… O número 5 vira 101.' },
         { h: 'Um sim ou um não', ill: '💡 = 1 · ⚫ = 0', t: '0 e 1 podem ser desligado e ligado, não e sim. Em 1854, George Boole mostrou que até o raciocínio lógico (E, OU, NÃO) pode ser feito com 0 e 1.' },
         { h: 'E na LLM?', ill: '01001100 01001100 01001101', t: 'Todo computador guarda tudo em 0 e 1: textos, fotos, músicas e os bilhões de números da própria LLM.' },
       ],
+      src: 'Leibniz, Explication de l’arithmétique binaire (apresentado à Academia de Paris em 1703, publicado em 1705). George Boole, The Laws of Thought (1854).',
     },
     game: 'binario',
     nex: 'Só dois? Como é que dá para escrever 100 com dois algarismos?',
@@ -181,15 +191,17 @@ export const STOPS: Stop[] = [
     id: 'erro', year: '1801', who: 'GAUSS',
     intro: [
       'Hallo! Eu sou Carl Friedrich Gauss. Em 1801, os astrônomos perderam um asteroide de vista.',
-      'Eu tinha 24 anos e encontrei ele com papel, lápis e uma ideia: errar o menos possível.',
+      'Eu tinha 24 anos e, só com papel e lápis, calculei onde ele ia aparecer de novo.',
     ],
     doc: {
       title: 'O menor erro', year: '1801 a 1809', place: 'Alemanha', who: 'GAUSS', pages: [
-        { h: 'O problema', ill: '✦ ·  ✦ · ✦', t: 'O asteroide Ceres foi visto por poucas semanas e sumiu no brilho do Sol. As medições que sobraram eram poucas, e todas um pouco erradas.' },
+        { h: 'O problema', ill: '✦ ·  ✦ · ✦', t: 'Ceres (hoje chamado de planeta anão) foi visto por poucas semanas e sumiu no brilho do Sol. As medições que sobraram eram poucas, e todas um pouco erradas.' },
         { h: 'Testar caminhos', ill: '📏', t: 'Para cada caminho possível, medi a distância até cada ponto observado: esse é o erro. Caminho ruim, erro grande.' },
-        { h: 'O caminho que erra menos', ill: '🎯', t: 'Fiquei com o caminho de menor erro total: o método dos mínimos quadrados. Meses depois, Ceres reapareceu bem onde eu tinha previsto!' },
+        { h: 'O caminho que erra menos', ill: '🎯', t: 'Fiquei com o caminho de menor erro. No fim de 1801, Ceres reapareceu quase onde eu tinha previsto! O método, os mínimos quadrados, só foi publicado depois: por Legendre, em 1805, e por mim, em 1809.' },
         { h: 'E na LLM?', ill: '⛰️ ↘ ↘ ↘', t: 'Treinar uma LLM é a mesma ideia, em tamanho gigante: ajustar os números dela, um pouquinho de cada vez, até o erro ficar o menor possível.' },
       ],
+      note: 'No treino de uma LLM, o erro quase nunca chega a zero, e errar pouco nos exemplos do treino não garante acertar perguntas novas.',
+      src: 'Gauss, Theoria motus corporum coelestium (1809). Legendre, Nouvelles méthodes pour la détermination des orbites des comètes (1805). Stephen Stigler, The History of Statistics (1986).',
     },
     game: 'erro',
     nex: 'Achar um asteroide com lápis e papel? Sem computador nenhum?',
@@ -212,8 +224,9 @@ export const STOPS: Stop[] = [
         { h: 'Mais que contas', ill: '🎵 = 🔢', t: 'E percebi algo maior: se letras ou notas musicais virassem números, a máquina poderia trabalhar com elas também. Ela poderia até compor música!' },
         { h: 'E na LLM?', ill: 'palavras → números → palavras', t: 'Foi o que aconteceu: palavras viram números, e uma máquina de contas escreve textos. Eu imaginei isso uns 180 anos antes.' },
       ],
+      src: 'Menabrea e Lovelace, Sketch of the Analytical Engine, com as Notas de A.A.L. (1843), Nota G. A Máquina Analítica nunca foi construída.',
     },
-    ask: { q: 'Qual foi a grande ideia da Ada?', opts: ['A máquina só serve para somar', 'Se símbolos virarem números, a máquina pode trabalhar com eles', 'As máquinas pensam como pessoas'], a: 1, why: 'Letras, notas e palavras podem virar números. É assim que uma máquina de contas consegue escrever.' },
+    ask: { q: 'Qual foi a grande ideia da Ada?', opts: ['A máquina só serve para somar', 'Se símbolos virarem números, a máquina pode trabalhar com eles', 'As máquinas pensam como pessoas'], a: 1, why: 'Letras, notas e palavras podem virar números. É assim que uma máquina de contas consegue escrever.', hint: 'Releia a página “Mais que contas”: o que acontece se uma nota musical virar número?' },
     nex: 'O primeiro programa foi escrito por uma mulher, em 1843? Que demais!',
     tease: 'Inglaterra, 1843. Engrenagens, vapor e cartões cheios de furinhos…',
     place: 'INGLATERRA',
@@ -241,6 +254,7 @@ export const STOPS: Stop[] = [
         { h: 'Transformar', ill: '↗ ⟲ ↖', t: 'Uma matriz multiplicando uma lista de números (um vetor) pode girar, esticar ou espelhar uma figura. A matriz vira uma máquina de transformar.' },
         { h: 'E na LLM?', ill: '× × × trilhões', t: 'Multiplicar matrizes é o que uma LLM mais faz: são trilhões de multiplicações para escrever uma resposta. Por isso ela usa placas de vídeo, que fazem isso muito rápido.' },
       ],
+      src: 'Arthur Cayley, A Memoir on the Theory of Matrices (1858).',
     },
     game: 'vetor',
     nex: 'Multiplicar uma tabela inteira? Isso parece trabalhoso…',
@@ -260,9 +274,11 @@ export const STOPS: Stop[] = [
       title: 'O que vem depois?', year: '1913', place: 'Rússia', who: 'MARKOV', pages: [
         { h: 'O problema', ill: 'a ? ? ?', t: 'Será que as letras de um texto aparecem por acaso? Ou a letra de antes ajuda a adivinhar a próxima?' },
         { h: 'Contar, letra por letra', ill: '🟡 → 🔵 ?', t: 'Peguei 20 mil letras do poema Eugênio Oneguin. Depois de cada vogal, anotei o que vinha: outra vogal ou uma consoante.' },
-        { h: 'Apareceu um padrão', ill: '87 em 100', t: 'Depois de uma vogal, vinha consoante 87 vezes em cada 100! A letra de antes ajuda, e muito, a prever a próxima. Isso virou a cadeia de Markov.' },
+        { h: 'Apareceu um padrão', ill: '87 em 100', t: 'Depois de uma vogal, vinha consoante 87 vezes em cada 100! A letra de antes ajuda, e muito, a prever a próxima. Eu já estudava sequências assim desde 1906: hoje elas se chamam cadeias de Markov.' },
         { h: 'E na LLM?', ill: 'O céu é ___', t: 'Troque letras por palavras e um poema por bilhões de textos: prever o que vem depois é o coração de toda LLM.' },
       ],
+      note: 'Uma cadeia de Markov olha só o que veio logo antes. Uma LLM olha o texto inteiro que cabe no contexto, e por isso acerta muito mais.',
+      src: 'Andrei Markov, estudo sobre Eugênio Oneguin (1913). Brian Hayes, “First Links in the Markov Chain”, American Scientist (2013).',
     },
     game: 'proxima',
     nex: 'Contar vinte mil letras na mão? Eu desistiria na décima!',
@@ -285,6 +301,7 @@ export const STOPS: Stop[] = [
         { h: 'Texto vira número', ill: 'N E X = 78 69 88', t: 'Qualquer letra pode virar um número, e qualquer número vira bits. Em 1963, o código ASCII deu um número para cada letra: A é 65, B é 66…' },
         { h: 'E na LLM?', ill: 'O c é u _ ?', t: 'Em 1951, eu brinquei de adivinhar a próxima letra de frases, para medir quanta informação o texto tem. Setenta anos depois, as LLMs jogam esse mesmo jogo, com palavras.' },
       ],
+      src: 'Claude Shannon, A Mathematical Theory of Communication (1948) e Prediction and Entropy of Printed English (1951). O nome “bit” foi sugerido por John Tukey.',
     },
     game: 'bits',
     nex: 'Monociclo e matemática? Gostei desse cara.',
@@ -297,7 +314,7 @@ export const STOPS: Stop[] = [
   {
     id: 'neuronio', year: '1958', who: 'ROSENBLATT',
     intro: [
-      'Olá! Eu sou Frank Rosenblatt. Em 1958, construí o Perceptron, uma máquina que aprendia.',
+      'Olá! Eu sou Frank Rosenblatt. Em 1958, apresentei o Perceptron, uma máquina que aprendia.',
       'Ela não seguia regras escritas por alguém: aprendia com os próprios erros.',
     ],
     doc: {
@@ -307,6 +324,8 @@ export const STOPS: Stop[] = [
         { h: 'Aprender errando', ill: '❌ → ⚖️ → ✅', t: 'O Perceptron errava e corrigia os pesos. Viu um cachorro e disse “gato”? A pista “late” passa a contar contra. Na próxima, ele acerta.' },
         { h: 'E na LLM?', ill: '3 pesos → bilhões', t: 'Os números ajustados de uma LLM se chamam pesos, igual aos do Perceptron. A diferença é a quantidade: em vez de 3, são bilhões.' },
       ],
+      note: 'O neurônio artificial é inspirado no de verdade, mas é bem mais simples: é uma conta, não uma célula viva.',
+      src: 'Warren McCulloch e Walter Pitts (1943). Frank Rosenblatt, “The Perceptron”, Psychological Review (1958). A máquina Mark I Perceptron ficou pronta em 1960.',
     },
     game: 'neuronio',
     nex: 'Uma máquina que aprende sozinha… isso já parece IA de verdade!',

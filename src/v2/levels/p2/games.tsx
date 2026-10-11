@@ -1,8 +1,9 @@
+import { METRICS, useActivity } from '../../engine/metrics'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { SFX } from '../../engine/audio'
 import { VOICE } from '../../engine/voice'
 import { SPEAKERS } from '../../ui/Icons'
-import { CORPUS, nextDist, withT, tokenize, tokenId, QUESTION, MINI, RAG_DOCS, CANTINA, ragSearch, pct, type RagDoc } from '../../content/llm'
+import { CORPUS, nextDist, withT, tokenize, tokenizeSmall, tokenId, QUESTION, MINI, RAG_DOCS, CANTINA, AVISO_2019, ragSearch, pct, softmax, type RagDoc } from '../../content/llm'
 import { P2_PIPELINE } from './zones'
 
 /* =========================================================
@@ -13,6 +14,12 @@ export type P = { win: (msg: ReactNode) => void; won: boolean }
 /** Estado que o cenário mostra (a torre acende, a roleta gira…). */
 export const WORLD = { camadas: 0, spinAt: -10, spinWord: '', treino: 0, holofotes: [] as string[] }
 
+/** Rola o painel até este ponto quando ele aparece (perguntas que surgem embaixo). */
+export function ScrollHere() {
+  const r = useRef<HTMLSpanElement>(null)
+  useEffect(() => { const t = setTimeout(() => r.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 80); return () => clearTimeout(t) }, [])
+  return <span ref={r} />
+}
 function useShake(): [string, () => void] {
   const [k, setK] = useState(false)
   return [k ? 'shake' : '', () => { setK(false); requestAnimationFrame(() => setK(true)); SFX.play('error'); setTimeout(() => setK(false), 400) }]
@@ -71,7 +78,7 @@ function Prever({ win, won }: P) {
         <span className={'blank' + (pick ? ' on' : '')}>{pick || '___'}</span>
       </div>
       <div className={sh} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 10 }}>
-        {R.opts.map((o) => <button key={o} className={'opt' + (pick === o ? (R.ok.includes(o) ? ' right' : ' wrong') : '')} style={{ margin: 0, textAlign: 'center' }} onClick={() => choose(o)}>{o}</button>)}
+        {R.opts.map((o) => <button key={o} className={'opt' + (pick === o ? (R.ok.includes(o) ? ' right' : ' wrong') : '')} style={{ margin: 0, textAlign: 'center' }} onClick={() => choose(o)}>{pick === o ? (R.ok.includes(o) ? '✓ ' : '✗ ') : ''}{o}</button>)}
       </div>
       <div className="bad">{bad}</div>
       {pick && (
@@ -93,7 +100,7 @@ function Prever({ win, won }: P) {
 const CUTS = [
   { w: 'Brasil?', cuts: [6], why: 'A pontuação vira um token separado: Brasil | ?' },
   { w: 'infelizmente', cuts: [2, 7], why: 'Prefixo, raiz e sufixo: in | feliz | mente' },
-  { w: 'capital', cuts: [], why: 'Palavra comum fica inteira: um token só.' },
+  { w: 'capital', cuts: [], why: 'Neste tokenizador, palavra comum fica inteira: um token só.' },
 ]
 function Tokens({ win, won }: P) {
   const [k, setK] = useState(0)
@@ -114,9 +121,12 @@ function Tokens({ win, won }: P) {
   useEffect(() => {
     if (k < CUTS.length) return
     if (shown < QUESTION.length) { const id = setTimeout(() => { setShown(shown + 1); SFX.play('bead') }, 380); return () => clearTimeout(id) }
-    if (!won) win(<>Cada pedaço é um <b>token</b>, e cada token tem um <b>número de catálogo</b> (ID). A pergunta “Qual é a capital do Brasil?” virou <b>7 tokens</b>, ou seja, 7 números. É só isso que a Engine enxerga.</>)
+    if (!won) win(<>Cada pedaço é um <b>token</b>, e cada token tem um <b>número de catálogo</b> (ID). A pergunta “Qual é a capital do Brasil?” virou <b>7 tokens</b>, ou seja, 7 números: a rede neural da Engine recebe esses números, não as letras. E cada LLM tem o seu tokenizador: no laboratório, compare dois jeitos de cortar.</>)
   }, [k, shown])
-  const toks = useMemo(() => tokenize(lab), [lab])
+  const [tk, setTk] = useState<'A' | 'B'>('A')
+  const toksA = useMemo(() => tokenize(lab), [lab])
+  const toksB = useMemo(() => tokenizeSmall(lab), [lab])
+  const toks = tk === 'A' ? toksA : toksB
   if (k >= CUTS.length) {
     return (
       <>
@@ -125,12 +135,16 @@ function Tokens({ win, won }: P) {
           {QUESTION.slice(0, shown).map((t, i) => <span key={i} className="p2tok" style={{ animationDelay: '0s' }}><b>{t}</b><i>{tokenId(t)}</i></span>)}
         </div>
         <div className="card" style={{ marginTop: 12 }}>
-          <div style={{ fontWeight: 800, fontSize: 14, marginBottom: 6 }}>Laboratório: escreva qualquer coisa e veja os tokens.</div>
+          <div style={{ fontWeight: 800, fontSize: 14, marginBottom: 6 }}>Laboratório: escreva qualquer coisa e veja o texto virar tokens e IDs.</div>
+          <div className="seg" style={{ marginBottom: 8 }} role="group" aria-label="Escolha o tokenizador">
+            <button className={tk === 'A' ? 'on' : ''} onClick={() => { SFX.play('click'); setTk('A') }}>Tokenizador A · {toksA.length}</button>
+            <button className={tk === 'B' ? 'on' : ''} onClick={() => { SFX.play('click'); setTk('B') }}>Tokenizador B · {toksB.length}</button>
+          </div>
           <input value={lab} onChange={(e) => setLab(e.target.value.slice(0, 80))} aria-label="Texto para fatiar" style={{ width: '100%', padding: '10px 12px', borderRadius: 12, border: '1.5px solid var(--line)', background: 'rgba(0,0,0,.25)', color: 'inherit', fontSize: 16, fontWeight: 700 }} />
           <div className="row" style={{ gap: 5, justifyContent: 'flex-start', marginTop: 8 }}>
-            {toks.map((t, i) => <span key={i} className="p2tok sm" style={{ borderColor: ['#ff9a8a', '#ffd27a', '#7ef0a0', '#59d7ff', '#c8a8ff'][t.g % 5] }}><b>{t.t}</b></span>)}
+            {toks.map((t, i) => <span key={i} className="p2tok sm" style={{ borderColor: ['#ff9a8a', '#ffd27a', '#7ef0a0', '#59d7ff', '#c8a8ff'][t.g % 5] }}><b>{t.t}</b><i>{tk === 'A' ? tokenId(t.t) : tokenId('b:' + t.t) % 9000}</i></span>)}
           </div>
-          <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--muted)', marginTop: 6 }}>{toks.length} tokens · palavras longas viram pedaços, emoji pode virar 2 ou mais.</div>
+          <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--muted)', marginTop: 6 }}>Texto → {toks.length} tokens → {toks.length} IDs. A mesma frase dá {toksA.length} tokens no A e {toksB.length} no B: cada LLM corta do seu jeito. Emoji pode virar 2 ou mais.</div>
         </div>
       </>
     )
@@ -186,7 +200,7 @@ function Atencao({ win, won }: P) {
   const next = () => {
     SFX.play('click')
     if (r < 2) { setR(r + 1); setSel([]); setDone(false) }
-    else if (!won) win(<>Na <b>atenção</b>, cada token dá uma nota para os outros, e as notas viram porcentagens. Os holofotes mudam o sentido de “banco” e, na pergunta, vão para <b>“capital”</b> e <b>“Brasil”</b>. É assim que a Engine olha a frase inteira.</>)
+    else if (!won) win(<>Na <b>atenção</b>, a Engine calcula uma nota para cada par de tokens, e as notas viram porcentagens. Elas mudam o sentido de “banco” e, na pergunta, pesam mais em <b>“capital”</b> e <b>“Brasil”</b>. Ninguém escolhe: é uma conta com números aprendidos. Os holofotes e as porcentagens daqui são uma ilustração.</>)
   }
   return (
     <>
@@ -206,6 +220,7 @@ function Atencao({ win, won }: P) {
           <div style={{ fontWeight: 800, fontSize: 14, marginBottom: 6 }}>Troque a palavra que recebe o holofote e veja a resposta mudar:</div>
           <div className="row" style={{ gap: 6 }}>{Object.keys(SWAP).map((k) => <button key={k} className={'chipbtn' + (sw === k ? ' on' : '')} style={{ fontSize: 14, minHeight: 38, padding: '0 10px' }} onClick={() => { SFX.play('click'); setSw(k) }}>{k}</button>)}</div>
           <div className="stat" style={{ marginTop: 8 }}>Qual é a {sw} do Brasil? → <span style={{ color: 'var(--gold-2)' }}>{SWAP[sw]}</span></div>
+          <Heat toks={SPOT[2].toks} />
         </div>
       )}
       <div className="foot">
@@ -213,6 +228,28 @@ function Atencao({ win, won }: P) {
         {done && !won && <button className="btn primary" onClick={next}>{r < 2 ? 'Próxima cena ▸' : 'Concluir ▸'}</button>}
       </div>
     </>
+  )
+}
+
+/** Mapa de calor ilustrativo: cada linha mostra quanto aquele token usa dos anteriores. */
+function Heat({ toks }: { toks: string[] }) {
+  const key = new Set(['capital', 'Brasil'])
+  const rows = toks.map((a, i) => {
+    const sc = toks.map((b, j) => (j > i ? -Infinity : (j === i ? 1 : 0) + (key.has(b) ? 1.3 : 0) + (key.has(a) && key.has(b) && a !== b ? 1.2 : 0) + (a === '?' && key.has(b) ? 1.4 : 0)))
+    const fin = sc.map((v) => (v === -Infinity ? -1e9 : v))
+    return softmax(fin).map((p, j) => (j > i ? 0 : p))
+  })
+  return (
+    <details style={{ marginTop: 10 }}>
+      <summary style={{ cursor: 'pointer', fontWeight: 800, fontSize: 13.5 }}>Ver o mapa de calor da atenção (ilustrativo)</summary>
+      <div style={{ overflowX: 'auto', marginTop: 6 }}>
+        <table className="heat" aria-label="Mapa de calor da atenção">
+          <thead><tr><th />{toks.map((t, j) => <th key={j}>{t}</th>)}</tr></thead>
+          <tbody>{rows.map((r, i) => <tr key={i}><th>{toks[i]}</th>{r.map((p, j) => <td key={j} title={j > i ? 'não olha para frente' : pct(p)} style={{ background: j > i ? 'transparent' : `rgba(255,210,122,${0.08 + p * 0.92})`, color: p > 0.45 ? '#1b1206' : 'var(--muted)' }}>{j > i ? '·' : Math.round(p * 100)}</td>)}</tr>)}</tbody>
+        </table>
+      </div>
+      <div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--muted)', marginTop: 4 }}>Cada linha soma 100%. Os tokens só usam os que vieram antes (os pontinhos), porque a Engine escreve da esquerda para a direita. Numa LLM de verdade são dezenas de mapas assim, um para cada cabeça de atenção, em cada camada.</div>
+    </details>
   )
 }
 
@@ -279,7 +316,10 @@ function Roleta({ win, won }: P) {
   const [hist, setHist] = useState<{ t: string; T: number }[]>([])
   const [busy, setBusy] = useState(false)
   const [q, setQ] = useState<null | 'baixa' | 'alta'>(null)
+  const [q2, setQ2] = useState<null | number>(null)
+  const [guess, setGuess] = useState<null | number>(null)
   const items = withT(nextDist('é'), T).map((d) => ({ t: d.t, p: d.p }))
+  const fav = (t: number) => withT(nextDist('é'), t)[0].p
   const cold = hist.filter((h) => h.T <= 0.5).length, hot = hist.filter((h) => h.T >= 1.5).length
   const spin = () => {
     if (busy) return
@@ -292,7 +332,16 @@ function Roleta({ win, won }: P) {
     WORLD.spinAt = performance.now() / 1000; WORLD.spinWord = items[i].t
     setTimeout(() => { setBusy(false); SFX.play('chime'); setHist((h) => [{ t: items[i].t, T }, ...h].slice(0, 12)) }, 1650)
   }
-  useEffect(() => { if (q === 'baixa' && !won) win(<>Com <b>temperatura baixa</b>, a fatia favorita cresce e a roleta quase sempre repete a mesma palavra: ótimo para fatos. Com <b>temperatura alta</b>, as fatias se igualam e saem palavras inesperadas: bom para criar, mas erra mais.</>) }, [q])
+  useEffect(() => { if (q2 === 1 && !won) win(<>A temperatura mexe nas fatias <b>antes</b> do sorteio. <b>Baixa</b>: a favorita cresce e a roleta quase sempre repete a mesma palavra (previsível). <b>Alta</b>: as fatias se igualam e saem palavras inesperadas (variado). Ela controla a <b>variedade</b>, não a <b>verdade</b>.</>) }, [q2])
+  if (guess === null) {
+    return (
+      <>
+        <p className="lead">Antes de mexer, faça uma previsão. Depois de “<b>é</b>”, a palavra favorita é “<b>uma</b>” ({pct(fav(1))}). Se a temperatura <b>subir</b>, o que acontece com a fatia dela?</p>
+        <div style={{ display: 'grid', gap: 8 }}>{['Fica maior', 'Fica menor', 'Não muda'].map((o, i) => <button key={o} className="opt" style={{ margin: 0 }} onClick={() => { SFX.play('click'); setGuess(i) }}>{o}</button>)}</div>
+        <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--muted)', marginTop: 8 }}>Não tem resposta errada aqui: é um palpite. Você vai testar já já.</div>
+      </>
+    )
+  }
   return (
     <>
       <p className="lead">Depois de “<b>é</b>”, cada palavra tem uma fatia da roleta. Mexa na temperatura, gire e veja o que sai.</p>
@@ -309,13 +358,29 @@ function Roleta({ win, won }: P) {
         <div style={{ color: hot >= 3 ? 'var(--green)' : undefined }}>{hot >= 3 ? '✓' : '○'} Gire 3 vezes com a roleta quente (1,5 ou mais) · {Math.min(3, hot)}/3</div>
       </div>
       {cold >= 3 && hot >= 3 && (
+        <div className="card" style={{ marginTop: 10, fontWeight: 800, fontSize: 14 }}>
+          Seu palpite: “{['Fica maior', 'Fica menor', 'Não muda'][guess]}” {guess === 1 ? '✓ acertou!' : '✗'} A fatia de “uma” foi de {pct(fav(0.5))} (fria, 0,5) para {pct(fav(1.5))} (quente, 1,5). Com temperatura alta, as fatias ficam parecidas.
+        </div>
+      )}
+      {cold >= 3 && hot >= 3 && (
         <div className="card" style={{ marginTop: 10 }}>
-          <div style={{ fontWeight: 900, marginBottom: 8 }}>Para responder “Qual é a capital do Brasil?”, que temperatura é melhor?</div>
+          <ScrollHere />
+          <div style={{ fontWeight: 900, marginBottom: 8 }}>Para um fato, como “Qual é a capital do Brasil?”, que temperatura costuma ser melhor?</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-            <button className={'opt' + (q === 'baixa' ? ' right' : '')} style={{ margin: 0, textAlign: 'center' }} onClick={() => { SFX.play('success'); setQ('baixa') }}>🧊 Baixa</button>
-            <button className={'opt' + (q === 'alta' ? ' wrong' : '')} style={{ margin: 0, textAlign: 'center' }} onClick={() => { SFX.play('error'); setQ('alta') }}>🔥 Alta</button>
+            <button className={'opt' + (q === 'baixa' ? ' right' : '')} style={{ margin: 0, textAlign: 'center' }} onClick={() => { if (q === 'baixa') return; SFX.play('success'); setQ('baixa') }}>{q === 'baixa' ? '✓ ' : ''}🧊 Baixa</button>
+            <button className={'opt' + (q === 'alta' ? ' wrong' : '')} style={{ margin: 0, textAlign: 'center' }} onClick={() => { if (q === 'baixa') return; SFX.play('error'); setQ('alta') }}>{q === 'alta' ? '✗ ' : ''}🔥 Alta</button>
           </div>
-          {q === 'alta' && <div className="bad">Quente demais! A roleta poderia sortear outra cidade. Para fatos, roleta fria.</div>}
+          {q === 'alta' && <div className="bad">✗ Quente demais! A roleta poderia sortear outra cidade. Para fatos, a roleta fria costuma ajudar.</div>}
+          {q === 'baixa' && (
+            <div style={{ marginTop: 10 }}>
+              <ScrollHere />
+              <div style={{ fontWeight: 900, marginBottom: 8 }}>✓ Isso. E com temperatura baixa, a resposta fica garantida como certa?</div>
+              <div style={{ display: 'grid', gap: 8 }}>
+                {['Sim, temperatura baixa sempre acerta', 'Não: ela só repete a favorita. Se a favorita estiver errada, repete o erro'].map((o, i) => <button key={i} className={'opt' + (q2 === i ? (i === 1 ? ' right' : ' wrong') : '')} style={{ margin: 0 }} onClick={() => { if (q2 === 1) return; SFX.play(i === 1 ? 'success' : 'error'); setQ2(i) }}>{q2 === i ? (i === 1 ? '✓ ' : '✗ ') : ''}{o}</button>)}
+              </div>
+              {q2 === 0 && <div className="bad">✗ Pense no modelinho que achava “Rio” mais provável: com temperatura baixa, ele diria “Rio” quase sempre!</div>}
+            </div>
+          )}
         </div>
       )}
     </>
@@ -340,7 +405,7 @@ function Treino({ win, won }: P) {
     if (pb >= 0.9) {
       SFX.play('success')
       const pf = MINI.probs(W, MINI.K[1].x), pb2 = MINI.probs(W, MINI.K[2].x)
-      win(<>Brasília passou de <b>90%</b> depois de {st.current.n} passos! A cada frase, o modelo chutou, mediu o <b>erro</b> e empurrou cada peso um pouquinho para errar menos. E os mesmos 27 pesos agora dizem <b>Paris</b> ({pct(pf[3])}) para a França e <b>futebol</b> ({pct(pb2[5])}) para “famoso pelo”.</>)
+      win(<>Brasília passou de <b>90%</b> depois de {st.current.n} passos! A cada frase, o modelo chutou, mediu o <b>erro</b> e empurrou cada peso um pouquinho para errar menos. E os mesmos 27 pesos agora dizem <b>Paris</b> ({pct(pf[3])}) para a França e <b>futebol</b> ({pct(pb2[5])}) para “famoso pelo”. Repare no gráfico: a chance nem sempre sobe em linha reta.</>)
     }
   }
   const pb = p0[0]
@@ -381,8 +446,16 @@ function DocCard({ d, s, on }: { d: RagDoc; s: number; on?: boolean }) {
 function Rag({ win, won }: P) {
   const [step, setStep] = useState(0)
   const Q1 = 'Que horas a biblioteca abre no sábado?', Q2 = 'Que horas sai o pão de queijo?'
-  const r1 = ragSearch(Q1, RAG_DOCS), r2 = ragSearch(Q2, RAG_DOCS), r3 = ragSearch(Q2, [...RAG_DOCS, CANTINA])
-  const go = (s: number) => { SFX.play(s === 1 ? 'error' : 'chime'); setStep(s); if (s === 5 && !won) win(<>Sem documentos, a Engine <b>inventou</b> um horário: uma <b>alucinação</b>. Com o <b>RAG</b>, um buscador achou o trecho certo e colou no <b>contexto</b>, junto com a pergunta: aí a resposta vem certa e com a fonte [1]. E quando nada foi achado, o certo é dizer que não sabe.</>) }
+  const Q3 = 'A biblioteca abre no feriado de amanhã?'
+  const r1 = ragSearch(Q1, RAG_DOCS), r2 = ragSearch(Q2, RAG_DOCS), r3 = ragSearch(Q2, [...RAG_DOCS, CANTINA]), r4 = ragSearch(Q3, [...RAG_DOCS, CANTINA, AVISO_2019])
+  const [p3, setP3] = useState<number | null>(null)
+  const go = (s: number) => { SFX.play(s === 1 ? 'error' : 'chime'); setStep(s) }
+  const pick3 = (i: number) => {
+    if (p3 === 1 || won) return
+    setP3(i); SFX.play(i === 1 ? 'success' : 'error')
+    if (i === 1) win(<>Sem documentos, a Engine <b>inventou</b> um horário: uma <b>alucinação</b>. Com o <b>RAG</b>, primeiro um buscador acha trechos parecidos (<b>recuperação</b>); depois a Engine escreve com eles no contexto (<b>geração</b>) e mostra a fonte [1]. Mas RAG não é garantia: quando nada é achado, o certo é dizer que não sabe; e um documento achado pode estar <b>velho</b> ou não sustentar a resposta.</>)
+  }
+  const Lbl = ({ n, t }: { n: number; t: string }) => <div style={{ fontWeight: 900, fontSize: 12.5, letterSpacing: '.06em', color: n === 1 ? 'var(--cyan)' : 'var(--green)', margin: '8px 0 4px' }}>{n} · {t}</div>
   return (
     <>
       <div className="card"><b>Pergunta 1:</b> {Q1}</div>
@@ -397,9 +470,10 @@ function Rag({ win, won }: P) {
       {step === 1 && <div className="foot"><button className="btn primary" onClick={() => go(2)}>Ligar a busca (RAG) 🔎</button></div>}
       {step >= 2 && (
         <div style={{ marginTop: 8 }}>
-          <div style={{ fontWeight: 900, fontSize: 13, color: 'var(--muted)', marginBottom: 4 }}>A BUSCA ACHOU (quanto mais alto o número, mais parecido com a pergunta):</div>
+          <Lbl n={1} t="BUSCA (RECUPERAÇÃO): quanto mais alto o número, mais parecido com a pergunta" />
           <div style={{ display: 'grid', gap: 5 }}>{r1.slice(0, 3).map((x, i) => <DocCard key={x.d.t} d={x.d} s={x.s} on={i === 0} />)}</div>
-          <div className="card" style={{ marginTop: 6, borderColor: 'var(--green)' }}><div style={{ fontWeight: 900, color: 'var(--green)', fontSize: 13 }}>ENGINE (com o trecho no contexto)</div><div style={{ fontWeight: 800 }}>“Aos sábados, a biblioteca abre das 9h às 13h [1].”</div></div>
+          <Lbl n={2} t="RESPOSTA (GERAÇÃO), com o trecho no contexto" />
+          <div className="card" style={{ borderColor: 'var(--green)' }}><div style={{ fontWeight: 800 }}>“Aos sábados, a biblioteca abre das 9h às 13h [1].”</div></div>
         </div>
       )}
       {step === 2 && <div className="foot"><button className="btn primary" onClick={() => go(3)}>Próxima pergunta ▸</button></div>}
@@ -412,7 +486,20 @@ function Rag({ win, won }: P) {
         </div>
       )}
       {step === 3 && <div className="foot"><button className="btn primary" onClick={() => go(4)}>Adicionar documento: Cantina do campus 📄</button></div>}
-      {step === 4 && <div className="foot"><button className="btn primary" onClick={() => go(5)}>Entendi o RAG ▸</button></div>}
+      {step === 4 && <div className="foot"><button className="btn primary" onClick={() => go(5)}>Última pergunta ▸</button></div>}
+      {step >= 5 && (
+        <div style={{ marginTop: 10 }}>
+          <ScrollHere />
+          <div className="card"><b>Pergunta 3:</b> {Q3}</div>
+          <Lbl n={1} t="BUSCA (RECUPERAÇÃO)" />
+          <div style={{ display: 'grid', gap: 5 }}>{r4.slice(0, 2).map((x, i) => <DocCard key={x.d.t} d={x.d} s={x.s} on={i === 0} />)}</div>
+          <Lbl n={2} t="QUAL RESPOSTA A ENGINE DEVE ESCREVER?" />
+          <div style={{ display: 'grid', gap: 8 }}>
+            {['“Sim! A biblioteca abre no feriado, das 10h às 14h [1].”', '“Só achei um aviso de 2019, que pode estar desatualizado. Melhor confirmar o horário com a biblioteca [1].”'].map((o, i) => <button key={i} className={'opt' + (p3 === i ? (i === 1 ? ' right' : ' wrong') : '')} style={{ margin: 0 }} onClick={() => pick3(i)}>{p3 === i ? (i === 1 ? '✓ ' : '✗ ') : ''}{o}</button>)}
+          </div>
+          {p3 === 0 && <div className="bad">✗ Olhe a data do documento: é de 2019. A busca achou um texto parecido com a pergunta, mas ele não garante o horário de amanhã.</div>}
+        </div>
+      )}
     </>
   )
 }
@@ -439,7 +526,8 @@ export function P2GameView({ game, who, onDone }: { game: string; who: string; o
   const okRef = useRef<HTMLDivElement>(null)
   useEffect(() => { if (msg) setTimeout(() => okRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }), 60) }, [msg])
   const G1 = P2GAMES[game]
-  const win = (m: ReactNode) => { if (!msg) { setMsg(m); SFX.play('discover') } }
+  useActivity('p2:' + game)
+  const win = (m: ReactNode) => { if (!msg) { setMsg(m); SFX.play('discover'); METRICS.done('p2:' + game) } }
   return (
     <div className="doc-wrap" onPointerDown={(e) => e.stopPropagation()}>
       <div className="gm">
@@ -455,6 +543,7 @@ export function P2GameView({ game, who, onDone }: { game: string; who: string; o
 
 /** O caminho da pergunta por dentro da Engine (final da fase). */
 export function P2PipelineView({ onDone }: { onDone: () => void }) {
+  useActivity('p2:caminho')
   const [k, setK] = useState(0)
   const p = P2_PIPELINE[k]
   const last = k === P2_PIPELINE.length - 1
@@ -469,10 +558,62 @@ export function P2PipelineView({ onDone }: { onDone: () => void }) {
         <div className="row" style={{ justifyContent: 'flex-start', gap: 6, marginBottom: 10 }}>{P2_PIPELINE.slice(0, k + 1).map((s) => <span key={s.k} className="chip" style={{ color: s.k === p.k ? 'var(--gold-2)' : 'var(--cyan)' }}>{s.k}</span>)}</div>
         <div className="card mono" style={{ fontSize: 'clamp(16px, 4.6vw, 24px)', fontWeight: 800, textAlign: 'center', color: last ? 'var(--gold-2)' : 'var(--cyan)', padding: '16px 10px' }} key={k}>{p.show}</div>
         <p className="lead" style={{ marginTop: 12 }}>{p.t}</p>
+        {last && <div className="simp">🔍 Caminho simplificado: numa LLM de verdade, a atenção e as tabelas de pesos se alternam dentro de cada uma das dezenas de camadas, e os números mostrados aqui são ilustrativos.</div>}
         <div className="foot">
           {k > 0 && <button className="btn small" onClick={() => { SFX.play('click'); setK(k - 1) }}>◂ Voltar</button>}
           <button className="btn primary" onClick={() => { SFX.play('click'); if (last) { VOICE.stop(); onDone() } else setK(k + 1) }}>{last ? 'Brasília!' : 'Próximo passo ▸'}</button>
         </div>
+      </div>
+    </div>
+  )
+}
+
+/* ---------- desafio do final: coloque os passos em ordem ---------- */
+const ORDER_HINT = [
+  'Tudo começa cortando o texto em pedaços.',
+  'Depois de cortar, cada pedaço ganha um número do catálogo.',
+  'Com o número, a Engine pega a lista de números do token.',
+  'Agora os vetores precisam se misturar com os das vizinhas.',
+  'Depois, os vetores sobem a torre, andar por andar.',
+  'No topo, cada palavra possível ganha uma chance.',
+  'Com as chances prontas, falta sortear.',
+  'Por fim, a palavra escolhida entra no texto.',
+]
+const ORDER_SUB: Record<string, string> = { TOKENS: 'cortar o texto', IDs: 'número do catálogo', VETORES: 'lista de números', 'ATENÇÃO': 'misturar o contexto', CAMADAS: 'andar por andar', CHANCES: 'uma chance por palavra', ROLETA: 'sortear', RESPOSTA: 'escrever a palavra' }
+export function P2OrderView({ onDone }: { onDone: () => void }) {
+  const shuffled = useMemo(() => { const r = [5, 2, 7, 0, 3, 6, 1, 4]; return r.map((i) => P2_PIPELINE[i].k) }, [])
+  const [done, setDone] = useState<string[]>([])
+  const [miss, setMiss] = useState(0)
+  const [msg, setMsg] = useState('')
+  const [sh, shake] = useShake()
+  const n = done.length, all = n === P2_PIPELINE.length
+  useActivity('p2:ordem')
+  useEffect(() => { if (all) METRICS.done('p2:ordem') }, [all])
+  useEffect(() => { VOICE.speak('Coloque os passos na ordem: do texto até a resposta.', 'ENGINE') }, [])
+  useEffect(() => () => VOICE.stop(), [])
+  const tap = (k: string) => {
+    if (all || done.includes(k)) return
+    if (k === P2_PIPELINE[n].k) { SFX.play('bead'); setDone([...done, k]); setMiss(0); setMsg(''); if (n + 1 === P2_PIPELINE.length) SFX.play('success') }
+    else { shake(); if (miss >= 1) METRICS.hint(); setMiss(miss + 1); setMsg((miss >= 1 ? '💡 ' : '') + ORDER_HINT[n]) }
+  }
+  return (
+    <div className="doc-wrap" onPointerDown={(e) => e.stopPropagation()}>
+      <div className="gm">
+        <div className="who-chip"><span style={{ color: '#8fe9ff' }}>DESAFIO DA LANGUAGE ENGINE</span></div>
+        <h4>Coloque os passos na ordem</h4>
+        <p className="lead">Do texto até a resposta: toque nos passos na ordem em que a Engine faz cada um.</p>
+        <div className="row" style={{ gap: 6, justifyContent: 'flex-start', minHeight: 40 }}>
+          {P2_PIPELINE.map((p, i) => <span key={p.k} className="chip" style={{ color: i < n ? 'var(--gold-2)' : 'rgba(255,255,255,.25)' }}>{i + 1}. {i < n ? p.k : '…'}</span>)}
+        </div>
+        <div className={sh} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 8, marginTop: 10 }}>
+          {shuffled.map((k) => {
+            const used = done.includes(k), hint = !used && miss >= 2 && k === P2_PIPELINE[n]?.k
+            return <button key={k} className={'opt' + (used ? ' right' : '') + (hint ? ' pulse' : '')} style={{ margin: 0, textAlign: 'center' }} disabled={used} onClick={() => tap(k)}>{used ? '✓ ' : ''}<b>{k}</b><br /><small style={{ fontWeight: 700, opacity: 0.8 }}>{ORDER_SUB[k]}</small></button>
+          })}
+        </div>
+        <div className="bad">{msg}</div>
+        {all && <div className="ok">Ordem certa! Tokens → IDs → vetores → atenção → camadas → chances → roleta → resposta. E depois tudo recomeça para a próxima palavra.</div>}
+        {all && <div className="foot"><button className="btn primary" onClick={() => { VOICE.stop(); onDone() }}>Ver a Engine responder ▸</button></div>}
       </div>
     </div>
   )

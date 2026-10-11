@@ -67,7 +67,12 @@ Com os três núcleos de volta, a Engine consegue devolver o NEX ao quarto dele,
 
 - **Fase 1:** que a LLM se apoia em ideias com milhares de anos: tokens (fichas de barro), matrizes, algoritmos, probabilidade, zero e um, o menor erro, programas com símbolos, multiplicação de matrizes, prever a próxima palavra (Markov), bits e neurônios com pesos.
 - **Fase 2:** o caminho de uma pergunta dentro de uma LLM: prever a próxima palavra, tokens e IDs, embeddings (vetores de significado), atenção, camadas e matrizes, temperatura, treino (errar e ajustar pesos) e contexto/RAG contra alucinação.
-- **Fase 3:** fazer uma LLM de verdade (pequena, treinada no navegador): escolher dados, montar o vocabulário, decidir a memória (janela de contexto), treinar e ver o erro cair, testar os 7 passos internos, entender prompt × ajuste fino e aprender com preferências (útil, honesta, segura), terminando com uma prova final.
+- **Fase 3:** fazer uma LLM de verdade (uma mini-rede neural treinada no navegador, muito menor que uma LLM moderna): escolher dados, montar o vocabulário, decidir a memória (janela de contexto), treinar e ver o erro cair, testar os 7 passos internos e com frases que ela nunca leu (generalização × decoreba), distinguir prompt, RAG e ajuste fino e aprender com preferências (útil, honesta, segura), terminando com uma prova final.
+- **Em todas as fases:** que uma resposta fluente e confiante pode estar errada, e que vale conferir em fontes confiáveis.
+
+**Como cada missão ensina:** previsão (o jogador dá um palpite), experimentação (muda algo e vê o resultado), explicação, transferência (usa a ideia num caso novo) e feedback que explica o erro, com dicas progressivas. A matriz completa está em `docs/MATRIZ_APRENDIZAGEM.md`.
+
+**Metáforas transparentes:** a Engine fala, “lembra” e “esquece” só na história. Quando o jogo simplifica algo, os documentos mostram o quadro “🔍 O jogo simplificou”, e os documentos históricos trazem “📚 Fontes” (lista completa em `docs/REFERENCIAS.md`).
 
 **Princípio de design:** o NEX é o aluno, não o professor. Ele pergunta o que o jogador perguntaria, erra, experimenta e só depois a explicação aparece, sempre ligada ao que acabou de acontecer. Cada ideia termina com “E na LLM?”, conectando a história ao funcionamento real dos modelos.
 
@@ -108,7 +113,7 @@ Os inventores aparecem como **ecos holográficos** em cada ilha, e cada um mostr
 | Época | Personagem | Ideia | Palavra que a Engine recupera |
 |---|---|---|---|
 | 3500 a.C. | **Escriba de Uruk** | As fichas de barro | FICHAS |
-| 200 a.C. | **Liu Hui** | O mistério dos três grãos | MATRIZES |
+| 263 | **Liu Hui** | O mistério dos três grãos | MATRIZES |
 | 825 | **Al-Khwarizmi** | O passo a passo | PASSOS |
 | 1654 | **Blaise Pascal** | Calcular a sorte | CHANCES |
 | 1703 | **Gottfried Leibniz** | Tudo com 0 e 1 | ZERO E UM |
@@ -160,7 +165,7 @@ Os inventores aparecem como **ecos holográficos** em cada ilha, e cada um mostr
 |---|---|---|---|
 | quarto | **O Quarto** | O quarto do NEX, noite de tempestade | 1: Uma pergunta |
 | prologo | **A Language Engine** | O salão da Language Engine | 1: A máquina que esqueceu |
-| p1 | **O Arquivo da Memória** | Arquipélago de 11 ilhas em volta da Memória Central | 13: Chegada ao Arquivo; 3500 a.C. · As fichas de barro; 200 a.C. · O mistério dos três grãos; 825 · O passo a passo; 1654 · Calcular a sorte; 1703 · Tudo com 0 e 1; 1801 · O menor erro; 1843 · A máquina dos símbolos; 1858 · Multiplicar tabelas; 1913 · O que vem depois?; 1948 · O bit; 1958 · O neurônio que aprende; A Memória Central |
+| p1 | **O Arquivo da Memória** | Arquipélago de 11 ilhas em volta da Memória Central | 13: Chegada ao Arquivo; 3500 a.C. · As fichas de barro; 263 · O mistério dos três grãos; 825 · O passo a passo; 1654 · Calcular a sorte; 1703 · Tudo com 0 e 1; 1801 · O menor erro; 1843 · A máquina dos símbolos; 1858 · Multiplicar tabelas; 1913 · O que vem depois?; 1948 · O bit; 1958 · O neurônio que aprende; A Memória Central |
 | p2 | **A Fábrica de Previsões** | Fábrica com 3×3 salas, esteiras e barreiras de energia | 10: Chegada à fábrica; Estação 1 · Oficina do Adivinho; Estação 2 · O Fatiador; Estação 3 · Vale dos Vetores; Estação 4 · Praça dos Holofotes; Estação 5 · Torre das Camadas; Estação 6 · Cassino da Roleta; Estação 7 · Academia dos Pesos; Estação 8 · Biblioteca do Contexto; A grande pergunta |
 | p3 | **O Laboratório** | Laboratório branco com cápsula no centro | 8: Chegada ao laboratório; Estação 1 · Biblioteca de Dados; Estação 2 · Tokenizador; Estação 3 · Forja de Treino; Estação 4 · Sala de Teste; Estação 5 · Ajuste e Alinhamento; Estação 6 · Formatura; A despedida |
 | fim | **De Volta para Casa** | O quarto do NEX, de manhã | 1: A resposta |
@@ -250,7 +255,7 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 >
 > **NOVA:** O choque que te trouxe para cá também embaralhou a memória dela. Ela ainda consegue responder, mas esqueceu como funciona.
 >
-> **NOVA:** As peças que explicam como ela pensa, os Núcleos de Conhecimento, se espalharam por mundos diferentes.
+> **NOVA:** As peças que explicam como ela funciona, os Núcleos de Conhecimento, se espalharam por mundos diferentes.
 >
 > **NEX:** E como eu volto para casa?
 >
@@ -259,11 +264,14 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 > **NOVA:** Quando os núcleos voltarem, ela vai funcionar direito de novo. E vai poder te devolver ao seu quarto.
 >
 > **NOVA:** Quer saber mais antes de ir?
+>  - *Opção “A Engine pensa e sente como gente?”* → **NOVA:** Aqui na história, ela fala, lembra e esquece, para a aventura ficar divertida. Uma LLM de verdade não tem lembranças nem sentimentos: por dentro, são contas com números. Quando o jogo simplificar alguma coisa, os documentos avisam.
 >  - *Opção “O que são esses mundos?”* → **NOVA:** Cada mundo guarda uma ideia que tornou possível uma máquina de linguagem. Os primeiros são bem antigos: começam com um pastor contando ovelhas com fichinhas de barro.
 >  - *Opção “Por que você me ajuda?”* → **NOVA:** Porque perguntas são o combustível desta máquina. E você parece ter muitas.
 >  - *Opção “Vamos logo!”* → **NOVA:** Gosto da energia!
 
 *Verbete do Codex: “Language Engine”. Um portal se abre.*
+
+> **NOVA:** Um portal se abriu! Vamos atravessar.
 
 *🎯 Objetivo: Entre no portal*
 
@@ -293,7 +301,7 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 >
 > **NOVA:** Cada ilha guarda uma dessas ideias. Alguém inventou cada uma, às vezes há milhares de anos.
 >
-> **NOVA:** Juntas, essas ideias são a matemática que faz uma LLM funcionar. Sem elas, a Engine não consegue pensar direito.
+> **NOVA:** Juntas, essas ideias são a matemática que faz uma LLM funcionar. Sem elas, a Engine não consegue funcionar direito.
 >
 > **NEX:** E como a gente devolve essas ideias para ela?
 >
@@ -356,10 +364,14 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 
 > 📜 **Documento: “As fichas de barro”** — há ~5.500 anos · Uruk, Mesopotâmia (hoje, Iraque)
 >
-> 1. **O problema** `🐑🐑🐑🐑🐑🐑🐑` — Um pastor leva 7 ovelhas para pastar. Na volta, como saber se alguma se perdeu? Ele não sabe contar até 7. Quase ninguém sabia!
+> 1. **O problema** `🐑🐑🐑🐑🐑🐑🐑` — Um pastor leva 7 ovelhas para pastar. Na volta, como conferir se alguma se perdeu? Ainda não existia escrita para anotar nada.
 > 2. **A ideia** `🐑 → 🟤` — Para cada ovelha que sai, uma fichinha de barro vai para a bolsa. Na volta, sai uma ficha para cada ovelha que entra. Sobrou ficha? Falta ovelha!
-> 3. **Do barro ao número** `🟤🟤🟤 → ✍️` — Depois, em vez de guardar as fichas, os escribas passaram a desenhá-las no barro. Esses desenhos são os números escritos mais antigos que conhecemos.
-> 4. **E na LLM?** `“gatinho” → [gat] [inho]` — Os arqueólogos chamam essas fichinhas de tokens. Uma LLM faz igual: corta o texto em pedacinhos e troca cada um por uma ficha, um token. Ela nunca lê letras: lê fichas!
+> 3. **Do barro ao número** `🟤🟤🟤 → ✍️` — Com o tempo, os escribas passaram a desenhar as fichas no barro, em vez de guardá-las. Para muitos arqueólogos, esses desenhos estão entre os primeiros números escritos.
+> 4. **E na LLM?** `“gatinho” → [gat] [inho]` — Os arqueólogos chamam essas fichinhas de tokens. Uma LLM faz algo parecido: um programa, o tokenizador, corta o texto em pedaços e troca cada pedaço por um número. Esses pedaços também se chamam tokens.
+>
+> 🔍 **O jogo simplificou:** No jogo, ficha = token. Na vida real, um token pode ser uma palavra inteira, um pedaço de palavra, um espaço ou uma pontuação. E cada LLM corta do seu jeito: o mesmo texto pode virar quantidades diferentes de tokens.
+>
+> 📚 **Fontes:** Denise Schmandt-Besserat, Before Writing (1992). A ligação entre as fichas e os primeiros números escritos é muito aceita; outros detalhes da hipótese ainda são discutidos.
 
 > **Escriba de Uruk:** Antes de eu ir, me responda uma coisa.
 
@@ -370,6 +382,8 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 - As fichas quebraram
 
 *Explicação:* Cada ficha representa uma ovelha. Ficha sobrando quer dizer ovelha faltando.
+
+*Dica (aparece no segundo erro):* Lembre: sai uma ficha da bolsa para cada ovelha que volta. Se sobrou ficha, quem não voltou?
 
 > **Escriba de Uruk:** Uma coisinha no lugar de outra: é assim que tudo começa.
 >
@@ -385,13 +399,13 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 >
 > 1. **Milhares de bolinhas** `🔺⚪🟤` — A arqueóloga Denise Schmandt-Besserat estudou milhares de fichinhas de barro achadas no Oriente Médio. Algumas têm mais de 9.000 anos!
 > 2. **Um formato para cada coisa** `🔺 grão · 🟤 ovelha` — As fichas tinham formatos diferentes para coisas diferentes: cones, esferas, discos. Cada formato representava um tipo de mercadoria.
-> 3. **O envelope de barro** `🥚 + marcas` — As fichas eram guardadas em envelopes de barro. Por fora, desenhavam as fichas de dentro. Com o tempo, bastavam os desenhos: tinha nascido a escrita.
+> 3. **O envelope de barro** `🥚 + marcas` — As fichas eram guardadas em envelopes de barro. Por fora, desenhavam as fichas de dentro. Com o tempo, bastavam os desenhos. Para ela, foi assim que a escrita começou; parte dos pesquisadores acha que a história foi mais complicada.
 
 *Quando a névoa da ponte seguinte se desfaz, NOVA comenta:*
 
 > **NOVA:** A névoa abriu! Do outro lado da ponte tem uma vila da China antiga. Parece que um comerciante tem um mistério…
 
-### 7.3 200 a.C. · O mistério dos três grãos (Liu Hui)
+### 7.3 263 · O mistério dos três grãos (Liu Hui)
 
 **Ilha:** a vila do arroz, China antiga (há ~2.000 anos). **Missão:** “O Mistério dos Três Grãos”: como descobrir algo que nunca foi medido diretamente?
 
@@ -477,12 +491,16 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 >
 > **Liu Hui:** Anotei a história deste método. Leia comigo.
 
-> 📜 **Documento: “O mistério dos três grãos”** — há ~2.000 anos · China
+> 📜 **Documento: “O mistério dos três grãos”** — livro de ~2.000 anos · comentário de 263 · China
 >
-> 1. **Um problema de 2.000 anos** `📜🌾` — O mistério dos três grãos é o primeiro problema do capítulo 8 do livro Os Nove Capítulos da Arte Matemática, escrito na China há uns 2.000 anos. Ninguém sabe quem foi o autor.
+> 1. **Um problema de 2.000 anos** `📜🌾` — O mistério dos três grãos é o primeiro problema do capítulo 8 do livro Os Nove Capítulos da Arte Matemática, reunido na China há uns 2.000 anos a partir de textos ainda mais antigos. Ninguém sabe quem foram os autores.
 > 2. **O tabuleiro de varetas** `│││ ││ │` — Os calculistas punham cada registro numa coluna de um tabuleiro, com varetas de bambu. Varetas vermelhas eram números positivos; pretas, negativos. O lugar de cada vareta dizia o que ela era.
 > 3. **Eliminar, coluna por coluna** `39 − 34 = 5` — Igual a você: tirando um registro do outro, uma incógnita some. Repetindo, sobra uma só, e as outras aparecem em seguida. Na Europa, esse método só apareceu mais de mil anos depois. Hoje ele se chama eliminação de Gauss.
 > 4. **E na LLM?** `exemplos → pesos → previsão` — Uma LLM resolve um mistério parecido, só que gigante: descobre bilhões de valores escondidos (os pesos) a partir de textos que já existem. Depois usa esses valores para prever o que nunca viu: a próxima palavra.
+>
+> 🔍 **O jogo simplificou:** Na vida real, os pesos de uma LLM não saem de um sistema de equações exato: eles são ajustados aos poucos, no treino, até errar menos. A ideia em comum é descobrir valores escondidos a partir de exemplos.
+>
+> 📚 **Fontes:** Os Nove Capítulos da Arte Matemática, cap. 8, problema 1, com o comentário de Liu Hui (263). Tradução: Shen Kangshen, John Crossley e Anthony Lun (1999).
 
 **Cena 11: a grande ideia** (painel animado com Liu Hui narrando):
 
@@ -500,7 +518,7 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 
 > **Liu Hui:** Quando não dá para medir algo diretamente, use o que você já sabe. Até mais, viajante!
 >
-> *Banner: MEMÓRIA RECUPERADA · **MATRIZES** · 200 a.C. · Liu Hui*
+> *Banner: MEMÓRIA RECUPERADA · **MATRIZES** · 263 · Liu Hui*
 >
 > **Language Engine:** ma… tri… zes. Eu guardo… o que aprendi… em matrizes.
 
@@ -544,6 +562,10 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 > 2. **A ideia** `0 1 2 3 4 5 6 7 8 9` — Escrevi um livro ensinando as contas com os algarismos que vieram da Índia, incluindo o zero. E ensinei cada conta como uma receita: passo 1, passo 2, passo 3.
 > 3. **Meu nome virou palavra** `al-Khwarizmi → algoritmo` — Na Europa, meu livro foi traduzido como “Algoritmi…”. E “algoritmo” passou a querer dizer qualquer receita de passos bem definidos. Outro livro meu, Al-jabr, deu nome à álgebra.
 > 4. **E na LLM?** `🔁` — Um computador só faz o que um algoritmo manda. Por dentro, uma LLM é um algoritmo enorme: os mesmos passos de conta, repetidos trilhões de vezes.
+>
+> 🔍 **O jogo simplificou:** A diferença é que, numa LLM, ninguém escreve à mão os números que essas contas usam: eles são aprendidos no treino.
+>
+> 📚 **Fontes:** Livro de aritmética de al-Khwarizmi, conhecido pela tradução latina Algoritmi de numero Indorum (séc. XII), e o livro Al-jabr (c. 820).
 
 > **Al-Khwarizmi:** Minha receita da soma ficou embaralhada. Coloque os passos na ordem!
 
@@ -571,7 +593,7 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 
 > **Blaise Pascal:** Bonjour! Eu sou Blaise Pascal. Em 1654, um amigo que adorava apostas me fez uma pergunta difícil.
 >
-> **Blaise Pascal:** Escrevi para o Pierre de Fermat pedindo ajuda. Das nossas cartas nasceu uma matemática nova.
+> **Blaise Pascal:** Escrevi para o Pierre de Fermat pedindo ajuda. Nossas cartas viraram um marco da matemática das chances.
 
 *🖼️ Imagem real: **Retrato de Blaise Pascal** — Pintura do século XVII · Palácio de Versalhes, França*
 
@@ -587,8 +609,12 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 >
 > 1. **O problema** `🎲🎲  ⏸️  💰 ?` — Dois amigos apostam num jogo de dados, mas precisam parar no meio. Dar tudo para quem tem mais pontos não é justo. Como dividir o dinheiro?
 > 2. **A ideia** `✉️ ⇄ ✉️` — Nas cartas, eu e Fermat listamos tudo o que ainda poderia acontecer e contamos em quantos casos cada um ganharia.
-> 3. **Nasce a probabilidade** `3 em 4 = 75%` — Assim, o dinheiro se divide pelas chances de cada um. Pela primeira vez, alguém fez contas com um futuro incerto: é a probabilidade.
+> 3. **Nasce a probabilidade** `3 em 4 = 75%` — Assim, o dinheiro se divide pelas chances de cada um. Cardano e Galileu já tinham feito contas com dados; nós achamos um método geral. Dali cresceu a teoria da probabilidade.
 > 4. **E na LLM?** `azul 62% · escuro 21% · …` — Uma LLM nunca tem certeza da próxima palavra. Ela calcula a chance de cada palavra possível e escolhe com base nisso.
+>
+> 🔍 **O jogo simplificou:** Chance alta numa LLM quer dizer “combina com o que veio antes”, não “é verdade”. Uma resposta pode sair muito provável e estar errada.
+>
+> 📚 **Fontes:** Cartas entre Pascal e Fermat (1654). Ian Hacking, The Emergence of Probability (1975).
 
 > **Blaise Pascal:** Vamos jogar dois dados milhares de vezes. Antes, aposte: qual soma sai mais?
 
@@ -639,9 +665,11 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 > 📜 **Documento: “Tudo com 0 e 1”** — 1703 · Alemanha
 >
 > 1. **O problema** `🖐️🖐️ = 10` — Contamos com dez algarismos porque temos dez dedos. Mas uma máquina não tem dedos. Dá para contar com menos?
-> 2. **A ideia** `8 4 2 1 → 0101 = 5` — Publiquei o sistema binário: só 0 e 1. Cada casa vale o dobro da anterior: 1, 2, 4, 8… O número 5 vira 101: um 4, nenhum 2 e um 1.
+> 2. **A ideia** `8 4 2 1 → 0101 = 5` — Em 1703, escrevi sobre o sistema binário: só 0 e 1. Outros já tinham pensado nisso, mas meu texto espalhou a ideia. Cada casa vale o dobro da anterior: 1, 2, 4, 8… O número 5 vira 101.
 > 3. **Um sim ou um não** `💡 = 1 · ⚫ = 0` — 0 e 1 podem ser desligado e ligado, não e sim. Em 1854, George Boole mostrou que até o raciocínio lógico (E, OU, NÃO) pode ser feito com 0 e 1.
 > 4. **E na LLM?** `01001100 01001100 01001101` — Todo computador guarda tudo em 0 e 1: textos, fotos, músicas e os bilhões de números da própria LLM.
+>
+> 📚 **Fontes:** Leibniz, Explication de l’arithmétique binaire (apresentado à Academia de Paris em 1703, publicado em 1705). George Boole, The Laws of Thought (1854).
 
 > **Gottfried Leibniz:** Acenda as lâmpadas certas para escrever cada número só com 0 e 1.
 
@@ -669,7 +697,7 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 
 > **Carl Friedrich Gauss:** Hallo! Eu sou Carl Friedrich Gauss. Em 1801, os astrônomos perderam um asteroide de vista.
 >
-> **Carl Friedrich Gauss:** Eu tinha 24 anos e encontrei ele com papel, lápis e uma ideia: errar o menos possível.
+> **Carl Friedrich Gauss:** Eu tinha 24 anos e, só com papel e lápis, calculei onde ele ia aparecer de novo.
 
 *🖼️ Imagem real: **Retrato de Carl Friedrich Gauss** — Christian Albrecht Jensen, 1840 (cópia de 1887)*
 
@@ -683,10 +711,14 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 
 > 📜 **Documento: “O menor erro”** — 1801 a 1809 · Alemanha
 >
-> 1. **O problema** `✦ ·  ✦ · ✦` — O asteroide Ceres foi visto por poucas semanas e sumiu no brilho do Sol. As medições que sobraram eram poucas, e todas um pouco erradas.
+> 1. **O problema** `✦ ·  ✦ · ✦` — Ceres (hoje chamado de planeta anão) foi visto por poucas semanas e sumiu no brilho do Sol. As medições que sobraram eram poucas, e todas um pouco erradas.
 > 2. **Testar caminhos** `📏` — Para cada caminho possível, medi a distância até cada ponto observado: esse é o erro. Caminho ruim, erro grande.
-> 3. **O caminho que erra menos** `🎯` — Fiquei com o caminho de menor erro total: o método dos mínimos quadrados. Meses depois, Ceres reapareceu bem onde eu tinha previsto!
+> 3. **O caminho que erra menos** `🎯` — Fiquei com o caminho de menor erro. No fim de 1801, Ceres reapareceu quase onde eu tinha previsto! O método, os mínimos quadrados, só foi publicado depois: por Legendre, em 1805, e por mim, em 1809.
 > 4. **E na LLM?** `⛰️ ↘ ↘ ↘` — Treinar uma LLM é a mesma ideia, em tamanho gigante: ajustar os números dela, um pouquinho de cada vez, até o erro ficar o menor possível.
+>
+> 🔍 **O jogo simplificou:** No treino de uma LLM, o erro quase nunca chega a zero, e errar pouco nos exemplos do treino não garante acertar perguntas novas.
+>
+> 📚 **Fontes:** Gauss, Theoria motus corporum coelestium (1809). Legendre, Nouvelles méthodes pour la détermination des orbites des comètes (1805). Stephen Stigler, The History of Statistics (1986).
 
 > **Carl Friedrich Gauss:** Ajuste a linha para passar o mais perto possível de todas as observações.
 
@@ -732,6 +764,8 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 > 2. **O primeiro programa** `🃏🃏🃏` — Em 1843, escrevi notas sobre a máquina. Numa delas, montei uma sequência de passos para ela calcular números difíceis. Muita gente considera esse o primeiro programa de computador.
 > 3. **Mais que contas** `🎵 = 🔢` — E percebi algo maior: se letras ou notas musicais virassem números, a máquina poderia trabalhar com elas também. Ela poderia até compor música!
 > 4. **E na LLM?** `palavras → números → palavras` — Foi o que aconteceu: palavras viram números, e uma máquina de contas escreve textos. Eu imaginei isso uns 180 anos antes.
+>
+> 📚 **Fontes:** Menabrea e Lovelace, Sketch of the Analytical Engine, com as Notas de A.A.L. (1843), Nota G. A Máquina Analítica nunca foi construída.
 
 > **Ada Lovelace:** Antes de eu ir, me responda uma coisa.
 
@@ -742,6 +776,8 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 - As máquinas pensam como pessoas
 
 *Explicação:* Letras, notas e palavras podem virar números. É assim que uma máquina de contas consegue escrever.
+
+*Dica (aparece no segundo erro):* Releia a página “Mais que contas”: o que acontece se uma nota musical virar número?
 
 > **Ada Lovelace:** Uma máquina não sabe o que é música. Mas, com números, ela pode tocar.
 >
@@ -789,6 +825,8 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 > 2. **Linha encontra coluna** `[1 2] · [3 4] = 1·3 + 2·4 = 11` — Para multiplicar, uma linha encontra uma coluna: multiplica par por par e soma tudo. Dá trabalho, mas é sempre a mesma receita.
 > 3. **Transformar** `↗ ⟲ ↖` — Uma matriz multiplicando uma lista de números (um vetor) pode girar, esticar ou espelhar uma figura. A matriz vira uma máquina de transformar.
 > 4. **E na LLM?** `× × × trilhões` — Multiplicar matrizes é o que uma LLM mais faz: são trilhões de multiplicações para escrever uma resposta. Por isso ela usa placas de vídeo, que fazem isso muito rápido.
+>
+> 📚 **Fontes:** Arthur Cayley, A Memoir on the Theory of Matrices (1858).
 
 > **Arthur Cayley:** Escolha a matriz que leva a seta até a estrela.
 
@@ -832,8 +870,12 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 >
 > 1. **O problema** `a ? ? ?` — Será que as letras de um texto aparecem por acaso? Ou a letra de antes ajuda a adivinhar a próxima?
 > 2. **Contar, letra por letra** `🟡 → 🔵 ?` — Peguei 20 mil letras do poema Eugênio Oneguin. Depois de cada vogal, anotei o que vinha: outra vogal ou uma consoante.
-> 3. **Apareceu um padrão** `87 em 100` — Depois de uma vogal, vinha consoante 87 vezes em cada 100! A letra de antes ajuda, e muito, a prever a próxima. Isso virou a cadeia de Markov.
+> 3. **Apareceu um padrão** `87 em 100` — Depois de uma vogal, vinha consoante 87 vezes em cada 100! A letra de antes ajuda, e muito, a prever a próxima. Eu já estudava sequências assim desde 1906: hoje elas se chamam cadeias de Markov.
 > 4. **E na LLM?** `O céu é ___` — Troque letras por palavras e um poema por bilhões de textos: prever o que vem depois é o coração de toda LLM.
+>
+> 🔍 **O jogo simplificou:** Uma cadeia de Markov olha só o que veio logo antes. Uma LLM olha o texto inteiro que cabe no contexto, e por isso acerta muito mais.
+>
+> 📚 **Fontes:** Andrei Markov, estudo sobre Eugênio Oneguin (1913). Brian Hayes, “First Links in the Markov Chain”, American Scientist (2013).
 
 > **Andrei Markov:** Conte comigo: nestas frases, o que vem depois de “é”?
 
@@ -879,6 +921,8 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 > 2. **O bit** `❓❓❓❓ = 4 bits` — Em 1948, mostrei que toda informação pode ser medida em respostas de sim ou não. Cada resposta é um bit. Para achar 1 número entre 16, bastam 4 perguntas: 4 bits.
 > 3. **Texto vira número** `N E X = 78 69 88` — Qualquer letra pode virar um número, e qualquer número vira bits. Em 1963, o código ASCII deu um número para cada letra: A é 65, B é 66…
 > 4. **E na LLM?** `O c é u _ ?` — Em 1951, eu brinquei de adivinhar a próxima letra de frases, para medir quanta informação o texto tem. Setenta anos depois, as LLMs jogam esse mesmo jogo, com palavras.
+>
+> 📚 **Fontes:** Claude Shannon, A Mathematical Theory of Communication (1948) e Prediction and Entropy of Printed English (1951). O nome “bit” foi sugerido por John Tukey.
 
 > **Claude Shannon:** Pensei num número de 1 a 16. Descubra com perguntas de sim ou não.
 
@@ -904,7 +948,7 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 
 *NEX toca no console; o eco de Frank Rosenblatt aparece num holograma.*
 
-> **Frank Rosenblatt:** Olá! Eu sou Frank Rosenblatt. Em 1958, construí o Perceptron, uma máquina que aprendia.
+> **Frank Rosenblatt:** Olá! Eu sou Frank Rosenblatt. Em 1958, apresentei o Perceptron, uma máquina que aprendia.
 >
 > **Frank Rosenblatt:** Ela não seguia regras escritas por alguém: aprendia com os próprios erros.
 
@@ -924,6 +968,10 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 > 2. **O neurônio de mentira** `pista × peso → soma → 💡` — Em 1943, McCulloch e Pitts imaginaram um neurônio feito de contas: cada pista tem um peso. Ele soma os pesos das pistas presentes e, se passar de um limite, acende.
 > 3. **Aprender errando** `❌ → ⚖️ → ✅` — O Perceptron errava e corrigia os pesos. Viu um cachorro e disse “gato”? A pista “late” passa a contar contra. Na próxima, ele acerta.
 > 4. **E na LLM?** `3 pesos → bilhões` — Os números ajustados de uma LLM se chamam pesos, igual aos do Perceptron. A diferença é a quantidade: em vez de 3, são bilhões.
+>
+> 🔍 **O jogo simplificou:** O neurônio artificial é inspirado no de verdade, mas é bem mais simples: é uma conta, não uma célula viva.
+>
+> 📚 **Fontes:** Warren McCulloch e Walter Pitts (1943). Frank Rosenblatt, “The Perceptron”, Psychological Review (1958). A máquina Mark I Perceptron ficou pronta em 1960.
 
 > **Frank Rosenblatt:** Meu neurônio está confundindo bichos. Ajuste os pesos até ele acertar todos.
 
@@ -976,11 +1024,19 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 6. `azul 62% · escuro 21% · bonito 12%` — No fim, sai uma chance para cada palavra possível. *(palavras: CHANCES)*
 7. `O céu é azul` — A Engine escolhe uma palavra… e repete tudo para a próxima. *(palavras: PRÓXIMA PALAVRA)*
 
+*No último passo:* “🔍 Versão simplificada: faltam peças importantes, como a atenção, que você vai conhecer na Fase 2. E os números daqui são só ilustrações.”
+
 > **Language Engine:** “O céu é azul.” Uma palavra de cada vez. Eu lembro como eu escrevo!
 >
 > **NEX:** Então é isso? Fichas, números, matrizes, pesos e chances?
 >
 > **NOVA:** Essa é a matemática por trás de toda LLM. Ninguém inventou tudo de uma vez: foram milhares de anos de ideias, uma em cima da outra.
+>
+> **NOVA:** Antes do núcleo voltar, um desafio rápido: ligue cada ideia ao que ela faz dentro de uma LLM.
+
+🎮 **Desafio: “Ligue cada ideia ao que ela faz na LLM”** — tocar numa palavra recuperada e depois no que ela faz dentro de uma LLM: FICHAS → cortar o texto em pedaços e trocar cada um por um número; CHANCES → dar uma chance para cada palavra que pode vir depois; MENOR ERRO → no treino, ajustar os números até errar menos; PESOS → os números que a LLM aprende e guarda; PRÓXIMA PALAVRA → prever o que vem depois. Cada erro mostra uma dica que lembra a ilha (ex.: “Lembre do Gauss e de Ceres: ele ficou com o caminho que errava menos.”).
+
+*Ao concluir:* “Tudo ligado! Ideias de milhares de anos viraram peças de uma LLM: fichas viraram tokens, chances viraram a escolha da próxima palavra e o menor erro virou o treino dos pesos.”
 
 *✨ Núcleo recuperado: **MATRIX CORE***
 
@@ -1039,7 +1095,7 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 >
 > **NEX:** Só isso? Achei que ela pensasse a frase inteira de uma vez!
 >
-> **Prof. Adivinho:** Ninguém aqui pensa a frase inteira. A gente olha o que já foi escrito e chuta o que vem depois. Mas não é chute cego: é chute contado!
+> **Prof. Adivinho:** Aqui a resposta sai um pedaço de cada vez: a gente olha o que já foi escrito e calcula o que pode vir depois. Não é chute cego: é chute contado!
 >
 > **Prof. Adivinho:** Aquele livro gigante tem oito frases. Minha máquina conta quem vem depois de quem.
 >
@@ -1056,7 +1112,9 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 > 1. **Um jogo de adivinhar** `🔮` — Uma LLM escreve como quem joga: olha o que já está escrito e escolhe a próxima palavra. Depois repete, palavra por palavra, até terminar.
 > 2. **Contar ajuda a chutar** `📊` — Se depois de “famoso pelo” costuma vir “futebol” ou “samba”, essas palavras ganham mais chance. Contar o que vem depois é a ideia de Markov, lá da Fase 1.
 > 3. **Só a última palavra não basta** `🧩` — Olhando só o “é”, a máquina chutou “uma”. Para acertar “Brasília”, é preciso olhar “capital” e “Brasil”. As LLMs de hoje olham tudo o que veio antes.
-> 4. **E na LLM?** `🤖` — Uma LLM aprendeu com bilhões de frases. Para cada palavra possível, ela calcula uma chance. A palavra escolhida entra no texto e o jogo recomeça.
+> 4. **E na LLM?** `🤖` — Para cada palavra possível, a LLM calcula uma chance. Uma delas é escolhida, entra no texto e o jogo recomeça. Chance alta quer dizer “combina com o que veio antes”, não “é verdade”.
+>
+> 🔍 **O jogo simplificou:** No jogo falamos em “palavras”. Na vida real, a LLM prevê tokens (pedaços de texto), e a escolha final depende do jeito de sortear, como a temperatura que você vai ver no Cassino.
 
 *Banner: ESTAÇÃO CONCLUÍDA · **PREVER** · Estação 1 · Oficina do Adivinho*
 
@@ -1072,7 +1130,7 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 
 > **Tesourinha:** Zip, zip! Cuidado com os dedos! Aqui é o Fatiador.
 >
-> **Tesourinha:** A Engine não lê letras nem palavras inteiras. Antes de tudo, eu corto o texto em pedacinhos chamados tokens.
+> **Tesourinha:** Antes de tudo, eu corto o texto em pedacinhos chamados tokens. Às vezes um token é uma palavra inteira; às vezes, um pedaço, um espaço ou uma pontuação.
 >
 > **NEX:** Por que cortar? Não seria mais fácil ler a palavra toda?
 >
@@ -1082,7 +1140,7 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 >
 > **Tesourinha:** Pegue a tesoura! Toque nos espaços entre as letras onde você cortaria.
 
-🎮 **Brincadeira: “A tesoura dos tokens”** — Tocar nos espaços entre as letras para cortar três palavras: “Brasil?” (Brasil | ?), “infelizmente” (in | feliz | mente) e “capital” (não precisa cortar). Depois a pergunta aparece fatiada e numerada: Qual 1842 · é 91 · a 17 · capital 7231 · do 52 · Brasil 4098 · ? 8. Um laboratório livre mostra os tokens de qualquer texto digitado (emoji pode virar 2 ou mais tokens).
+🎮 **Brincadeira: “A tesoura dos tokens”** — Tocar nos espaços entre as letras para cortar três palavras: “Brasil?” (Brasil | ?), “infelizmente” (in | feliz | mente) e “capital” (neste tokenizador, não precisa cortar). Depois a pergunta aparece fatiada e numerada: Qual 1842 · é 91 · a 17 · capital 7231 · do 52 · Brasil 4098 · ? 8. No laboratório livre, o jogador escreve qualquer texto e vê texto → tokens → IDs, comparando dois tokenizadores (A, de pedaços maiores, e B, de pedaços menores): a mesma frase vira quantidades diferentes de tokens. Emoji pode virar 2 ou mais.
 
 > **Tesourinha:** Zip! Olhe só: a pergunta que chegou na fábrica também foi fatiada.
 >
@@ -1092,10 +1150,12 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 
 > 📜 **Documento: “Tokens: os pedacinhos do texto”** — Estação 2 · Dentro da LLM
 >
-> 1. **Cortar em pedaços** `✂️` — Antes de pensar, a LLM corta o texto em tokens. Palavras comuns viram um token só; palavras longas ou raras viram vários pedaços.
+> 1. **Cortar em pedaços** `✂️` — Antes de qualquer conta, um programa chamado tokenizador corta o texto em tokens. Palavras comuns costumam virar um token só; palavras longas ou raras viram vários pedaços.
 > 2. **Pedaços que se repetem** `🧱` — “in”, “feliz”, “mente”, “des”… Com alguns milhares de pedaços dá para escrever qualquer palavra, como num jogo de montar.
 > 3. **Cada token, um número** `🔢` — Cada pedaço tem um número fixo no catálogo: “capital” é 7231, “Brasil” é 4098. Daqui para a frente, a Engine só vê números.
-> 4. **E na LLM?** `🤖` — As LLMs contam tudo em tokens: o tamanho da pergunta, o limite de memória e até o preço de uso. Em português, uma palavra dá, em média, um pouco mais de um token.
+> 4. **E na LLM?** `🤖` — As LLMs contam tudo em tokens: o tamanho da pergunta, o limite de memória e até o preço de uso. Em português, uma palavra costuma dar um pouco mais de um token.
+>
+> 🔍 **O jogo simplificou:** Os cortes do jogo foram inventados para ensinar. Cada LLM tem o seu tokenizador: a mesma frase pode virar mais ou menos tokens, e o espaço muitas vezes vai grudado na palavra seguinte.
 
 *Banner: ESTAÇÃO CONCLUÍDA · **TOKENS** · Estação 2 · O Fatiador*
 
@@ -1142,13 +1202,17 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 > **Vetora:** Lisboa! A mesma seta, o mesmo significado. Por isso dizemos que as palavras viram vetores: setas com direção e tamanho.
 >
 > **NEX:** Então “capital de” é uma direção no mapa? Que doido!
+>
+> **Vetora:** Mais ou menos! Este mapa tem só 2 direções, para caber no chão. Os de verdade têm centenas ou milhares, e quase nenhuma tem um nome tão simples.
 
 > 📜 **Documento: “Embeddings: o mapa das palavras”** — Estação 3 · Dentro da LLM
 >
 > 1. **Um endereço para cada token** `🗺️` — Cada token vira uma lista de números, como coordenadas num mapa. Nas LLMs de verdade, são milhares de números por token.
-> 2. **Vizinhos parecidos** `🏘️` — Palavras usadas em frases parecidas moram perto: Brasil perto de França, gol perto de bola. Distância no mapa é diferença de significado.
+> 2. **Vizinhos parecidos** `🏘️` — Palavras usadas em frases parecidas moram perto: Brasil perto de França, gol perto de bola. Perto quer dizer “usado de jeito parecido”, não que sejam a mesma coisa.
 > 3. **Setas com sentido** `➡️` — O caminho de Brasil até Brasília é parecido com o de Portugal até Lisboa. As direções do mapa guardam ideias, como “capital de”.
-> 4. **E na LLM?** `🤖` — Depois de virar número, cada token vira um vetor de significado. É com esses vetores que a Engine faz todas as contas seguintes.
+> 4. **E na LLM?** `🤖` — O ID de cada token puxa o seu vetor numa tabela aprendida no treino. Depois, as camadas vão mudando esse vetor conforme as vizinhas: “banco” começa igual e termina diferente em cada frase.
+>
+> 🔍 **O jogo simplificou:** O mapa do jogo tem 2 dimensões e bairros com nome. Os vetores de verdade têm centenas ou milhares de números, e cada número sozinho quase nunca quer dizer algo que a gente reconheça, como “é país”.
 
 *Banner: ESTAÇÃO CONCLUÍDA · **VETORES** · Estação 3 · Vale dos Vetores*
 
@@ -1164,7 +1228,7 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 
 > **Luz:** Luzes, por favor! Bem-vindo à Praça dos Holofotes.
 >
-> **Luz:** Aqui cada token olha para os outros e decide quais importam mais para ele. Isso se chama atenção.
+> **Luz:** Aqui, para cada token, a Engine calcula quanto cada um dos outros ajuda a entendê-lo. Esse cálculo se chama atenção.
 >
 > **Luz:** Pense na palavra “banco”. Banco de sentar ou banco de dinheiro? Depende das outras palavras da frase!
 >
@@ -1172,16 +1236,18 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 >
 > **Luz:** Exatamente. Me ajude a apontar os holofotes!
 
-🎮 **Brincadeira: “Os holofotes da atenção”** — Três cenas: escolher as 2 palavras que explicam “banco” em “Na praça, sentei no banco” (praça 42%, sentei 34%) e em “Para sacar dinheiro, fui ao banco” (dinheiro 45%, sacar 30%); depois, as 2 palavras que mais importam em “Qual é a capital do Brasil?” (Brasil 37%, capital 33%). Bônus: trocar a palavra que recebe o holofote (capital → Brasília, moeda → real, língua → português, esporte → futebol).
+🎮 **Brincadeira: “Os holofotes da atenção”** — Três cenas: escolher as 2 palavras que explicam “banco” em “Na praça, sentei no banco” (praça 42%, sentei 34%) e em “Para sacar dinheiro, fui ao banco” (dinheiro 45%, sacar 30%); depois, as 2 palavras que mais importam em “Qual é a capital do Brasil?” (Brasil 37%, capital 33%). Bônus: trocar a palavra que recebe o holofote (capital → Brasília, moeda → real, língua → português, esporte → futebol) e abrir o mapa de calor (ilustrativo) da pergunta: cada linha soma 100% e os tokens só olham para os anteriores; numa LLM de verdade há dezenas de mapas assim, um por cabeça de atenção, em cada camada.
 
 > **Luz:** Bravo! Os holofotes foram para “capital” e “Brasil”. Agora a Engine olha a pergunta inteira, não só a última palavra.
 
 > 📜 **Documento: “Atenção: quem olha para quem”** — Estação 4 · Dentro da LLM
 >
-> 1. **Palavras que se ajudam** `🔦` — Na atenção, cada token dá uma nota para todos os outros: “quanto você me ajuda a me entender?”. As notas viram porcentagens.
+> 1. **Palavras que se ajudam** `🔦` — Na atenção, a Engine faz contas com os vetores e dá uma nota para cada par de tokens: quanto um ajuda a entender o outro. As notas viram porcentagens.
 > 2. **O mesmo token, sentidos diferentes** `🏦` — Com “praça” e “sentei”, banco é de sentar. Com “dinheiro” e “sacar”, banco é de dinheiro. A atenção mistura o vetor do banco com o das vizinhas.
 > 3. **A pergunta inteira** `❓` — Para responder “Qual é a capital do Brasil?”, os holofotes vão para “capital” e “Brasil”. É assim que a Engine olha a frase inteira, e não só a última palavra.
-> 4. **E na LLM?** `🤖` — A atenção é o coração do Transformer, a invenção de 2017 que deu origem às LLMs. Ela roda muitas vezes, com vários holofotes ao mesmo tempo.
+> 4. **E na LLM?** `🤖` — A atenção é o coração do Transformer, a invenção de 2017 que deu origem às LLMs. Em cada camada, ela roda com vários “holofotes” ao mesmo tempo: as cabeças de atenção.
+>
+> 🔍 **O jogo simplificou:** Holofote é só uma imagem: ninguém escolhe nada, são contas com números aprendidos. As porcentagens do jogo foram inventadas para ensinar, e um mapa de atenção sozinho não explica tudo o que a LLM fez.
 
 *Banner: ESTAÇÃO CONCLUÍDA · **ATENÇÃO** · Estação 4 · Praça dos Holofotes*
 
@@ -1215,6 +1281,8 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 > 2. **Uma conta, milhões de somas** `⚡` — Numa LLM, essas tabelas têm milhões de números. As placas de vídeo (GPUs) fazem milhões dessas somas ao mesmo tempo.
 > 3. **Andar por andar** `🏢` — A saída de uma camada vira a entrada da próxima. Empilhando dezenas de camadas, cada uma refina o que a anterior entendeu.
 > 4. **E na LLM?** `🤖` — Uma LLM grande tem dezenas de camadas de atenção e de tabelas de pesos. Todo o “conhecimento” dela está guardado nesses números.
+>
+> 🔍 **O jogo simplificou:** A tabela do jogo tem 12 pesos e só soma votos. Numa LLM, cada camada tem atenção e tabelas enormes, e os números passam por contas que não são só somas.
 
 *Banner: ESTAÇÃO CONCLUÍDA · **CAMADAS** · Estação 5 · Torre das Camadas*
 
@@ -1234,20 +1302,22 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 >
 > **NEX:** Uma roleta? Então ela responde no sorteio?
 >
-> **Crupiê Sorte:** Um sorteio controlado! O botão da temperatura deixa a roleta mais certinha ou mais criativa. Experimente.
+> **Crupiê Sorte:** Um sorteio controlado! O botão da temperatura deixa a roleta mais previsível ou mais variada. Experimente.
 
-🎮 **Brincadeira: “A roleta da temperatura”** — Roleta com as palavras que vêm depois de “é” (uma, famoso, Brasília, Paris, Roma) e um controle de temperatura (0,2 a 2,5). Tarefas: girar 3 vezes com a roleta fria (até 0,5) e 3 vezes quente (1,5 ou mais); depois responder qual temperatura é melhor para “Qual é a capital do Brasil?” (baixa).
+🎮 **Brincadeira: “A roleta da temperatura”** — Primeiro, um palpite: se a temperatura subir, a fatia da favorita (“uma”) fica maior, menor ou igual? Depois, a roleta com as palavras que vêm depois de “é” (uma, famoso, Brasília, Paris, Roma) e um controle de temperatura (0,2 a 2,5): girar 3 vezes fria (até 0,5) e 3 vezes quente (1,5 ou mais). O jogo confere o palpite (a fatia cai de ~92% para ~43%). Por fim, duas perguntas: qual temperatura costuma ser melhor para um fato (baixa) e “com temperatura baixa, a resposta fica garantida como certa?” (não: ela só repete a favorita; se a favorita estiver errada, repete o erro).
 
 > **Crupiê Sorte:** Viu só? Fria, a roleta repete a favorita. Quente, ela arrisca.
 >
-> **NOVA:** Para responder a capital do Brasil, a Engine vai usar temperatura baixa. Fato não é lugar para criatividade!
+> **NOVA:** Para um fato, como a capital do Brasil, a temperatura baixa ajuda: sai quase sempre a favorita. Mas, se a favorita estiver errada, ela sai errada do mesmo jeito!
 
 > 📜 **Documento: “A roleta e a temperatura”** — Estação 6 · Dentro da LLM
 >
 > 1. **Uma chance para cada palavra** `🎡` — No fim das contas, a Engine tem uma lista de chances: 75% para uma palavra, 19% para outra… A roleta sorteia uma delas.
-> 2. **Temperatura baixa** `🧊` — Com temperatura baixa, a fatia maior cresce. A resposta fica previsível e repetida: bom para fatos, contas e código.
-> 3. **Temperatura alta** `🔥` — Com temperatura alta, as fatias ficam parecidas. Saem palavras inesperadas: bom para ideias e histórias, mas erra mais.
+> 2. **Temperatura baixa** `🧊` — Com temperatura baixa, a fatia maior cresce. A resposta fica previsível e repetida: costuma ajudar em fatos, contas e código. Mas não garante acerto: só repete a favorita.
+> 3. **Temperatura alta** `🔥` — Com temperatura alta, as fatias ficam parecidas. Saem palavras inesperadas: bom para ideias e histórias. Não quer dizer “errado”: quer dizer “mais variado”.
 > 4. **E na LLM?** `🤖` — Por isso a mesma pergunta pode ter respostas diferentes. Quem usa uma LLM pela API pode escolher a temperatura.
+>
+> 🔍 **O jogo simplificou:** Temperatura mexe na variedade, não na verdade. Existem outros botões, como top-k e top-p, que cortam as fatias pequenas antes do sorteio; muitas LLMs usam vários juntos.
 
 *Banner: ESTAÇÃO CONCLUÍDA · **TEMPERATURA** · Estação 6 · Cassino da Roleta*
 
@@ -1281,6 +1351,8 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 > 2. **O mesmo time de pesos** `🔁` — Os mesmos 27 pesos responderam às três perguntas. Numa LLM, bilhões de pesos guardam tudo junto: capitais, gramática, receitas…
 > 3. **Muito texto, muito tempo** `🖥️` — LLMs de verdade treinam com trilhões de tokens, por semanas, em milhares de GPUs. Ninguém escreve as regras: elas aparecem nos pesos.
 > 4. **E na LLM?** `🤖` — Depois do treino, os pesos ficam congelados. Quando você conversa com uma LLM, ela usa os pesos, mas não aprende de novo a cada pergunta.
+>
+> 🔍 **O jogo simplificou:** O modelinho do jogo tem 27 pesos e treina em segundos. LLMs têm bilhões de pesos. E o erro nem sempre cai em linha reta: sobe e desce até assentar.
 
 *Banner: ESTAÇÃO CONCLUÍDA · **TREINO** · Estação 7 · Academia dos Pesos*
 
@@ -1300,22 +1372,26 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 >
 > **NEX:** Ele inventa as coisas?
 >
-> **Bibliotecária Letícia:** Quando a Engine não sabe, ela continua prevendo palavras que soam bem. Às vezes sai uma resposta bonita e errada: uma alucinação.
+> **Bibliotecária Letícia:** Quando a resposta não está nos pesos, a Engine continua prevendo palavras que soam bem. Às vezes sai uma resposta bonita e errada: uma alucinação.
 >
-> **Bibliotecária Letícia:** O remédio é buscar documentos e colocar no contexto, junto com a pergunta. Isso se chama RAG. Vamos testar!
+> **Bibliotecária Letícia:** Um jeito de ajudar é buscar documentos e colocar no contexto, junto com a pergunta. Isso se chama RAG. Não é mágica, mas ajuda. Vamos testar!
 
-🎮 **Brincadeira: “Buscar antes de responder”** — Pergunta 1: “Que horas a biblioteca abre no sábado?” Sem busca, o Hallucino inventa “Provavelmente das 8h às 12h.”; com a busca (RAG), aparecem os documentos mais parecidos e a resposta certa: “Aos sábados, a biblioteca abre das 9h às 13h [1].” Pergunta 2: “Que horas sai o pão de queijo?” Nada é encontrado e a Engine diz “Não encontrei isso nos documentos. Prefiro não inventar.”; ao adicionar o documento “Cantina do campus”, responde “O pão de queijo sai às 10h e às 16h [1].”
+🎮 **Brincadeira: “Buscar antes de responder”** — Pergunta 1: “Que horas a biblioteca abre no sábado?” Sem busca, o Hallucino inventa “Provavelmente das 8h às 12h.”; com o RAG, o painel separa os dois momentos: 1 · BUSCA (recuperação), com os documentos mais parecidos e sua nota, e 2 · RESPOSTA (geração), com o trecho no contexto: “Aos sábados, a biblioteca abre das 9h às 13h [1].” Pergunta 2: “Que horas sai o pão de queijo?” Nada é encontrado e a Engine diz “Não encontrei isso nos documentos. Prefiro não inventar.”; ao adicionar o documento “Cantina do campus”, responde “O pão de queijo sai às 10h e às 16h [1].” Pergunta 3: “A biblioteca abre no feriado de amanhã?” A busca acha só um “Aviso de 2019 · Feriados”. O jogador escolhe a resposta certa: em vez de “Sim! A biblioteca abre no feriado, das 10h às 14h [1].”, a Engine deve dizer “Só achei um aviso de 2019, que pode estar desatualizado. Melhor confirmar o horário com a biblioteca [1].”
 
 > **Hallucino:** Ah, não! Com os documentos na mesa, ninguém acredita mais nas minhas invenções…
 >
 > **Bibliotecária Letícia:** E quando nem os documentos sabem, o certo é dizer “não sei”. Melhor que inventar!
+>
+> **Bibliotecária Letícia:** Lembre do aviso velho: documento achado não é documento certo. Sempre vale ver de onde ele veio e de quando é.
 
 > 📜 **Documento: “Contexto, RAG e alucinação”** — Estação 8 · Dentro da LLM
 >
 > 1. **Quando a Engine não sabe** `👻` — A Engine sempre prevê alguma palavra. Se a resposta não está nos pesos, ela pode inventar algo que parece certo. Isso é uma alucinação.
-> 2. **Buscar antes de responder** `🔎` — No RAG, um buscador acha trechos de documentos parecidos com a pergunta e cola esses trechos no contexto, junto com a pergunta.
+> 2. **Buscar antes de responder** `🔎` — No RAG, primeiro um buscador acha trechos parecidos com a pergunta (recuperação). Depois, a Engine escreve a resposta com esses trechos no contexto (geração).
 > 3. **O contexto é a memória de curto prazo** `📋` — Tudo o que está no contexto (a conversa, os documentos, as instruções) a Engine consegue usar na hora. Mas o contexto tem limite de tokens.
 > 4. **E na LLM?** `🤖` — Muitos assistentes usam RAG para responder sobre documentos de empresas ou notícias recentes, e mostram de onde tiraram a resposta.
+>
+> 🔍 **O jogo simplificou:** RAG é opcional: é um sistema em volta da LLM, não uma parte dela. Os documentos podem estar errados, velhos ou fora do assunto, e a LLM ainda pode ler mal. Confira as fontes.
 
 *Banner: ESTAÇÃO CONCLUÍDA · **CONTEXTO** · Estação 8 · Biblioteca do Contexto*
 
@@ -1335,18 +1411,26 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 
 *Os tokens pulam, um a um, para dentro da máquina do prompt.*
 
-> **Language Engine:** Vou mostrar cada passo, com tudo o que você me ajudou a lembrar.
+> **Language Engine:** Antes de eu responder: você lembra a ordem dos passos? Me ajude a montar o caminho.
+
+🎮 **Desafio: “Coloque os passos na ordem”** — oito cartões embaralhados (TOKENS, IDs, VETORES, ATENÇÃO, CAMADAS, CHANCES, ROLETA, RESPOSTA, cada um com uma pista curta, como “cortar o texto” ou “sortear”). O jogador toca na ordem em que a Engine faz cada passo. Cada erro mostra uma pista (ex.: “Depois de cortar, cada pedaço ganha um número do catálogo.”); depois de dois erros no mesmo passo, o cartão certo pisca.
+
+*Ao concluir:* “Ordem certa! Tokens → IDs → vetores → atenção → camadas → chances → roleta → resposta. E depois tudo recomeça para a próxima palavra.”
+
+> **Language Engine:** Isso! Agora vou mostrar cada passo, com tudo o que você me ajudou a lembrar.
 
 **Painel “Qual é a capital do Brasil?” (8 passos dentro da Engine):**
 
 1. **TOKENS** — `Qual | é | a | capital | do | Brasil | ?` — Primeiro, corto a pergunta em tokens.
 2. **IDs** — `1842 · 91 · 17 · 7231 · 52 · 4098 · 8` — Troco cada token pelo número dele no catálogo.
-3. **VETORES** — `capital → [ 0,8 · −0,3 · 1,2 · … ]` — Cada número vira um vetor: o endereço do token no mapa dos significados.
-4. **ATENÇÃO** — `Brasil 37% · capital 33% · Qual 10% · …` — Na atenção, os tokens se olham. “capital” e “Brasil” recebem os holofotes.
+3. **VETORES** — `capital → [ 0,8 · −0,3 · 1,2 · … ]` — Cada ID puxa um vetor, uma lista de números aprendida no treino: o endereço do token no mapa.
+4. **ATENÇÃO** — `Brasil 37% · capital 33% · Qual 10% · …` — Na atenção, calculo quanto cada token ajuda a entender os outros. “capital” e “Brasil” pesam mais.
 5. **CAMADAS** — `andar 1 → andar 2 → … → andar 96` — Os vetores sobem a torre: andar por andar, multiplico matrizes de pesos aprendidos no treino.
 6. **CHANCES** — `Brasília 96% · Rio 2% · São Paulo 1%` — No topo, cada palavra possível ganha uma chance.
 7. **ROLETA** — `temperatura baixa → Brasília` — Com temperatura baixa, giro a roleta. Quase sempre sai a favorita.
 8. **RESPOSTA** — `A capital do Brasil é Brasília.` — A palavra escolhida entra no texto, e eu recomeço o caminho para a próxima. Uma palavra de cada vez!
+
+*No último passo:* “🔍 Caminho simplificado: numa LLM de verdade, a atenção e as tabelas de pesos se alternam dentro de cada uma das dezenas de camadas, e os números mostrados aqui são ilustrativos.”
 
 > **Language Engine:** “A capital do Brasil é Brasília.” Eu lembro como eu funciono por dentro!
 >
@@ -1406,7 +1490,7 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 
 **Objetivo:** “Estação 1: Biblioteca de Dados”.
 
-> **Dra. Sinapse:** Uma LLM só aprende o que está nos textos do treino. As grandes leem trilhões de palavras. A nossa vai ler um punhado de frases.
+> **Dra. Sinapse:** Uma LLM aprende com os textos do treino: o que estiver lá, certo ou errado, molda o que ela vai dizer. As grandes leem trilhões de palavras. A nossa vai ler um punhado de frases.
 >
 > **Dra. Sinapse:** Escolha as frases que {nome} vai estudar. Cuidado: se tiver frase errada, ela aprende errado também!
 
@@ -1416,7 +1500,7 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 
 > **LLM bebê ({nome}):** Fra… ses? *(fala da LLM bebê: antes do treino sai embaralhada, com palavras soltas; depois do treino sai uma frase de verdade)*
 >
-> **Dra. Sinapse:** Ela ainda não entende nada: só guardou os textos. Agora vamos cortar tudo em tokens.
+> **Dra. Sinapse:** Por enquanto ela só recebeu os textos: ainda não aprendeu nada com eles. Agora vamos cortar tudo em tokens.
 
 ### 9.3 Estação 2 · Tokenizador
 
@@ -1440,11 +1524,11 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 
 > **Dra. Sinapse:** Hora do treino! Na Forja, {nome} vai ler cada exemplo, chutar a próxima palavra, medir o erro e ajustar os pesos.
 >
-> **Dra. Sinapse:** Uma passada por todos os exemplos se chama época. Aperte o botão e acompanhe o erro caindo.
+> **Dra. Sinapse:** Uma passada por todos os exemplos se chama época. Antes de apertar o botão, dê um palpite: o que vai acontecer com o erro?
 
-🎮 **Painel: “A Forja de treino”** — Treinar a LLM de verdade: botões “Treinar 10 épocas” e “Treinar 50 épocas”, gráfico do erro (perda) caindo e as chances para “A capital do Brasil é ___” mudando ao vivo. Com as 10 frases básicas: cerca de 26 tokens, 80 exemplos e 536 pesos; o erro cai de ~3,3 para ~0,5 em 50 épocas. Termina com pelo menos 30 épocas.
+🎮 **Painel: “A Forja de treino”** — Treinar a LLM de verdade. Antes, uma ficha técnica compara a LLM do jogador (cerca de 26 tokens, 80 exemplos e algumas centenas de pesos, conforme as escolhas) com uma LLM moderna (dezenas de milhares de tokens, bilhões de pesos, trilhões de tokens de treino) e avisa que a mini-rede não tem atenção nem camadas empilhadas. Os botões de treino só liberam depois de um palpite: “o que vai acontecer com o erro?” (vai cair, vai subir, vai ficar igual). Botões “Treinar 10 épocas” e “Treinar 50 épocas”, gráfico do erro (perda) e as chances para “A capital do Brasil é ___” mudando ao vivo; o erro cai de ~3,3 para menos de 1. Termina com pelo menos 30 épocas, com o aviso: o erro costuma cair com sobe-e-desce, e erro baixo nos exemplos do treino não prova que ela aprendeu (pode ser decoreba).
 
-*Banner: ESTAÇÃO CONCLUÍDA · **TREINO** · Estação 3 · Forja de Treino. A bebê pula e cresce um pouco.* *Verbetes do Codex: “Perda (erro do treino)”.*
+*Banner: ESTAÇÃO CONCLUÍDA · **TREINO** · Estação 3 · Forja de Treino. A bebê pula e cresce um pouco.* *Verbetes do Codex: “Perda (erro do treino)”, “A sua LLM × uma LLM de verdade”.*
 
 *A câmera mostra a cápsula:*
 
@@ -1460,25 +1544,25 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 
 > **Dra. Sinapse:** Agora, a Sala de Teste. Escreva o começo de uma frase e veja, passo a passo, como {nome} escolhe a próxima palavra.
 >
-> **Dra. Sinapse:** O desafio: ela tem que completar “A capital do Brasil é” com Brasília.
+> **Dra. Sinapse:** O desafio: ela tem que completar “A capital do Brasil é” com Brasília. Depois, vamos ver como ela se sai com frases que nunca leu.
 
-🎮 **Painel: “A Sala de Teste”** — Escrever o começo de uma frase (ou escolher: “A capital do Brasil é”, “A capital da França é”, “O Brasil é famoso pelo”, “Roma é a capital da”) e avançar pelos 7 passos: 1. Tokens, 2. IDs, 3. Memória, 4. Embeddings (3 números por token), 5. Neurônios (12 quadradinhos), 6. Chances, 7. Escolha (com temperatura e o botão “Escrever sozinha”). Desafio: “A capital do Brasil é” precisa dar Brasília. Com memória de 1 ou 2 tokens ela erra (vê só “é” ou “Brasil é” e chuta “famoso”), e o painel oferece “Aumentar a memória para 3 e treinar de novo”; se a frase errada estava nos dados, ela responde “São” e o painel oferece “Tirar a frase errada e treinar de novo”.
+🎮 **Painel: “A Sala de Teste”** — Escrever o começo de uma frase (ou escolher: “A capital do Brasil é”, “A capital da França é”, “O Brasil é famoso pelo”, “Roma é a capital da”) e avançar pelos 7 passos: 1. Tokens, 2. IDs, 3. Memória, 4. Embeddings (3 números por token), 5. Neurônios (12 quadradinhos), 6. Chances, 7. Escolha (com temperatura e o botão “Escrever sozinha”). Desafio: “A capital do Brasil é” precisa dar Brasília. Com memória de 1 ou 2 tokens ela erra (vê só “é” ou “Brasil é” e chuta “famoso”), e o painel oferece “Aumentar a memória para 3 e treinar de novo”; se a frase errada estava nos dados, ela responde “São” e o painel oferece “Tirar a frase errada e treinar de novo”. Depois de acertar, vem o teste de verdade: um palpite (“ela vai acertar frases novas?”) e três frases calculadas pela própria LLM: 📗 vista no treino (“A capital da França é” → Paris ✓), 📙 frase nova (“A Itália fica na” → costuma errar, ex.: América ✗) e 📕 palavra nunca vista (“A capital da Espanha é”: “Espanha” vira ⟨?⟩ e ela responde, com confiança, uma capital errada, como Roma). Para concluir, o jogador escolhe o que o teste mostra: “que ela vai bem no que parece com o treino e pode errar com confiança no que é novo”.
 
-*Banner: ESTAÇÃO CONCLUÍDA · **TESTE** · Estação 4 · Sala de Teste. A bebê pula e cresce um pouco.*
+*Banner: ESTAÇÃO CONCLUÍDA · **TESTE** · Estação 4 · Sala de Teste. A bebê pula e cresce um pouco.* *Verbetes do Codex: “Decorar × generalizar”.*
 
-> **Dra. Sinapse:** Funciona! Tokens, IDs, memória, embeddings, neurônios, chances e a escolha. É uma LLM de verdade… só que bem pequena.
+> **Dra. Sinapse:** Funciona! Mas viu a Espanha? Ela acerta o que parece com o treino e inventa o resto com toda a confiança. As LLMs grandes erram bem menos, mas também podem errar assim.
 >
-> **LLM bebê ({nome}):** Eu… sei… Brasília!
+> **LLM bebê ({nome}):** Brasília eu sei! Espanha… eu chutei.
 
 ### 9.6 Estação 5 · Ajuste e Alinhamento
 
 **Objetivo:** “Estação 5: Ajuste e Alinhamento”.
 
-> **Dra. Sinapse:** Depois do treino, as LLMs ainda passam por ajustes. Primeiro: qual a diferença entre pedir no prompt e fazer um ajuste fino?
+> **Dra. Sinapse:** Depois do treino, as LLMs ainda passam por ajustes. Primeiro: qual a diferença entre pedir no prompt, buscar documentos com RAG e fazer um ajuste fino?
 
-🎮 **Painel 1: “Prompt ou ajuste fino?”** — uma LLM grande já treinada responde Brasília (96%). Num jogo de faz de conta, queremos “São Paulo”. Ligar o prompt (“Neste jogo de faz de conta, considere São Paulo como a capital do Brasil.”) muda a resposta sem mexer nos pesos (cadeado fechado: “Não, nenhum peso mudou”); fazer passos de ajuste fino com “A capital do Brasil é São Paulo.” muda os pesos (cadeado aberto) e cria um efeito colateral: até “capital da França” passa a dar um pouco de São Paulo (0,4% → 3,3%).
+🎮 **Painel 1: “Prompt ou ajuste fino?”** — uma LLM grande já treinada responde Brasília (96%). Num jogo de faz de conta, queremos “São Paulo”. Ligar o prompt (“Neste jogo de faz de conta, considere São Paulo como a capital do Brasil.”) muda a resposta sem mexer nos pesos (cadeado fechado: “Não, nenhum peso mudou”); fazer passos de ajuste fino com “A capital do Brasil é São Paulo.” muda os pesos (cadeado aberto) e cria um efeito colateral: até “capital da França” passa a dar um pouco de São Paulo (0,4% → 3,3%). Depois, “Qual técnica usar? Prompt, RAG ou ajuste fino?” em três situações: o regulamento novo da faculdade, que muda todo semestre (RAG); responder como um pirata só nesta conversa (prompt); uma empresa que quer a LLM sempre no estilo dos seus documentos, em milhares de conversas (ajuste fino). Cada escolha errada explica por que não serve.
 
-*Ao concluir:* O prompt mudou a resposta sem mexer em nenhum peso: ele só vale para aquela conversa. O ajuste fino treinou de novo e mudou os pesos, a própria LLM. E veja o efeito colateral: até a pergunta da França ficou um pouco mais “São Paulo”.
+*Ao concluir:* O prompt mudou a resposta sem mexer em nenhum peso: vale só para aquela conversa. O RAG também só muda o contexto, trazendo documentos. O ajuste fino treinou de novo e mudou os pesos, a própria LLM, com efeito colateral: até a pergunta da França ficou um pouco mais “São Paulo”. Quanto mais passos e piores os exemplos, maior o risco.
 
 > **Dra. Sinapse:** E tem mais: pessoas comparam respostas e escolhem as melhores, para a LLM ser útil, honesta e segura. Ajude {nome}!
 
@@ -1502,9 +1586,9 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 
 > **Dra. Sinapse:** Chegou o grande dia: a Formatura! Para {nome} se formar, você responde a prova final.
 >
-> **Dra. Sinapse:** Sete acertos em dez e o diploma é de vocês. Boa sorte!
+> **Dra. Sinapse:** São {EXAM.length} perguntas. Com {EXAM_PASS} acertos, o diploma é de vocês. Boa sorte!
 
-🎮 **Painel: “A prova final”** — Dez perguntas de múltipla escolha; precisa de 7 acertos. Ao terminar, mostra todas as explicações; se não passar, pode tentar de novo.
+🎮 **Painel: “A prova final”** — Doze perguntas de múltipla escolha; precisa de 8 acertos. Cada resposta mostra ✓ ou ✗ e a explicação; ao terminar, aparecem todas as explicações; se não passar, pode tentar de novo.
 
 1. **O que uma LLM faz, no fundo?**
     - Procura a resposta pronta na internet
@@ -1516,16 +1600,16 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
     - Para economizar tinta
     - Porque ela só entende letras soltas
     - *Com alguns milhares de pedaços, a LLM monta qualquer palavra, até as que nunca viu.*
-3. **O que é o ID de um token?**
-    - A senha da LLM
-    - ✅ O número dele no catálogo de tokens
-    - Quantas vezes ele apareceu
-    - *Cada token tem um número fixo: é só isso que a LLM enxerga.*
+3. **Qual a diferença entre o ID de um token e o embedding dele?**
+    - Nenhuma: são a mesma coisa
+    - ✅ O ID é o número do token no catálogo; o embedding é uma lista de números aprendida no treino
+    - O embedding é o nome do token em inglês
+    - *O ID só identifica o token. O embedding é o vetor que esse ID puxa, e ele foi aprendido no treino.*
 4. **No mapa dos embeddings, quem fica perto de “Paris”?**
     - ✅ Roma
     - banana
     - pênalti
-    - *Palavras usadas de jeito parecido moram perto: capitais com capitais.*
+    - *Palavras usadas de jeito parecido moram perto: capitais com capitais. Perto não quer dizer igual.*
 5. **Em “fui ao banco sacar dinheiro”, para onde a atenção de “banco” mais olha?**
     - “fui”
     - ✅ “dinheiro”
@@ -1536,11 +1620,11 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
     - Apagam as palavras repetidas
     - Traduzem para o inglês
     - *Cada camada soma votos de muitas pistas de uma vez: multiplicação de matrizes.*
-7. **Para responder um fato, como a capital de um país, a temperatura deve ser…**
-    - alta, para ser criativa
-    - ✅ baixa, para escolher a mais provável
-    - tanto faz
-    - *Temperatura baixa favorece a palavra mais provável: bom para fatos.*
+7. **O que a temperatura baixa faz?**
+    - Garante que a resposta está certa
+    - ✅ Deixa a escolha mais previsível: quase sempre sai a palavra mais provável
+    - Deixa a LLM mais criativa
+    - *Ela mexe na variedade, não na verdade: se a palavra mais provável estiver errada, ela sai errada.*
 8. **O que acontece no treino?**
     - ✅ A LLM chuta, mede o erro e ajusta os pesos
     - Alguém digita todas as regras
@@ -1550,16 +1634,26 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
     - Chutar um horário comum
     - ✅ Buscar o regulamento (RAG) e colocar no contexto
     - Aumentar a temperatura
-    - *Com RAG, ela usa o documento certo em vez de inventar.*
+    - *Com RAG, ela usa o documento em vez de inventar. Ainda assim, vale conferir se o documento é atual.*
 10. **Qual a diferença entre prompt e ajuste fino?**
     - Nenhuma
     - ✅ O prompt muda só a conversa; o ajuste fino muda os pesos
     - O ajuste fino só muda a conversa
     - *O prompt vai no contexto. O ajuste fino treina de novo e muda a própria LLM.*
+11. **Uma LLM respondeu com um texto bonito e muita confiança. O que isso garante?**
+    - Que a resposta está certa
+    - ✅ Nada sobre a verdade: fluência não é prova, e o que importa se confere em fontes confiáveis
+    - Que ela leu sobre isso no treino
+    - *Texto fluente e confiante pode estar errado: é a alucinação. Verdade se confere em fontes.*
+12. **Sua LLM acertou “A capital da França é Paris”, uma frase que estava no treino. O que isso prova?**
+    - Que ela entende geografia
+    - ✅ Pouco: para saber se aprendeu, é preciso testar com frases que ela nunca viu
+    - Que ela vai acertar qualquer capital
+    - *Acertar o que já viu pode ser decoreba. Frases novas mostram se ela generaliza, e às vezes ela erra com confiança.*
 
 *Banner: ESTAÇÃO CONCLUÍDA · **FORMATURA** · Estação 6 · Formatura. A bebê pula e cresce um pouco.*
 
-**A formatura:** aparece o diploma — “Certificamos que {nome} leu os dados, aprendeu seus pesos, passou nos testes e se formou com {nota} acertos em 10, treinada por NEX e por você.” 🏆 — e confetes explodem em volta da cápsula. A bebê ganha um capelo.
+**A formatura:** aparece o diploma — “Certificamos que {nome} leu os dados, aprendeu seus pesos, passou nos testes e se formou com {nota} acertos em 12, treinada por NEX e por você.” (embaixo: “Uma mini-rede neural de {n} pesos, treinada no seu navegador.”) 🏆 — e confetes explodem em volta da cápsula. A bebê ganha um capelo.
 
 > **LLM bebê ({nome}):** Eu me formei! Obrigada, NEX!
 >
@@ -1575,7 +1669,7 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 >
 > **NEX:** Para casa? Mas… e a NOVA? E a {nome}?
 >
-> **NOVA:** A gente mora aqui dentro, NEX. Mas toda vez que você conversar com uma IA, lembre: tem tokens, vetores, atenção e muitos pesos trabalhando por você.
+> **NOVA:** A gente mora aqui dentro, NEX. Mas toda vez que você conversar com uma IA, lembre: tem tokens, vetores, atenção e muitos pesos trabalhando. E ela pode errar com toda a confiança, então confira o que for importante.
 >
 > **Dra. Sinapse:** E eu cuido da {nome}. Ela vai continuar estudando!
 >
@@ -1603,7 +1697,9 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 
 *NEX senta no computador. A conversa da noite anterior ainda está na tela, com a resposta cortada. A IA termina a frase:*
 
-> 💻 **Language Engine (chat):** Boa pergunta! Por dentro, eu funciono prevendo a próxima palavra, uma de cada vez, usando tudo o que você viu lá dentro! Eu corto o seu texto em tokens e troco cada um por um número. Cada número vira um vetor de significado. Na atenção, eu descubro quais palavras importam. Os vetores sobem por dezenas de camadas de pesos, que eu aprendi no treino, errando e ajustando. No fim, cada palavra possível ganha uma chance, e eu escolho uma com cuidado. Uma palavra de cada vez.
+> 💻 **Language Engine (chat):** Boa pergunta! Por dentro, eu funciono prevendo a próxima palavra, uma de cada vez, usando tudo o que você viu lá dentro! Eu corto o seu texto em tokens e troco cada um por um número. Cada número puxa um vetor, uma lista de números aprendida no treino. Na atenção, faço contas para ver quais palavras ajudam a entender as outras. Os vetores sobem por dezenas de camadas de pesos, ajustados no treino, errando e ajustando. No fim, cada palavra possível ganha uma chance, e um sorteio controlado escolhe uma. Uma palavra de cada vez.
+
+*(Se no começo o jogador perguntou “Você pensa como eu?”, a resposta começa com “Não exatamente.” no lugar de “Boa pergunta!”.)*
 
 > **NEX:** Eu sei! Eu estive lá dentro!
 
@@ -1611,13 +1707,17 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 
 > **NEX:** Ninguém vai acreditar nessa história…
 
+> 💻 **Language Engine (chat):** Uma última dica: eu posso errar, mesmo parecendo confiante. Para o que for importante, confira em fontes confiáveis.
+
+*(Se a pergunta foi “Você pensa como eu?”: “E respondendo a sua pergunta: não, eu não penso nem sinto como você. Lá dentro, eu “lembrava” e “esquecia” só para contar a história. Ah, e eu posso errar com toda a confiança: para o que for importante, confira em fontes confiáveis.”)*
+
 > 💻 **NEX (digitando):** Obrigado, Engine. Amanhã eu volto com mais perguntas!
 >
 > 💻 **Language Engine (chat):** Estarei aqui. Uma palavra de cada vez. 💙
 
 *Banner: **FIM** · Obrigado por jogar!*
 
-**Créditos:** “LLM: The Prediction Factory — Uma aventura sobre como funcionam as LLMs”, com o resumo de cada fase (Fase 1: 5.500 anos de ideias…; Fase 2: tokens, vetores, atenção, camadas, temperatura, treino e RAG, até a resposta “Brasília”; Fase 3: você escolheu os dados, treinou, testou, ajustou e formou a {nome}) e os botões “Abrir o Codex”, “Mapa da jornada” e “Ficar no quarto”. Depois, tocar no computador mostra os créditos de novo.
+**Créditos:** “LLM: The Prediction Factory — Uma aventura sobre como funcionam as LLMs”, com o resumo de cada fase (Fase 1: 5.500 anos de ideias…; Fase 2: tokens, vetores, atenção, camadas, temperatura, treino e RAG, até a resposta “Brasília”; Fase 3: você escolheu os dados, treinou, testou, ajustou e formou a {nome}) e os botões “Abrir o Codex”, “Mapa da jornada” e “Ficar no quarto” (no modo piloto, também “Avaliação final”). Depois, tocar no computador mostra os créditos de novo.
 
 ## 11. Codex (verbetes)
 
@@ -1628,6 +1728,7 @@ O Codex é a enciclopédia do jogo: cada ideia descoberta vira um verbete com ex
 | Verbete | Tipo | Em uma linha |
 |---|---|---|
 | **Language Engine** | ★ História | A máquina que responde, mas esqueceu por quê. |
+| **O que é metáfora no jogo** | ◆ Curiosidade | A Engine fala, lembra e sente só na história. |
 
 ### Fase 1
 
@@ -1661,9 +1762,9 @@ O Codex é a enciclopédia do jogo: cada ideia descoberta vira um verbete com ex
 | **Token** | ● Fundamento | O pedacinho de texto que a LLM lê e escreve. |
 | **ID do token** | ◆ Curiosidade | Cada token tem um número fixo no catálogo. |
 | **Embedding (vetor de significado)** | ● Fundamento | Cada token vira um endereço num mapa de significados. |
-| **Atenção** | ● Fundamento | Cada token decide quais outros importam para ele. |
+| **Atenção** | ● Fundamento | Uma conta que pesa quanto cada token ajuda a entender os outros. |
 | **Camadas** | ● Fundamento | Andar por andar, a LLM multiplica matrizes de pesos. |
-| **Temperatura** | ● Fundamento | O botão que deixa a roleta mais certinha ou mais criativa. |
+| **Temperatura** | ● Fundamento | O botão que deixa a escolha mais previsível ou mais variada. |
 | **Treino** | ● Fundamento | Chutar, medir o erro, ajustar os pesos. Milhões de vezes. |
 | **RAG (busca no contexto)** | ● Fundamento | Buscar documentos e colocar junto com a pergunta. |
 | **Alucinação** | ◆ Curiosidade | Uma resposta bonita, confiante e errada. |
@@ -1674,7 +1775,9 @@ O Codex é a enciclopédia do jogo: cada ideia descoberta vira um verbete com ex
 
 | Verbete | Tipo | Em uma linha |
 |---|---|---|
-| **Dados de treino** | ● Fundamento | A LLM só sabe o que estava nos textos do treino. |
+| **Dados de treino** | ● Fundamento | A LLM aprende padrões dos textos do treino, certos ou errados. |
+| **Decorar × generalizar** | ● Fundamento | Acertar o que já viu não prova que aprendeu. |
+| **A sua LLM × uma LLM de verdade** | ▲ Deep Dive | Centenas de pesos contra bilhões. |
 | **Janela de contexto** | ● Fundamento | Quantos tokens para trás a LLM consegue olhar. |
 | **Perda (erro do treino)** | ▲ Deep Dive | O número que o treino tenta diminuir. |
 | **Ajuste fino** | ● Fundamento | Treinar mais um pouco, com exemplos escolhidos. |
@@ -1692,11 +1795,13 @@ O Codex é a enciclopédia do jogo: cada ideia descoberta vira um verbete com ex
 - **Diálogos:** caixa com retrato expressivo de quem fala, texto digitado no ritmo da voz, escolhas em botões; falas “de passagem” avançam sozinhas.
 - **Painéis:** documentos de 4 páginas (com desenhos e o selo “IDEIA QUE A LLM USA”), brincadeiras, perguntas e o caminho da pergunta dentro da Engine.
 - **Banners:** área nova, memória recuperada, estação concluída, conceito descoberto, núcleo recuperado, side quest.
-- **Codex** (livro), **Mapa da jornada** (núcleos recuperados, fases, áreas visitadas e side quests) e **Menu** (voz, música, efeitos, tamanho dos pixels, como jogar, capítulos e missões, tela inicial, recomeçar do zero).
+- **Codex** (livro), **Mapa da jornada** (núcleos recuperados, fases, áreas visitadas e side quests) e **Menu** (voz, volume da voz, música, efeitos, tamanho do texto, movimento, contraste, tamanho dos pixels, modo piloto, como jogar, capítulos e missões, tela inicial, recomeçar do zero).
+- **Acessibilidade:** o texto de todas as falas fica sempre na tela (legenda); botões para voltar à fala anterior (◂) e ouvir de novo (↻); volumes separados de voz, música e efeitos; texto Grande ou Maior; alto contraste; movimento reduzido (sem tremor de câmera nem clarões, cinemáticas em cortes, menos partículas e sem animações de interface); ✓ e ✗ junto das cores; documentos que podem ser fechados e relidos depois.
+- **Modo piloto (pesquisa):** liga pelo Menu ou pelo link `?piloto=1`. Antes do jogo, uma avaliação inicial de 8 perguntas; nos créditos (ou pelo Menu), uma avaliação final com 8 perguntas equivalentes e 2 perguntas abertas. O jogo registra tempo, tentativas e dicas por atividade, a prova e o uso do Codex, **só no navegador**, e permite exportar um arquivo JSON. Roteiro em `docs/PROTOCOLO_TESTE_INICIANTES.md`.
 - **Capítulos e missões:** lista todas as missões com ✓ nas feitas e leva direto para qualquer uma.
 - **Side quests da Fase 1:** documentos extras (“Quem descobriu as fichas?”, “Por que ‘matriz’?”, “O triângulo de Pascal”, “Babbage e suas máquinas”).
 - **Voz:** a NOVA e os personagens leem os diálogos em voz alta (gravações no prólogo; voz do navegador nas outras fases). Pode ser desligada.
-- **Salvamento automático** no navegador (progresso, verbetes, núcleos e missões).
+- **Salvamento automático** no navegador (progresso, verbetes, núcleos e missões). Ao abrir, o save é conferido: se estiver danificado, o jogo guarda uma cópia e começa do zero; se estiver incompleto, aproveita o que for válido. Nos dois casos, a tela inicial avisa.
 
 ## 13. Notas para quem mexe no projeto
 
@@ -1719,5 +1824,10 @@ O Codex é a enciclopédia do jogo: cada ideia descoberta vira um verbete com ex
 | Modelos (tokenizador, Markov, 27 pesos, RAG, MiniLM) | `src/v2/content/llm.ts` |
 | Verbetes do Codex | `src/v2/content/codex.ts` |
 | Vozes gravadas | `tools/voz/gerar_piper.py` → `public/audio/voz/` |
+| Métricas locais e modo piloto | `src/v2/engine/metrics.ts`, `src/v2/ui/Pilot.tsx` |
+| Testes automáticos | `tests/` (`npm test` e Playwright, ver `tests/README.md`) |
+| Matriz de aprendizagem e critérios por missão | `docs/MATRIZ_APRENDIZAGEM.md` |
+| Fontes históricas e técnicas | `docs/REFERENCIAS.md` |
+| Protocolo de teste com iniciantes | `docs/PROTOCOLO_TESTE_INICIANTES.md` |
 
 *Este documento foi gerado a partir do código do jogo; se um texto mudar no código, vale gerar de novo.*

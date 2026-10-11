@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import type { P2 } from '../store'
+import { G, type P2 } from '../store'
 
 /* =========================================================
    Núcleo do mundo 2D isométrico: projeção, tipos e o estado
@@ -133,6 +133,7 @@ export function worldToCss(x: number, y: number, z = 0) {
 /** Faíscas/poeira: n partículas saindo de (x, y, z). */
 export function burst(x: number, y: number, z: number, n: number, colors: string[], o: { spd?: number; up?: number; life?: number; g?: number; s?: number } = {}) {
   const spd = o.spd ?? 1.6, up = o.up ?? 40, life = o.life ?? 0.9
+  if (G().settings.reduced) n = Math.ceil(n / 3)
   for (let i = 0; i < n; i++) {
     const a = Math.random() * Math.PI * 2, r = (0.3 + Math.random() * 0.7) * spd
     RT.particles.push({ x, y, z, vx: Math.cos(a) * r, vy: Math.sin(a) * r, vz: up * (0.4 + Math.random() * 0.8), life: life * (0.6 + Math.random() * 0.6), max: life, c: colors[i % colors.length], s: o.s ?? (Math.random() < 0.3 ? 2 : 1), g: o.g ?? 90 })

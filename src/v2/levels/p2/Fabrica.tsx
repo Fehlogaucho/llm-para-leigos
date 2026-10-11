@@ -13,7 +13,7 @@ import { walkTo, fallIn, pulses, dataRainBg, tween } from '../common'
 import { registerRobot } from '../robots'
 import { QUESTION, GROUPS } from '../../content/llm'
 import { ZONES, zoneFlag, ZI, type Zone } from './zones'
-import { P2GameView, P2PipelineView, WORLD } from './games'
+import { P2GameView, P2PipelineView, P2OrderView, WORLD } from './games'
 import { W, H, ZW, ZH, ZO, CORRS, inCorr, beltLane, START, MACHINE, PROMPT_USE, PORTAL_P, PORTAL_USE, type Room, type Corr } from './layout'
 import * as A from './art'
 
@@ -219,7 +219,9 @@ async function finale(c: Ctx) {
     FIN.fed = true
     SFX.play('core'); RT.cam.shake = 0.5
     await c.wait(0.8)
-    await c.say({ who: 'ENGINE', text: 'Vou mostrar cada passo, com tudo o que você me ajudou a lembrar.' })
+    await c.say({ who: 'ENGINE', text: 'Antes de eu responder: você lembra a ordem dos passos? Me ajude a montar o caminho.' })
+    await show(c, (d) => <P2OrderView onDone={d} />)
+    await c.say({ who: 'ENGINE', text: 'Isso! Agora vou mostrar cada passo, com tudo o que você me ajudou a lembrar.' })
     await show(c, (d) => <P2PipelineView onDone={d} />)
     c.setFlag('p2_final')
     gesture('cheer', 2)

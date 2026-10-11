@@ -77,6 +77,12 @@ export function Dialogue() {
     if (line?.choices) return
     advance()
   }
+  function back() {
+    const cur = G().dialog
+    if (!cur || cur.i === 0) return
+    SFX.play('click')
+    useGame.setState({ dialog: { ...cur, i: cur.i - 1 } })
+  }
   function choose(ci: number) {
     const cur = G().dialog
     if (!cur || !line?.choices) return
@@ -104,6 +110,12 @@ export function Dialogue() {
           </div>
         )}
       </div>
+      {!d.ambient && (
+        <div className="dlg-tools">
+          {d.i > 0 && <button className="icon-btn" onClick={(e) => { e.stopPropagation(); back() }} aria-label="Voltar para a fala anterior" title="Fala anterior">◂</button>}
+          {voiceOn && <button className="icon-btn" onClick={(e) => { e.stopPropagation(); VOICE.replay() }} aria-label="Ouvir esta fala de novo" title="Ouvir de novo">↻</button>}
+        </div>
+      )}
       {!d.ambient && !typing && !line.choices && <div className="more">toque para continuar ▸</div>}
     </div>
   )

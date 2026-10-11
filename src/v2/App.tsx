@@ -1,3 +1,5 @@
+import { PilotTest } from './ui/Pilot'
+import { METRICS } from './engine/metrics'
 import { useEffect, useMemo, useState } from 'react'
 import { G, hasSave, useGame } from './store'
 import { Game } from './Game'
@@ -23,9 +25,13 @@ function Title() {
   const [saved] = useState(hasSave())
   const [chap, setChap] = useState(false)
   const level = useGame((s) => s.level)
-  const start = (fresh: boolean) => {
+  const issue = useGame((s) => s.saveIssue)
+  const [pre, setPre] = useState(false)
+  const start = (fresh: boolean, skipPilot = false) => {
+    if (fresh && !skipPilot && G().settings.pilot && !METRICS.data.pre) { initAudio(); SFX.play('open'); setPre(true); return }
     initAudio(); SFX.play('open')
     if (fresh) G().resetProgress()
+    useGame.setState({ saveIssue: null })
     const lv = fresh ? 'quarto' : resolveLevel(G().level)
     useGame.setState({ screen: 'game', level: '', loading: lv, levelReady: null })
   }
@@ -49,7 +55,9 @@ function Title() {
         {saved && L && <button className="btn primary" onClick={() => start(false)}>Continuar · {L.title}</button>}
         <button className={'btn' + (saved ? '' : ' primary')} onClick={() => start(true)}>{saved ? 'Novo jogo' : 'Começar a aventura'}</button>
         <button className="btn ghost" onClick={() => { initAudio(); SFX.play('click'); setChap(true) }}>Capítulos e missões</button>
+        {issue && <div className="save-issue" role="status">{issue === 'corrompido' ? 'O progresso salvo estava danificado e não pôde ser lido. Uma cópia foi guardada, e o jogo começa do zero. Você pode ir direto a qualquer missão em “Capítulos e missões”.' : 'Parte do progresso salvo estava incompleta e foi ajustada. Se algo parecer fora do lugar, use “Capítulos e missões”.'}</div>}
       </div>
+      {pre && <PilotTest kind="pre" onDone={() => { setPre(false); start(true, true) }} />}
       {chap && (
         <div className="modal" onClick={() => setChap(false)}>
           <div className="sheet" style={{ maxWidth: 640 }} onClick={(e) => e.stopPropagation()}><Chapters close={() => setChap(false)} /></div>
@@ -62,5 +70,18 @@ function Title() {
 
 export default function App() {
   const screen = useGame((s) => s.screen)
+  const st = useGame((s) => s.settings)
+  // acessibilidade: tamanho do texto, contraste e movimento reduzido valem para toda a interface
+  // modo piloto pelo link: ?piloto=1 liga, ?piloto=0 desliga
+  useEffect(() => {
+    const q = new URLSearchParams(location.search).get('piloto')
+    if (q === '1' || q === '0') useGame.setState({ settings: { ...G().settings, pilot: q === '1' } })
+  }, [])
+  useEffect(() => {
+    const r = document.documentElement
+    r.dataset.text = st.text || 'normal'
+    r.dataset.contrast = st.contrast ? 'alto' : 'normal'
+    r.classList.toggle('reduced', !!st.reduced)
+  }, [st.text, st.contrast, st.reduced])
   return screen === 'title' ? <Title /> : <Game />
 }

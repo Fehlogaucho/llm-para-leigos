@@ -65,7 +65,8 @@ export function makeCtx(signal: AbortSignal): Ctx {
     waitFlag: (k, v = 1) => until(() => (G().flags[k] || 0) >= v),
     cinematic: async (shots, skippable = true) => {
       check()
-      await new Promise<void>((resolve) => useGame.setState({ cine: { shots, t0: performance.now(), resolve, skippable } }))
+      const sh = G().settings.reduced ? shots.map((x) => ({ ...x, cut: true })) : shots
+      await new Promise<void>((resolve) => useGame.setState({ cine: { shots: sh, t0: performance.now(), resolve, skippable } }))
       check()
     },
     focus: (pos, zoom = 2, h = 0) => { FOCUS.x = pos[0]; FOCUS.y = pos[1]; FOCUS.zoom = zoom; FOCUS.h = h; FOCUS.active = true; useGame.setState({ focus: true }) },

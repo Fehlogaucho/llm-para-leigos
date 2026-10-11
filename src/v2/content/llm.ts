@@ -38,6 +38,15 @@ export function tokenize(text: string): { t: string; g: number }[] {
   }
   return out
 }
+/** Um segundo tokenizador, de pedaços menores (para comparar: cada LLM corta do seu jeito). */
+export function tokenizeSmall(text: string): { t: string; g: number }[] {
+  const out: { t: string; g: number }[] = []
+  for (const tk of tokenize(text)) {
+    if (/^\p{L}+$/u.test(tk.t) && tk.t.length > 3) for (let i = 0; i < tk.t.length; i += 3) out.push({ t: tk.t.slice(i, i + 3), g: tk.g })
+    else out.push(tk)
+  }
+  return out
+}
 export const KNOWN_IDS: Record<string, number> = { Qual: 1842, 'é': 91, a: 17, capital: 7231, do: 52, Brasil: 4098, '?': 8 }
 export function tokenId(t: string) { if (KNOWN_IDS[t] != null) return KNOWN_IDS[t]; let x = 5381; for (const ch of t) x = ((x * 33) ^ ch.codePointAt(0)!) >>> 0; return 100 + (x % 49900) }
 /** A pergunta que atravessa a fábrica. */
@@ -104,8 +113,10 @@ export const RAG_DOCS: RagDoc[] = [
   { c: 'Faculdade', s: 'Horários', t: 'Regulamento da biblioteca', x: 'A biblioteca do campus funciona de segunda a sexta, das 8h às 22h, e aos sábados, das 9h às 13h. Empréstimos duram 14 dias.', k: 'biblioteca horário abre fecha funciona sábado empréstimo campus' },
   { c: 'Faculdade', s: 'Provas', t: 'Calendário acadêmico', x: 'As provas finais do semestre acontecem entre 30 de novembro e 11 de dezembro.', k: 'provas finais semestre calendário datas' },
 ]
+/** Um aviso velho: a busca acha, mas ele não garante a resposta de hoje. */
+export const AVISO_2019: RagDoc = { c: 'Faculdade', s: 'Aviso antigo', t: 'Aviso de 2019 · Feriados', x: 'Em 2019, a biblioteca abria nos feriados, das 10h às 14h.', k: 'biblioteca feriado feriados abre aviso 2019' }
 export const CANTINA: RagDoc = { c: 'Seus documentos', s: 'Cantina', t: 'Cantina do campus', x: 'A cantina do campus serve pão de queijo quentinho todos os dias, às 10h e às 16h.', k: 'cantina pão queijo lanche horário campus' }
-for (const d of [...RAG_DOCS, CANTINA]) d.bag = bagOf(d.t + ' ' + d.x, 1, bagOf(d.k, 2))
+for (const d of [...RAG_DOCS, CANTINA, AVISO_2019]) d.bag = bagOf(d.t + ' ' + d.x, 1, bagOf(d.k, 2))
 export function ragSearch(q: string, docs: RagDoc[]) { const qb = bagOf(q); return docs.map((d) => ({ d, s: cosBag(qb, d.bag!) })).sort((a, b) => b.s - a.s) }
 
 /* ---------- a MiniLM que o jogador treina (Fase 3) ---------- */

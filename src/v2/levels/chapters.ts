@@ -4,6 +4,7 @@ import { ZONES } from './p2/zones'
 import { STATIONS } from './p3/lab'
 import { gotoLevel } from '../engine/script'
 import { initAudio, SFX } from '../engine/audio'
+import { METRICS } from '../engine/metrics'
 
 /* =========================================================
    Capítulos e missões: o jogador escolhe onde quer jogar.
@@ -100,6 +101,7 @@ function partial(level: string, mi: number, cur: F): F {
       const n = all ? STATIONS.length : Math.min(mi - 1, STATIONS.length)
       p3Stations(n, f, cur)
       if (all || mi > STATIONS.length) Object.assign(f, { p3_nota: cur.p3_nota || 8, p3_done: 1 })
+      if (all) f.p3_saida = 1
       break
     }
     case 'fim': if (all) f.fim_done = 1; break
@@ -125,6 +127,7 @@ export function jumpTo(ci: number, mi: number) {
   Object.assign(f, partial(ch.level, mi, cur))
   const visited = g.visited.includes(ch.level) ? g.visited : [...g.visited, ch.level]
   useGame.setState({ flags: f, cores, visited, objective: null, menu: null })
+  METRICS.jump()
   SFX.play('open')
   if (useGame.getState().screen === 'title') {
     initAudio()
@@ -141,7 +144,7 @@ export function missionDone(ci: number, mi: number, f: F): boolean {
     case 'prologo': return !!f.pro_done
     case 'p1': return mi === 0 ? !!f.l1_intro : mi === last ? !!f.l1_final : !!f['l1_' + STOPS[mi - 1].id]
     case 'p2': return mi === 0 ? !!f.p2_intro : mi === last ? !!f.p2_final : !!f['p2_' + ZONES[mi - 1].id]
-    case 'p3': return mi === 0 ? !!f.p3_intro : mi === last ? !!f.p3_done : !!f['p3_' + STATIONS[mi - 1].id]
+    case 'p3': return mi === 0 ? !!f.p3_intro : mi === last ? !!f.p3_saida : !!f['p3_' + STATIONS[mi - 1].id]
     case 'fim': return !!f.fim_done
   }
   return false

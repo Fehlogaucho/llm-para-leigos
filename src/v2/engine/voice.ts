@@ -45,6 +45,7 @@ function load(key: string): Promise<AudioBuffer | null> {
 /** Já carrega as falas que vêm a seguir (sem atraso quando a fala abrir). */
 export function preloadLines(lines: { who: string; text: string }[]) { for (const l of lines) { const k = voiceKey(l.who, l.text); if (manifest[k]) load(k) } }
 let playing: AudioBufferSourceNode | null = null
+let last: { text: string; who: string } | null = null
 let token = 0
 
 function speakBrowser(text: string, who: string, onEnd?: () => void) {
@@ -56,6 +57,7 @@ function speakBrowser(text: string, who: string, onEnd?: () => void) {
     if (voice) u.voice = voice
     const tb = TIMBRE[who] || TIMBRE.SISTEMA
     u.pitch = tb.pitch; u.rate = tb.rate
+    u.volume = Math.max(0, Math.min(1, G().settings.voiceVol ?? 1))
     if (onEnd) { u.onend = () => onEnd(); u.onerror = () => onEnd() }
     synth.speak(u)
     return true
@@ -67,6 +69,7 @@ export const VOICE = {
   /** Duração da fala gravada (segundos), se existir. */
   duration(text: string, who = 'NOVA') { return manifest[voiceKey(who, text)]?.d || 0 },
   speak(text: string, who = 'NOVA', onEnd?: () => void) {
+    last = { text, who }
     if (!G().settings.voice) { onEnd?.(); return false }
     VOICE.stop()
     const key = voiceKey(who, text)
@@ -86,6 +89,8 @@ export const VOICE = {
     }
     return speakBrowser(text, who, onEnd)
   },
+  /** Repete a última fala (botão de repetir do diálogo). */
+  replay() { if (last) VOICE.speak(last.text, last.who) },
   /** Uma fala gravada está tocando agora? (para testes) */
   isPlaying() { return !!playing },
   stop() {

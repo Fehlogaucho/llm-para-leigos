@@ -184,12 +184,13 @@ async function main(c: Ctx) {
     { who: 'NEX', text: 'Eu estava conversando com uma IA no meu computador. Teve um raio, um choque… e a tela me puxou!' },
     { who: 'NOVA', text: 'Eu sei. Você está dentro dela: esta é a Language Engine, a LLM com quem você conversava.' },
     { who: 'NOVA', text: 'O choque que te trouxe para cá também embaralhou a memória dela. Ela ainda consegue responder, mas esqueceu como funciona.' },
-    { who: 'NOVA', text: 'As peças que explicam como ela pensa, os Núcleos de Conhecimento, se espalharam por mundos diferentes.' },
+    { who: 'NOVA', text: 'As peças que explicam como ela funciona, os Núcleos de Conhecimento, se espalharam por mundos diferentes.' },
     { who: 'NEX', text: 'E como eu volto para casa?' },
     { who: 'NOVA', text: 'Ajudando a máquina a se lembrar. Cada mundo guarda uma ideia: primeiro as origens, como números, regras e máquinas; depois, o que faz uma LLM escrever.' },
     { who: 'NOVA', text: 'Quando os núcleos voltarem, ela vai funcionar direito de novo. E vai poder te devolver ao seu quarto.' },
     {
       who: 'NOVA', text: 'Quer saber mais antes de ir?', choices: [
+        { label: 'A Engine pensa e sente como gente?', next: [{ who: 'NOVA', text: 'Aqui na história, ela fala, lembra e esquece, para a aventura ficar divertida. Uma LLM de verdade não tem lembranças nem sentimentos: por dentro, são contas com números. Quando o jogo simplificar alguma coisa, os documentos avisam.' }] },
         { label: 'O que são esses mundos?', next: [{ who: 'NOVA', text: 'Cada mundo guarda uma ideia que tornou possível uma máquina de linguagem. Os primeiros são bem antigos: começam com um pastor contando ovelhas com fichinhas de barro.' }] },
         { label: 'Por que você me ajuda?', next: [{ who: 'NOVA', text: 'Porque perguntas são o combustível desta máquina. E você parece ter muitas.' }] },
         { label: 'Vamos logo!', next: [{ who: 'NOVA', text: 'Gosto da energia!' }] },
@@ -197,6 +198,7 @@ async function main(c: Ctx) {
     },
   ])
   c.discover('engine')
+  c.discover('metaforas')
   RT.novaPos = null; RT.lookAt = null
   c.setFlag('pro_portal', 1)
   S.portal = 0

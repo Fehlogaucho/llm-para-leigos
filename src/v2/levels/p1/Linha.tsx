@@ -10,7 +10,7 @@ import { start, type Ctx } from '../../engine/script'
 import { G, useGame, type P2 } from '../../store'
 import { STOPS, PEOPLE } from '../../content/stops'
 import { holo, HOLO } from './faces'
-import { openDoc, openAsk, openGame, openPipeline, MemoryStrip, memFlag, readExtra, readAgain, extraQuest, OV } from './Doc'
+import { openDoc, openAsk, openGame, openPipeline, openMatch, MemoryStrip, memFlag, readExtra, readAgain, extraQuest, OV } from './Doc'
 import { graosTalk, graosHint, graosMesa, BIG } from './Graos'
 import { showPhoto, PH } from './Photo'
 import { RECORDS, VALUES, type GK } from './graosData'
@@ -126,7 +126,7 @@ async function intro(c: Ctx) {
     { who: 'NEX', text: 'É a IA do meu computador! A voz dela está toda falhando.' },
     { who: 'NOVA', text: 'O choque apagou as lembranças mais antigas dela: as ideias que vieram antes de qualquer computador.' },
     { who: 'NOVA', text: 'Cada ilha guarda uma dessas ideias. Alguém inventou cada uma, às vezes há milhares de anos.' },
-    { who: 'NOVA', text: 'Juntas, essas ideias são a matemática que faz uma LLM funcionar. Sem elas, a Engine não consegue pensar direito.' },
+    { who: 'NOVA', text: 'Juntas, essas ideias são a matemática que faz uma LLM funcionar. Sem elas, a Engine não consegue funcionar direito.' },
     { who: 'NEX', text: 'E como a gente devolve essas ideias para ela?' },
     { who: 'NOVA', text: 'Em cada ilha, toque no console. O eco de quem teve a ideia vai aparecer, contar a história e deixar um documento para você ler.' },
     { who: 'NOVA', text: 'Cada ideia que você entender vira uma palavra que a Engine volta a lembrar. E a névoa da ponte seguinte se abre.' },
@@ -177,7 +177,9 @@ async function finale(c: Ctx) {
     { who: 'ENGINE', text: '“O céu é azul.” Uma palavra de cada vez. Eu lembro como eu escrevo!' },
     { who: 'NEX', text: 'Então é isso? Fichas, números, matrizes, pesos e chances?' },
     { who: 'NOVA', text: 'Essa é a matemática por trás de toda LLM. Ninguém inventou tudo de uma vez: foram milhares de anos de ideias, uma em cima da outra.' },
+    { who: 'NOVA', text: 'Antes do núcleo voltar, um desafio rápido: ligue cada ideia ao que ela faz dentro de uma LLM.' },
   ])
+  await openMatch(c)
   c.core('MATRIX', 'MATRIX CORE')
   c.discover('llm_pipeline')
   await c.wait(1.8)
