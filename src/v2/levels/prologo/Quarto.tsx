@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from 'react'
 import { Pix, hex, hash2, darker, lighter, mix } from '../../engine/pix'
 import { box, boxPix, spr, memo, wallDecal, glow, cyl, OUT } from '../../art/core'
 import { personSprite, NEX } from '../../art/person'
-import { RT, addInteract, gesture, burst, type Scene, type Thing } from '../../engine/runtime'
+import { RT, addInteract, gesture, burst, emote, emoteNex, type Scene, type Thing } from '../../engine/runtime'
+import { catSprite, type CatPose } from '../../art/creatures'
+import { tween } from '../common'
 import { SFX, playTheme } from '../../engine/audio'
 import { G } from '../../store'
 import type { Ctx } from '../../engine/script'
@@ -12,7 +14,8 @@ import type { Ctx } from '../../engine/script'
    Noite de tempestade. NEX pergunta à IA “Como você funciona?”.
    Um raio, um choque: ele encolhe e é sugado para dentro da tela.
    ========================================================= */
-const PC_USE: [number, number] = [5.3, 1.35]
+const PC_USE: [number, number] = [5.3, 2.3]
+const SEAT: [number, number] = [5.32, 1.27]
 const SCREEN = { x: 5.3, y: 0.3, z: 36 }
 
 /* ---------- estado da cena ---------- */
@@ -26,6 +29,15 @@ export const FX = {
   v: 0,
 }
 function resetFX() { Object.assign(FX, { msgs: [], typing: null, glitch: 0, vortex: 0, flash: 0, sparks: false, open: false, pull: null, shrink: null, white: 0 }); FX.v++ }
+/** O gato do NEX: dorme na cama até o raio. */
+const CAT = { pose: 'dorme' as CatPose, x: 1.15, y: 5.5, z: 18, flip: false, hidden: false, run: null as null | { t0: number; pts: [number, number, number][] }, lastZ: 0 }
+function resetCat() { Object.assign(CAT, { pose: 'dorme', x: 1.15, y: 5.5, z: 18, flip: false, hidden: false, run: null, lastZ: 0 }) }
+function scareCat() {
+  if (CAT.run || CAT.hidden) return
+  CAT.pose = 'assustado'
+  emote('!', () => ({ x: CAT.x, y: CAT.y, z: CAT.z + 18 }), 1.2)
+  CAT.run = { t0: RT.time + 0.5, pts: [[1.15, 5.5, 18], [2.3, 6.2, 0], [2.6, 3.4, 0], [0.4, 3.1, 0]] }
+}
 
 /* ---------- arte do quarto ---------- */
 const WALL = '#26345e'
@@ -124,8 +136,8 @@ const lamp = () => memo('q:lamp', () => {
   p.outline(hex(OUT))
   return spr(p, 7, 20)
 })
-const chairSeat = () => memo('q:chair', () => box(0.7, 0.7, 12, '#2a3a6a', { top: '#3a4a8a' }))
-const chairBack = () => memo('q:chairB', () => box(0.14, 0.7, 30, '#2a3a6a', { top: '#3a4a8a' }))
+const chairSeat = () => memo('q:chair', () => box(0.75, 0.55, 12, '#2a3a6a', { top: '#3a4a8a' }))
+const chairBack = () => memo('q:chairB', () => box(0.75, 0.12, 30, '#2a3a6a', { top: '#3a4a8a', leftFn: (u, zz) => (zz < 13 && (u < 0.12 || u > 0.88) ? hex('#1a2448') : zz < 13 ? null : null) }))
 const strip = () => memo('q:strip', () => box(0.55, 0.16, 3, '#e8e8f0', { topFn: (u) => (u > 0.8 ? hex('#ff4a4a') : u > 0.2 && Math.floor(u * 10) % 2 ? hex('#5a5a66') : null) }))
 const plant = () => memo('q:plant', () => {
   const p = new Pix(18, 26)
@@ -136,6 +148,19 @@ const plant = () => memo('q:plant', () => {
   p.outline(hex(OUT))
   return spr(p, 9, 25)
 })
+function clockSprite(t: number) {
+  const m = Math.floor(t * 2) % 60
+  return memo('q:clock:' + m, () => {
+    const p = new Pix(15, 15)
+    p.ellipse(7.5, 7.5, 7, 7, hex('#e8dcc0')); p.ellipse(7.5, 7.5, 5.6, 5.6, hex('#fff8ec'))
+    for (let k = 0; k < 12; k++) { const a = (k / 12) * Math.PI * 2; p.px(7.5 + Math.cos(a) * 5, 7.5 + Math.sin(a) * 5, hex('#8a7a6a')) }
+    const am = (m / 60) * Math.PI * 2 - Math.PI / 2, ah = ((m / 60 + 10) / 12) * Math.PI * 2 - Math.PI / 2
+    p.line(7, 7, 7 + Math.cos(am) * 4.6, 7 + Math.sin(am) * 4.6, hex('#2a1a3a'))
+    p.line(7, 7, 7 + Math.cos(ah) * 3, 7 + Math.sin(ah) * 3, hex('#c84a3a'))
+    p.outline(hex(OUT))
+    return spr(p, 7, 14)
+  })
+}
 const ball = () => memo('q:ball', () => { const p = new Pix(9, 9); p.ellipse(4.5, 4.5, 4, 4, hex('#e84a4a')); p.rect(1, 4, 7, 1, hex('#ffffff')); p.px(3, 2, hex('#ffb0b0')); p.outline(hex(OUT)); return spr(p, 4, 8) })
 function fromCanvas(cv: HTMLCanvasElement) {
   const p = new Pix(cv.width, cv.height)
@@ -198,6 +223,7 @@ async function main(c: Ctx) {
   ])
   c.freeze(false)
   FX.flash = 1; SFX.play('stone')
+  emoteNex('!', 1)
   await c.say([
     { who: 'NEX', text: 'Que tempestade… Sem chance de sair hoje.' },
     { who: 'NEX', text: 'Vou conversar com a IA. Tem uma coisa que eu sempre quis perguntar.' },
@@ -206,8 +232,12 @@ async function main(c: Ctx) {
   await c.waitFlag('q_pc')
   c.objective(null)
   c.freeze(true)
-  RT.player.x = PC_USE[0]; RT.player.y = PC_USE[1] - 0.1
+  // senta na cadeira
   RT.lookAt = [SCREEN.x, SCREEN.y - 1]
+  const from = { x: RT.player.x, y: RT.player.y }
+  await tween(c, 0.45, (k) => { RT.player.x = from.x + (SEAT[0] - from.x) * k; RT.player.y = from.y + (SEAT[1] - from.y) * k; RT.nexZ = Math.sin(k * Math.PI) * 6 })
+  RT.nexZ = 0
+  RT.pose = 'sit'; RT.poseT = 999
   c.focus([5.2, 0.9], 2, 26)
   await c.wait(0.9)
   FX.open = true; FX.v++; SFX.play('open')
@@ -218,7 +248,9 @@ async function main(c: Ctx) {
     { who: 'NEX', text: 'O que eu pergunto?', choices: [{ label: 'Como você funciona?', flag: 'q_ask1' }, { label: 'Você pensa como eu?', flag: 'q_ask2' }] },
   ])
   const q = c.flag('q_ask2') ? 'Você pensa como eu?' : 'Como você funciona?'
+  RT.pose = 'type'; RT.poseT = 999
   await typeOn(c, true, q, 18)
+  RT.pose = 'sit'
   FX.msgs.push({ me: true, text: q }); FX.typing = null; FX.v++
   SFX.play('click')
   await c.wait(0.9)
@@ -232,14 +264,19 @@ async function main(c: Ctx) {
   await fadeWhite(c, 0.9, 0.12)
   FX.open = false; FX.v++
   gesture('scared', 9)
+  scareCat()
+  // pula da cadeira com o susto
+  RT.player.x = SEAT[0]; RT.player.y = SEAT[1] + 0.75
   RT.lookAt = [RT.player.x + 1, RT.player.y + 1]
-  c.focus([5.3, 1.3], 2, 16)
+  c.focus([5.3, 1.9], 2, 16)
   await c.wait(0.15)
+  emoteNex('!', 1.2)
   await fadeWhite(c, 0, 0.45)
   await c.say([{ who: 'NEX', text: 'AAAI! Levei um choque!' }])
   gesture('scared', 9)
   FX.shrink = { t0: performance.now() }; SFX.play('whoosh')
-  c.focus([5.3, 1.3], 2, 8)
+  c.focus([5.3, 1.9], 2, 8)
+  emoteNex('?', 1.6)
   await c.wait(1.8)
   await c.say([
     { who: 'NEX', text: 'Eu… estou encolhendo?!' },
@@ -259,8 +296,10 @@ async function main(c: Ctx) {
   c.goto('prologo')
 }
 
+const BALL = { x: 2.4, y: 2.6, z: 0 }
 /* ---------- a fase ---------- */
 export default function build(): Scene {
+  resetCat(); Object.assign(BALL, { x: 2.4, y: 2.6, z: 0 })
   const things: Thing[] = []
   const T = (t: Thing) => { things.push(t); return t }
   T({ x: 0, y: -0.35, w: 8, d: 0.35, sprite: wallR() })
@@ -274,11 +313,14 @@ export default function build(): Scene {
   T({ x: 4.7, y: 0.14, w: 1.25, d: 0.16, z: 26, sprite: () => monitorSprite(FX.vortex > 0 ? 'vortex' : FX.glitch > 0 ? 'glitch' : 'chat', Math.floor(RT.time * 12)) })
   T({ x: 4.85, y: 0.62, w: 0.9, d: 0.28, z: 22, sprite: keyboard() })
   T({ x: 6.1, y: 0.25, z: 22, sprite: lamp() })
-  T({ x: 6.45, y: 1.6, w: 0.7, d: 0.7, solid: true, sprite: chairSeat() })
-  T({ x: 7.15, y: 1.6, w: 0.14, d: 0.7, solid: true, sprite: chairBack() })
+  T({ x: 4.95, y: 0.98, w: 0.75, d: 0.55, solid: true, sprite: chairSeat() })
+  T({ x: 4.95, y: 1.53, w: 0.75, d: 0.12, solid: true, sprite: chairBack() })
+  T({ x: 3.95, y: 0.02, z: 46, sprite: () => clockSprite(RT.time) })
+  // o gato
+  T({ x: CAT.x, y: CAT.y, hidden: () => CAT.hidden, pos: () => ({ x: CAT.x, y: CAT.y, z: CAT.z }), sprite: () => catSprite(CAT.pose, Math.floor(RT.time * (CAT.pose === 'corre' ? 10 : 1.5)), CAT.flip), shadow: 0 })
   T({ x: 6.6, y: 0.3, w: 0.55, d: 0.16, sprite: strip() })
   T({ x: 7.45, y: 0.5, w: 0, d: 0, solid: false, sprite: plant(), shadow: 5 })
-  T({ x: 2.4, y: 2.1, sprite: ball(), shadow: 3 })
+  T({ x: 2.4, y: 2.6, pos: () => BALL, sprite: ball(), shadow: 3 })
   // luzes (somadas por cima)
   T({ x: 5.4, y: 1.5, layer: 'ground', blend: 'lighter', sprite: () => glow(30, FX.vortex > 0 ? '#9a7aff' : '#3a6aff', 0.16 + FX.vortex * 0.22 + (FX.glitch > 0 ? Math.random() * 0.12 : 0)) })
   T({ x: 6.6, y: 1.0, layer: 'ground', blend: 'lighter', sprite: glow(18, '#ffb050', 0.16) })
@@ -292,18 +334,36 @@ export default function build(): Scene {
     sprite: () => { const a = RT.time * 14; return personSprite('NEX', NEX, { x: Math.cos(a), y: Math.sin(a) }, 0, 'scared') },
   })
   const ground = (x: number, y: number) => (x >= 0 && y >= 0 && x < 8 && y < 7 ? (x >= 2 && x <= 4 && y >= 3 && y <= 5 ? { s: 'carpet', a: '#3a4a8a', b: '#2a3468', c: '#e8b65a' } : { s: 'wood', a: '#7a4e30', b: '#4a2e1c' }) : null)
+  addInteract({ id: 'gato', x: 2.35, y: 5.6, r: 1.3, label: 'Fazer carinho no gato', icon: 'talk', color: '#ffc890', mz: 34, enabled: () => CAT.pose === 'dorme' && !CAT.hidden && !RT.frozen, use: () => { gesture('reach', 1.2); SFX.play('chime'); emote('♥', () => ({ x: CAT.x, y: CAT.y, z: CAT.z + 16 }), 1.8); if (!G().flags.q_gato) G().setFlag('q_gato') } })
   addInteract({ id: 'pc', x: PC_USE[0], y: PC_USE[1], r: 1.4, label: 'Sentar no computador', enabled: () => !G().flags.q_pc && !!G().objective, use: () => G().setFlag('q_pc'), mz: 48, color: '#9fe9ff' })
   let vig: HTMLCanvasElement | null = null
   return {
     w: 8, h: 7, ground, things,
     cliff: null,
-    spawn: { pos: [2.6, 5.2], dir: [0.4, -1] },
+    spawn: { pos: [2.4, 1.4], dir: [0, -1] },
     bg: (ctx, w, h) => { ctx.fillStyle = '#06070f'; ctx.fillRect(0, 0, w, h) },
     scripts: [main],
     update: (dt) => {
       FX.flash = Math.max(0, FX.flash - dt * 2.2)
       if (FX.shrink) { const k = Math.min(1, (performance.now() - FX.shrink.t0) / 1600); RT.nexScale = 1 - k * 0.68 + Math.sin(k * 30) * 0.03 * (1 - k) }
       if (FX.pull) RT.nexHidden = true
+      // o gato foge do raio
+      if (CAT.run && RT.time > CAT.run.t0) {
+        CAT.pose = 'corre'
+        const pts = CAT.run.pts, k = (RT.time - CAT.run.t0) * 2.6
+        const i = Math.floor(k)
+        if (i >= pts.length - 1) { CAT.hidden = true; CAT.run = null }
+        else { const a = pts[i], b = pts[i + 1], f = k - i; CAT.x = a[0] + (b[0] - a[0]) * f; CAT.y = a[1] + (b[1] - a[1]) * f; CAT.z = a[2] + (b[2] - a[2]) * f + (a[2] !== b[2] ? Math.sin(f * Math.PI) * 10 : 0); CAT.flip = (b[0] - a[0]) - (b[1] - a[1]) < 0 }
+      }
+      if (CAT.pose === 'dorme' && !CAT.hidden && Math.random() < dt * 0.25) emote('zz', { x: CAT.x, y: CAT.y, z: CAT.z + 14 }, 1.6)
+      // poeira na luz da luminária
+      if (Math.random() < dt * 1.5) RT.particles.push({ x: 6.1 + Math.random() * 0.8, y: 0.6 + Math.random() * 0.8, z: 10 + Math.random() * 30, vx: (Math.random() - 0.5) * 0.08, vy: (Math.random() - 0.5) * 0.08, vz: 1.5, life: 3, max: 3, c: '#ffe2a3', s: 1, g: 0 })
+      // o redemoinho puxa a bola e papéis
+      if (FX.vortex) {
+        const dx = SCREEN.x - BALL.x, dy = SCREEN.y + 0.5 - BALL.y, d = Math.hypot(dx, dy)
+        if (d > 0.3) { BALL.x += (dx / d) * dt * 1.1; BALL.y += (dy / d) * dt * 1.1; BALL.z = Math.min(30, BALL.z + dt * 8) }
+        if (Math.random() < dt * 6) { const sx = 4.6 + Math.random() * 1.8, sy = 0.4 + Math.random() * 1.2; RT.particles.push({ x: sx, y: sy, z: 22, vx: (SCREEN.x - sx) * 1.4, vy: (SCREEN.y - sy) * 1.4, vz: 12, life: 0.7, max: 0.7, c: '#f2ead8', s: 2, g: 0 }) }
+      }
       if (FX.sparks && Math.random() < 0.5) burst(6.85, 0.4, 3, 2, ['#9fe9ff', '#fff3b0', '#ffffff'], { spd: 1.2, up: 60, life: 0.5 })
       if (FX.vortex && Math.random() < 0.6) { const a = Math.random() * 6.28; RT.particles.push({ x: SCREEN.x + Math.cos(a) * 1.4, y: SCREEN.y + 0.4 + Math.sin(a) * 1.4, z: 30 + Math.random() * 20, vx: -Math.cos(a) * 1.6, vy: -Math.sin(a) * 1.6, vz: 4, life: 0.8, max: 0.8, c: Math.random() < 0.5 ? '#9fe9ff' : '#c8a8ff', s: 1, g: 0 }) }
     },

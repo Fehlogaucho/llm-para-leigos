@@ -1,4 +1,4 @@
-import { RT, burst } from '../engine/runtime'
+import { RT, burst, emoteNex, gesture } from '../engine/runtime'
 import { SFX } from '../engine/audio'
 import { hash2 } from '../engine/pix'
 import { mixc } from '../art/sky'
@@ -79,4 +79,57 @@ export async function walkTo(c: Ctx, p: P2, maxSec = 3.5) {
   }
   RT.path = null
   RT.player.x = p[0]; RT.player.y = p[1]
+}
+
+/** Luzinhas correndo por caminhos (circuitos, cabos, pontes). Para usar em Scene.under. */
+export function pulses(paths: P2[][], color: string, speed = 2.2, gap = 2.4) {
+  const segs = paths.map((path) => {
+    const L: number[] = [0]
+    for (let i = 1; i < path.length; i++) L.push(L[i - 1] + Math.hypot(path[i][0] - path[i - 1][0], path[i][1] - path[i - 1][1]))
+    return { path, L, total: L[L.length - 1] }
+  })
+  const at = (sg: typeof segs[0], s: number) => {
+    let i = 1; while (i < sg.L.length - 1 && sg.L[i] < s) i++
+    const a = sg.path[i - 1], b = sg.path[i], k = (s - sg.L[i - 1]) / Math.max(1e-6, sg.L[i] - sg.L[i - 1])
+    return [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k]
+  }
+  return (ctx: CanvasRenderingContext2D, t: number) => {
+    ctx.fillStyle = color
+    for (const sg of segs) {
+      if (sg.total <= 0) continue
+      const n = Math.max(1, Math.floor(sg.total / gap))
+      for (let k = 0; k < n; k++) {
+        const s0 = (t * speed + k * gap) % sg.total
+        for (let tail = 0; tail < 4; tail++) {
+          const s = s0 - tail * 0.12
+          if (s < 0) continue
+          const [x, y] = at(sg, s)
+          const sx = Math.round((x - y) * 16), sy = Math.round((x + y) * 8)
+          ctx.globalAlpha = 0.9 - tail * 0.22
+          ctx.fillRect(sx - (tail ? 0 : 1), sy, tail ? 1 : 2, 1)
+        }
+      }
+    }
+    ctx.globalAlpha = 1
+  }
+}
+
+/** O NEX cai do alto (chegando por um portal), levanta poeira e fica tonto um instante. */
+export async function fallIn(c: Ctx, height = 240) {
+  RT.nexZ = height; RT.nexScale = 1
+  SFX.play('whoosh')
+  const t0 = performance.now()
+  await c.until(() => {
+    const k = Math.min(1, (performance.now() - t0) / 850)
+    RT.nexZ = height * (1 - k * k)
+    if (Math.random() < 0.7) RT.particles.push({ x: RT.player.x + (Math.random() - 0.5) * 0.3, y: RT.player.y + (Math.random() - 0.5) * 0.3, z: RT.nexZ + 20, vx: 0, vy: 0, vz: 30, life: 0.5, max: 0.5, c: Math.random() < 0.5 ? '#bff3ff' : '#c8a8ff', s: 1, g: 0 })
+    return k >= 1
+  })
+  RT.nexZ = 0
+  RT.cam.shake = 0.7
+  SFX.play('stone')
+  burst(RT.player.x, RT.player.y, 2, 22, ['#8a8aa8', '#b8b8d0', '#6a6a88'], { spd: 2.4, up: 18, life: 0.8, g: 60 })
+  gesture('sit', 1.8)
+  emoteNex('tonto', 1.8)
+  await c.wait(1.8)
 }

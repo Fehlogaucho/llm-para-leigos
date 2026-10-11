@@ -44,26 +44,34 @@ export const LOOKS: Record<string, Look> = {
 type View = 'f' | 'b'
 
 /** Desenha um personagem. frame: 0..3 (andando) · pose: gesto. */
-export function personPix(L: Look, view: View, frame = 0, pose: Pose = 'idle'): Pix {
+export function personPix(L: Look, view: View, frame = 0, pose: Pose = 'idle', blink = false): Pix {
   const p = new Pix(W, H)
   const C = (c: string) => hex(c)
   const skin = C(L.skin), skinD = C(darker(L.skin, 0.18)), hair = C(L.hair), hairD = C(darker(L.hair, 0.3)), hairL = C(lighter(L.hair, 0.25))
   const top = C(L.top), topD = C(darker(L.top, 0.25)), topL = C(lighter(L.top, 0.15))
   const legs = C(L.legs), legsD = C(darker(L.legs, 0.25)), shoes = C(L.shoes)
-  const walking = pose === 'walk'
-  const bob = walking && frame % 2 === 1 ? -1 : 0
-  const armsUp = pose === 'cheer' || pose === 'scared'
-  const by = bob // deslocamento do corpo
+  const walking = pose === 'walk' || pose === 'run' || pose === 'carry'
+  const run = pose === 'run'
+  const sit = pose === 'sit' || pose === 'type'
+  const bob = (walking && frame % 2 === 1 ? -1 : 0) + (pose === 'idle' && frame % 2 === 1 ? 1 : 0)
+  const armsUp = pose === 'scared' || pose === 'carry' || (pose === 'cheer' && frame % 2 === 0)
+  const armsHalf = pose === 'cheer' && frame % 2 === 1
+  const by = bob + (sit ? 4 : 0) // deslocamento do corpo
   // ---- saco de dormir aparecendo atrás dos ombros (de frente) ----
   if (L.roll && view === 'f') { const r = C(L.roll), rd = C(darker(L.roll, 0.3)); p.ellipse(4.5, 16 + by, 2, 2.4, r); p.ellipse(17.5, 16 + by, 2, 2.4, r); p.px(4, 16 + by, rd); p.px(17, 16 + by, rd) }
   // ---- pernas e sapatos ----
-  const liftL = walking && frame === 1 ? 1 : 0, liftR = walking && frame === 3 ? 1 : 0
-  if (L.robe || L.dress) {
+  const liftL = walking && frame === 1 ? (run ? 2 : 1) : 0, liftR = walking && frame === 3 ? (run ? 2 : 1) : 0
+  const spread = run ? (frame === 1 ? -1 : frame === 3 ? 1 : 0) : 0
+  if (sit) {
+    if (view === 'f') { p.rect(7, 25, 8, 2, legs); p.rect(7, 25, 8, 1, C(lighter(L.legs, 0.12))); p.rect(8, 27, 2, 2, legs); p.rect(12, 27, 2, 2, legsD) }
+    else { p.rect(8, 27, 2, 2, legsD); p.rect(12, 27, 2, 2, legsD) }
+    p.rect(7, 29, 3, 2, shoes); p.rect(12, 29, 3, 2, shoes)
+  } else if (L.robe || L.dress) {
     // pés aparecem por baixo da roupa
-    p.rect(8, 29 - liftL, 3, 2, shoes); p.rect(12, 29 - liftR, 3, 2, shoes)
+    p.rect(8 + spread, 29 - liftL, 3, 2, shoes); p.rect(12 - spread, 29 - liftR, 3, 2, shoes)
   } else {
-    p.rect(8, 24 + by, 2, 5 - liftL, legs); p.rect(12, 24 + by, 2, 5 - liftR, legsD)
-    p.rect(7, 29 - liftL, 3, 2, shoes); p.rect(12, 29 - liftR, 3, 2, shoes)
+    p.rect(8 + spread, 24 + by, 2, 5 - liftL - by, legs); p.rect(12 - spread, 24 + by, 2, 5 - liftR - by, legsD)
+    p.rect(7 + spread, 29 - liftL, 3, 2, shoes); p.rect(12 - spread, 29 - liftR, 3, 2, shoes)
   }
   // ---- corpo ----
   if (L.dress) {
@@ -89,13 +97,27 @@ export function personPix(L: Look, view: View, frame = 0, pose: Pose = 'idle'): 
     } else { p.rect(8, 17 + by, 1, 5, bd); p.rect(13, 17 + by, 1, 5, bd) }
   }
   // ---- braços ----
-  const swing = walking ? (frame === 1 ? 1 : frame === 3 ? -1 : 0) : 0
+  const swing = walking && !armsUp ? (frame === 1 ? (run ? 2 : 1) : frame === 3 ? (run ? -2 : -1) : 0) : 0
   if (armsUp) {
     p.rect(4, 11 + by, 2, 7, top); p.rect(16, 11 + by, 2, 7, topD)
     p.rect(4, 9 + by, 2, 2, skin); p.rect(16, 9 + by, 2, 2, skinD)
+  } else if (armsHalf) {
+    p.rect(4, 14 + by, 2, 5, top); p.rect(16, 14 + by, 2, 5, topD)
+    p.rect(4, 12 + by, 2, 2, skin); p.rect(16, 12 + by, 2, 2, skinD)
   } else if (pose === 'think') {
     p.rect(5, 18 + by, 2, 5, top); p.rect(5, 23 + by, 2, 1, skin)
     p.rect(14, 16 + by, 3, 2, topD); p.rect(13, 14 + by, 2, 2, skin)
+  } else if (pose === 'type') {
+    const k = frame % 2
+    if (view === 'f') { p.rect(5, 18 + by, 2, 3, top); p.rect(15, 18 + by, 2, 3, topD); p.rect(6, 21 + by - k, 2, 1, skin); p.rect(14, 20 + by + k, 2, 1, skinD) }
+    else { p.rect(5, 18 + by, 2, 3, top); p.rect(15, 18 + by, 2, 3, topD) }
+  } else if (pose === 'reach') {
+    p.rect(5, 18 + by, 2, 5, top); p.rect(5, 23 + by, 2, 1, skin)
+    p.rect(15, 18 + by, 4, 2, topD); p.rect(19, 18 + by, 2, 2, skinD)
+  } else if (pose === 'wave') {
+    p.rect(5, 18 + by, 2, 5, top); p.rect(5, 23 + by, 2, 1, skin)
+    const hx = frame % 2 ? 18 : 16
+    p.rect(16, 12 + by, 2, 6, topD); p.rect(hx, 10 + by, 2, 2, skinD)
   } else {
     p.rect(5, 18 + by + swing, 2, 5, top); p.rect(15, 18 + by - swing, 2, 5, topD)
     p.rect(5, 23 + by + swing, 2, 1, skin); p.rect(15, 23 + by - swing, 2, 1, skinD)
@@ -127,6 +149,7 @@ export function personPix(L: Look, view: View, frame = 0, pose: Pose = 'idle'): 
     const scared = pose === 'scared'
     const ey = hy + 1
     for (const ex of [8, 13]) {
+      if (blink && !scared) { p.rect(ex, ey + 1, 2, 1, hex('#20140c')); continue }
       p.rect(ex, ey - (scared ? 1 : 0), 2, scared ? 3 : 2, hex('#20140c'))
       p.px(ex, ey - (scared ? 1 : 0), hex('#ffffff'))
     }
@@ -201,14 +224,16 @@ export function holoTint(src: Pix, color: string): Pix {
 }
 
 /** Sprite de uma pessoa olhando na direção (dx, dy) do mundo. */
-export function personSprite(id: string, L: Look, dir: { x: number; y: number }, frame: number, pose: Pose, holo?: string): Sprite {
+export function personSprite(id: string, L: Look, dir: { x: number; y: number }, frame: number, pose: Pose, holo?: string, blink = false): Sprite {
   const sx = dir.x - dir.y, sy = dir.x + dir.y
   const view: View = sy >= -0.05 ? 'f' : 'b'
   const flip = view === 'f' ? sx < 0 : sx > 0
-  const fr = pose === 'walk' ? frame % 4 : 0
-  const key = `pp:${id}:${view}:${flip ? 1 : 0}:${fr}:${pose}:${holo || ''}`
+  const animated = pose === 'walk' || pose === 'run' || pose === 'carry'
+  const fr = animated ? frame % 4 : (pose === 'idle' || pose === 'cheer' || pose === 'type' || pose === 'wave') ? frame % 2 : 0
+  const bl = blink && view === 'f'
+  const key = `pp:${id}:${view}:${flip ? 1 : 0}:${fr}:${pose}:${holo || ''}:${bl ? 1 : 0}`
   return memo(key, () => {
-    let p = personPix(L, view, fr, pose)
+    let p = personPix(L, view, fr, pose, bl)
     if (holo) p = holoTint(p, holo)
     if (flip) { const q = new Pix(p.w, p.h); q.blit(p, 0, 0, true); p = q }
     return spr(p, flip ? W - 1 - AX : AX, AY)

@@ -4,6 +4,8 @@ import { RT, FOCUS, INTERACTS, iso, unIso, labelOf, resetRT, type Scene, type Th
 import { INPUT, screenMove, screenToWorldDir, wantsRun } from './input'
 import { buildWalk, moveWithCollision, findPath, fits } from './world'
 import { tilePix, shadow, markerSprite } from '../art/core'
+import { emoteSprite, talkMarker } from '../art/creatures'
+import { recordTrail } from './npc'
 import { personSprite, NEX, novaSprite } from '../art/person'
 import { Pix, hex, darker, lighter, hash2 } from './pix'
 import { LEVELS } from '../levels/registry'
@@ -229,7 +231,8 @@ export function GameView() {
           else { mvx = dx / d; mvy = dy / d }
         }
       } else if (RT.path) { RT.path = null }
-      const speed = (wantsRun() ? 5.6 : 3.6) * RT.nexScale ** 0.3
+      const running = wantsRun() || (INPUT.joyActive && Math.hypot(INPUT.joy.x, INPUT.joy.y) > 0.93)
+      const speed = (running ? 5.4 : 3.5) * RT.nexScale ** 0.3
       const moving = mvx || mvy
       if (moving) {
         const bx = RT.player.x, by = RT.player.y
@@ -245,6 +248,7 @@ export function GameView() {
       if (!fits(sc, RT.player.x, RT.player.y, 0.05)) { /* fora do chão: não deve acontecer */ }
       if (RT.lookAt && (blocked || !moving)) { const dx = RT.lookAt[0] - RT.player.x, dy = RT.lookAt[1] - RT.player.y; if (Math.hypot(dx, dy) > 0.05) RT.dir = { x: dx, y: dy } }
       if (RT.poseT > 0) { RT.poseT -= dt; if (RT.poseT <= 0) RT.pose = 'idle' }
+      recordTrail()
       // chegou ao objeto tocado
       if (RT.tapUse && !RT.path) {
         const it = INTERACTS.get(RT.tapUse); RT.tapUse = null
@@ -303,6 +307,7 @@ export function GameView() {
         if (ch.ox > vx1 || ch.ox + ch.w < vx0 || ch.oy > vy1 || ch.oy + ch.h < vy0) continue
         ctx.drawImage(ch.img, ch.ox, ch.oy)
       }
+      if (sc.under) { sc.under(ctx, RT.time); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over' }
       // cachoeiras de dados caindo das bordas
       if (sc.falls) {
         const D = sc.cliff?.depth ?? 0
@@ -353,12 +358,19 @@ export function GameView() {
       }
       // o NEX
       if (!RT.nexHidden && RT.nexScale > 0.02) {
-        const pose = RT.poseT > 0 ? RT.pose : RT.speed > 0.2 ? 'walk' : 'idle'
-        const fr = Math.floor(RT.walkDist / 0.3) % 4
-        const s = personSprite('NEX', NEX, RT.dir, fr, pose)
-        const P = iso(RT.player.x, RT.player.y, 0), scl = RT.nexScale
+        const fast = RT.speed > 4.4
+        const pose = RT.poseT > 0 ? RT.pose : RT.speed > 0.2 ? (RT.carry ? 'carry' : fast ? 'run' : 'walk') : RT.carry ? 'carry' : 'idle'
+        const moving = pose === 'walk' || pose === 'run' || (pose === 'carry' && RT.speed > 0.2)
+        const fr = moving ? Math.floor(RT.walkDist / (fast ? 0.42 : 0.3)) % 4 : pose === 'type' ? Math.floor(RT.time * 8) : pose === 'wave' || pose === 'cheer' ? Math.floor(RT.time * 5) : Math.floor(RT.time / 0.7)
+        const blink = (RT.time % 3.6) < 0.13
+        const s = personSprite('NEX', NEX, RT.dir, fr, pose === 'carry' && !moving ? 'carry' : pose, undefined, blink)
+        const P = iso(RT.player.x, RT.player.y, RT.nexZ), G0 = iso(RT.player.x, RT.player.y, 0), scl = RT.nexScale
         const sh = shadow(5)
-        list.push({ x0: RT.player.x - 0.2, x1: RT.player.x + 0.2, y0: RT.player.y - 0.2, y1: RT.player.y + 0.2, s0: P.sx - 12, s1: P.sx + 12, t0: P.sy - 34 * scl, t1: P.sy + 2, draw: () => { drawSprite(sh, P.sx, P.sy, 0.8, Math.max(0.3, scl)); drawSprite(s, P.sx, P.sy, 1, scl) } })
+        const carry = RT.carry ? RT.carry() : null
+        list.push({ x0: RT.player.x - 0.2, x1: RT.player.x + 0.2, y0: RT.player.y - 0.2, y1: RT.player.y + 0.2, s0: P.sx - 14, s1: P.sx + 14, t0: P.sy - 50 * scl, t1: G0.sy + 2, draw: () => {
+          drawSprite(sh, G0.sx, G0.sy, 0.8 / (1 + RT.nexZ / 40), Math.max(0.3, scl)); drawSprite(s, P.sx, P.sy, 1, scl)
+          if (carry) drawSprite(carry, P.sx, P.sy - 30 * scl + (moving ? Math.round(Math.sin(RT.walkDist * 6)) : 0), 1, scl)
+        } })
       }
       // a NOVA
       if (RT.novaOn) {
@@ -379,8 +391,18 @@ export function GameView() {
       if (!g.cine && !FOCUS.active) for (const it of INTERACTS.values()) {
         if (!it.enabled() || (it.marker && !it.marker())) continue
         const P = iso(it.x, it.y, (it.mz ?? 34) + Math.sin(RT.time * 3 + it.x) * 2.5)
-        drawSprite(markerSprite(it.color || '#ffd27a'), P.sx, P.sy)
+        drawSprite(it.icon === 'talk' ? talkMarker(it.color || '#fff3d6') : markerSprite(it.color || '#ffd27a'), P.sx, P.sy)
       }
+      // balões de emoção
+      for (let i = RT.emotes.length - 1; i >= 0; i--) {
+        const e = RT.emotes[i], k = (RT.time - e.t) / e.dur
+        if (k >= 1) { RT.emotes.splice(i, 1); continue }
+        if (e.follow) { const q = e.follow(); e.x = q.x; e.y = q.y; e.z = q.z ?? e.z }
+        const P = iso(e.x, e.y, e.z + 6 + Math.min(1, k * 6) * 4)
+        const pop = Math.min(1, k * 8)
+        drawSprite(emoteSprite(e.kind, Math.floor(RT.time * 4)), P.sx, P.sy, k > 0.85 ? (1 - k) / 0.15 : 1, pop < 1 ? 0.5 + pop * 0.5 : 1)
+      }
+      if (sc.over) { sc.over(ctx, RT.time); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over' }
       // partículas
       for (const p of ps) {
         const P = iso(p.x, p.y, p.z)

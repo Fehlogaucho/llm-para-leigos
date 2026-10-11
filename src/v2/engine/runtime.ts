@@ -58,6 +58,10 @@ export interface Scene {
   falls?: { density: number; color: string }
   /** Chamado quando a fase fica pronta (overlays etc.). */
   init?: () => void
+  /** Efeitos animados no chão (coordenadas do mundo, depois do chão e antes das coisas). */
+  under?: (ctx: CanvasRenderingContext2D, t: number) => void
+  /** Desenho no mundo por cima de tudo (feixes de luz, ligações…). */
+  over?: (ctx: CanvasRenderingContext2D, t: number) => void
 }
 
 export interface Interact {
@@ -68,12 +72,14 @@ export interface Interact {
   color?: string
   mz?: number // altura do marcador (px)
   marker?: () => boolean
+  /** Ícone do marcador: losango (usar) ou balão (conversar). */
+  icon?: 'use' | 'talk'
 }
 export const INTERACTS = new Map<string, Interact>()
 export function addInteract(i: Interact) { INTERACTS.set(i.id, i); return i }
 export const labelOf = (i: Interact) => (typeof i.label === 'function' ? i.label() : i.label)
 
-export type Pose = 'idle' | 'walk' | 'scared' | 'cheer' | 'think'
+export type Pose = 'idle' | 'walk' | 'run' | 'scared' | 'cheer' | 'think' | 'sit' | 'type' | 'reach' | 'wave' | 'carry'
 export interface Particle { x: number; y: number; z: number; vx: number; vy: number; vz: number; life: number; max: number; c: string; s: number; g?: number; screen?: boolean }
 
 export const RT = {
@@ -84,6 +90,7 @@ export const RT = {
   frozen: false,
   time: 0,
   nexScale: 1,
+  nexZ: 0, // NEX acima do chão (pulos, quedas)
   nexHidden: false,
   pose: 'idle' as Pose, poseT: 0,
   lookAt: null as P2 | null,
@@ -95,6 +102,12 @@ export const RT = {
   path: null as P2[] | null,
   tapUse: null as string | null,
   tapMark: null as null | { x: number; y: number; t: number },
+  /** Coisa carregada pelo NEX (desenhada em cima da cabeça). */
+  carry: null as null | (() => Sprite),
+  /** Rastro dos passos do NEX (para quem o segue). */
+  trail: [] as P2[],
+  /** Balões de emoção ( ! ? ♥ … ) sobre personagens. */
+  emotes: [] as { x: number; y: number; z: number; kind: string; t: number; dur: number; follow?: () => { x: number; y: number; z?: number } }[],
   walkDist: 0,
   novaOn: false,
   view: { w: 0, h: 0, k: 1, dpr: 1 }, // pixels internos e escala
@@ -125,7 +138,17 @@ export function burst(x: number, y: number, z: number, n: number, colors: string
 /** Reinicia o estado do mundo ao trocar de fase. */
 export function resetRT() {
   RT.frozen = false; RT.nexScale = 1; RT.nexHidden = false; RT.pose = 'idle'; RT.poseT = 0; RT.lookAt = null
+  RT.carry = null; RT.trail = []; RT.emotes = []; RT.nexZ = 0
   RT.novaPos = null; RT.novaOn = false; RT.novaTalking = 0; RT.nexTalking = 0; RT.particles = []; RT.path = null; RT.tapUse = null; RT.tapMark = null
   RT.cam.shake = 0; RT.cam.zoom = 1; RT.cam.h = 0
   FOCUS.active = false
 }
+
+/** Um balão de emoção sobre um ponto (ou seguindo alguém). kind: '!', '?', '♥', '…', 'zz', 'ideia', 'tonto', '♪'. */
+export function emote(kind: string, at: { x: number; y: number; z?: number } | (() => { x: number; y: number; z?: number }), dur = 1.6) {
+  const f = typeof at === 'function' ? at : null
+  const p = f ? f() : (at as { x: number; y: number; z?: number })
+  RT.emotes.push({ x: p.x, y: p.y, z: p.z ?? 40, kind, t: RT.time, dur, follow: f || undefined })
+}
+/** Balão sobre a cabeça do NEX. */
+export const emoteNex = (kind: string, dur = 1.6) => emote(kind, () => ({ x: RT.player.x, y: RT.player.y, z: 40 * RT.nexScale }), dur)

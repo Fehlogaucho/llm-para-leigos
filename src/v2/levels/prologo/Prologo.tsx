@@ -6,7 +6,11 @@ import { RT, addInteract, gesture, burst, type Scene, type Thing } from '../../e
 import { SFX, playTheme } from '../../engine/audio'
 import { G, IS_TOUCH, useGame } from '../../store'
 import { gotoLevel, type Ctx } from '../../engine/script'
-import { arrive, dataRainBg, tween } from '../common'
+import { arrive, dataRainBg, tween, fallIn, pulses } from '../common'
+import { droneSprite } from '../../art/creatures'
+import { makeNpc, npcThing, npcTalk, updateNpcs, syncTalk, type Npc } from '../../engine/npc'
+import { INTERACTS, emote } from '../../engine/runtime'
+import { gear } from '../p1/art'
 
 /* =========================================================
    PRÓLOGO — O SALÃO DA LANGUAGE ENGINE (pixel art)
@@ -23,7 +27,7 @@ const PORTAL: [number, number] = [19.6, 12.6]
 const PORTAL_USE: [number, number] = [18.9, 13.6]
 const SPAWN: [number, number] = [16.5, 17.5]
 
-const S = { phrases: 0, on: 0, open: 0, brk: 0, crack: 0 } // estado visual (0..1)
+const S = { phrases: 0, on: 0, open: 0, brk: 0, crack: 0, portal: 0, novaBoot: 0 } // estado visual (0..1)
 const flag = (k: string) => G().flags[k] || 0
 
 /* ---------- a máquina ---------- */
@@ -73,6 +77,17 @@ const pylon = (on: boolean) => memo(`pro:py:${on}`, () => box(0.6, 0.6, 18, '#2a
 const pedestal = () => memo('pro:ped', () => cyl(9, 14, '#3a4060', '#7fe3ff'))
 function dormantNova() { return novaSprite(true, false, 0, true) }
 
+/* ---------- telas holográficas com texto correndo ---------- */
+function holoScreen(i: number, f: number) {
+  return memo(`pro:hs:${i}:${f % 8}`, () => {
+    const p = new Pix(30, 20)
+    const c = ['#7fe3ff', '#c8a8ff', '#8ff0b0', '#ffd27a'][i % 4]
+    p.rect(0, 0, 30, 20, hex(mix(c, '#06122a', 0.75))); p.rect(0, 0, 30, 1, hex(c)); p.rect(0, 19, 30, 1, hex(c)); p.rect(0, 0, 1, 20, hex(c)); p.rect(29, 0, 1, 20, hex(c))
+    for (let r = 0; r < 5; r++) { const len = 6 + Math.floor(hash2(r + f, i, 3) * 18); p.rect(3, 3 + r * 3, len, 1, hex(r === 4 - (f % 5) ? '#ffffff' : c)) }
+    return spr(p, 15, 20)
+  })
+}
+
 /* ---------- frases que aparecem no ar ---------- */
 const PHRASES = ['“Olá.”', '“Quem é você?”', '“Conte uma história.”', '“Explique…”', '“Por quê?”', '“Qual é a capital do Brasil?”', '“Me ajude com…”', '“O que é isso?”', '“Traduza…”', '“Resuma…”']
 const ITEMS = Array.from({ length: 15 }, (_, i) => ({ t: PHRASES[i % PHRASES.length], a: i * 1.37, r: 4.4 + (i % 3) * 1.5, z: 24 + (i % 5) * 22, sp: 0.1 + (i % 4) * 0.04, col: i % 3 ? '#bff3ff' : '#ffe2a3' }))
@@ -82,7 +97,7 @@ const RINGS = Array.from({ length: 6 }, (_, i) => { const a = (i / 6) * Math.PI 
 
 /* ---------- roteiro ---------- */
 async function main(c: Ctx) {
-  if (c.flag('pro_portal')) { RT.novaOn = true; S.on = 1; S.brk = 0; c.objective('Entre no portal', PORTAL_USE); return }
+  if (c.flag('pro_portal')) { RT.novaOn = true; S.on = 1; S.brk = 0; S.portal = 1; c.objective('Entre no portal', PORTAL_USE); return }
   const move = IS_TOUCH ? 'Arraste o círculo dourado para andar, ou toque no chão onde quer ir.' : 'Use WASD ou as setas para andar (Shift corre). Também dá para clicar no chão.'
   const first = !c.flag('pro_seen')
   c.freeze(true)
@@ -95,10 +110,10 @@ async function main(c: Ctx) {
   ])
   if (first) {
     c.focus(SPAWN, 2, 14)
-    await arrive(c)
-    gesture('think', 1.8)
+    await fallIn(c)
+    gesture('think', 1.6)
     c.setFlag('pro_seen')
-    await c.wait(0.6)
+    await c.wait(0.4)
   }
   c.unfocus(); c.freeze(false)
   await c.say([
@@ -147,13 +162,18 @@ async function main(c: Ctx) {
   // ---- a NOVA acorda ----
   RT.lookAt = PED
   await c.cinematic([{ pos: [PED[0] + 1, PED[1]], h: 20, zoom: 2, dur: 1.8 }], false)
+  // os olhos piscam, ligando
+  await tween(c, 1.4, (k) => { S.novaBoot = k })
+  emote('!', { x: PED[0], y: PED[1], z: 44 }, 1.2)
   RT.nova.x = PED[0]; RT.nova.y = PED[1]; RT.nova.z = 15
-  RT.novaPos = { x: PED[0] + 0.7, y: PED[1] + 0.9, z: 12 }
+  RT.novaPos = { x: PED[0], y: PED[1], z: 36 }
   RT.novaOn = true
   c.setFlag('nova', 1)
   SFX.play('chime')
   burst(PED[0], PED[1], 24, 18, ['#bff3ff', '#7fe3ff', '#ffffff'], { spd: 1.4, up: 40, life: 0.9 })
-  await c.wait(1.2)
+  await c.wait(0.9)
+  RT.novaPos = { x: PED[0] + 0.7, y: PED[1] + 0.9, z: 12 }
+  await c.wait(0.6)
   // o NEX vai até ela
   RT.player.x = PED[0] + 2.6; RT.player.y = PED[1] + 1.4
   RT.lookAt = [PED[0] + 0.6, PED[1] + 0.8]
@@ -179,7 +199,9 @@ async function main(c: Ctx) {
   c.discover('engine')
   RT.novaPos = null; RT.lookAt = null
   c.setFlag('pro_portal', 1)
+  S.portal = 0
   SFX.play('portal')
+  tween(c, 1.1, (k) => { S.portal = k * k * (3 - 2 * k) }).catch(() => {})
   burst(PORTAL[0], PORTAL[1], 20, 30, ['#7fe3ff', '#c8a8ff', '#ffffff'], { spd: 2, up: 60, life: 1 })
   await c.cinematic([{ pos: [PORTAL[0] - 1, PORTAL[1]], h: 26, zoom: 1, dur: 1.4 }, { pos: [PORTAL[0] - 1, PORTAL[1]], h: 26, zoom: 1, dur: 1 }], false)
   c.unfocus(); c.freeze(false)
@@ -212,7 +234,16 @@ export default function build(): Scene {
   }
   // pedestal da NOVA
   T({ x: PED[0], y: PED[1], solid: false, sprite: pedestal(), shadow: 0 })
-  T({ x: PED[0], y: PED[1] + 0.05, z: 15, hidden: () => !!flag('nova'), sprite: dormantNova() })
+  T({ x: PED[0], y: PED[1] + 0.05, z: 15, hidden: () => !!flag('nova'), sprite: () => (S.novaBoot > 0 && Math.floor(RT.time * (4 + S.novaBoot * 10)) % 2 ? novaSprite(false, false, 0, S.novaBoot < 0.6) : dormantNova()) })
+  // telas holográficas em volta da máquina
+  for (let i = 0; i < 4; i++) {
+    const a0 = (i / 4) * Math.PI * 2 + 0.4
+    T({ x: 0, y: 0, layer: 'top', pos: () => { const a = a0 + RT.time * 0.12; return { x: 12 + Math.cos(a) * 4.4, y: 5.5 + Math.sin(a) * 3.8, z: 56 + Math.sin(RT.time * 1.3 + i) * 4 } }, sprite: () => holoScreen(i, Math.floor(RT.time * 3)), alpha: () => 0.35 + S.on * 0.5 })
+  }
+  // engrenagens na lateral da máquina
+  T({ x: ENG.x + ENG.w + 0.02, y: ENG.y + 1.1, z: 60, sprite: () => gear(9, '#c8a040', Math.floor(RT.time * (2 + S.on * 8))) })
+  T({ x: ENG.x + ENG.w + 0.03, y: ENG.y + 2.0, z: 48, sprite: () => gear(6, '#c87a3a', 3 - (Math.floor(RT.time * (2 + S.on * 8)) % 4)) })
+  T({ x: ENG.x + ENG.w + 0.04, y: ENG.y + 2.6, z: 64, sprite: () => gear(5, '#c8a040', Math.floor(RT.time * (2 + S.on * 8))) })
   // frases no ar
   for (const it of ITEMS) {
     T({ x: 0, y: 0, hidden: () => S.phrases <= 0.01, pos: () => { const a = it.a + RT.time * it.sp, r = it.r * (0.6 + S.phrases * 0.4); return { x: 12 + Math.cos(a) * r, y: 5.5 + Math.sin(a) * r * 0.9, z: it.z + Math.sin(RT.time + it.a) * 3 } }, sprite: label(it.t, it.col, '#0a2040'), alpha: () => S.phrases })
@@ -220,9 +251,16 @@ export default function build(): Scene {
   // portais no céu e as peças fugindo
   for (const r of RINGS) T({ x: r.x, y: r.y, z: r.z, layer: 'top', hidden: () => S.brk <= 0.01, sprite: () => ringSprite(r.col, fr()), alpha: () => S.brk, scale: () => 0.3 + S.brk * 0.7 })
   // o portal de saída
-  T({ x: PORTAL[0], y: PORTAL[1], hidden: () => !flag('pro_portal'), sprite: () => portalSprite(fr(), '#7fe3ff'), shadow: 0 })
+  T({ x: PORTAL[0], y: PORTAL[1], hidden: () => !flag('pro_portal') || S.portal < 0.02, sprite: () => portalSprite(fr(), '#7fe3ff'), scale: () => S.portal, shadow: 0 })
   T({ x: PORTAL[0], y: PORTAL[1] + 0.6, layer: 'ground', blend: 'lighter', hidden: () => !flag('pro_portal'), sprite: glow(30, '#7fe3ff', 0.35) })
 
+  // drones de manutenção
+  const drones: Npc[] = [
+    makeNpc({ id: 'drone1', route: [[6, 9], [9, 14], [15, 16], [18, 11], [16, 8.5], [9, 8.5]], speed: 1.3, fly: 46, pause: 1.5, sprite: (n, f) => droneSprite(f, '#c8d0e0', S.on > 0.5 ? '#7fe3ff' : '#ffb35a'),
+      talk: () => { emote('♪', () => ({ x: drones[0].x, y: drones[0].y, z: 70 }), 1.5); SFX.play('bead'); useGame.getState().showToast('Bip-bop! Manutenção da Language Engine. Memória bagunçada… bip.') }, label: 'Falar com o drone', color: '#7fe3ff' }),
+    makeNpc({ id: 'drone2', route: [[17, 6], [19, 13], [13, 18], [6, 15], [4.5, 10]], speed: 1.1, fly: 58, pause: 2, sprite: (n, f) => droneSprite(f + 1, '#d8c8a8', '#ffd27a') }),
+  ]
+  for (const d of drones) { T(npcThing(d)); T({ x: d.x, y: d.y, layer: 'ground', blend: 'lighter', pos: () => ({ x: d.x, y: d.y }), sprite: glow(12, '#7fe3ff', 0.25) }); npcTalk(d) }
   addInteract({ id: 'pro_door', x: DOOR_USE[0], y: DOOR_USE[1], r: 1.6, label: 'Tocar na porta', color: '#7fe3ff', mz: 54, enabled: () => !flag('pro_door') && !!useGame.getState().objective?.text?.startsWith('Toque'), use: () => G().setFlag('pro_door') })
   addInteract({ id: 'pro_portal', x: PORTAL_USE[0], y: PORTAL_USE[1], r: 1.6, label: 'Entrar no portal', color: '#7fe3ff', mz: 58, enabled: () => !!flag('pro_portal'), use: () => { G().setFlag('pro_done'); useGame.setState({ objective: null }); gotoLevel('p1') } })
 
@@ -255,7 +293,13 @@ export default function build(): Scene {
       }
     },
     init: () => { if (flag('nova')) RT.novaOn = true },
-    update: () => {
+    under: pulses([
+      ...Array.from({ length: 8 }, (_, i) => { const a = (i / 8) * Math.PI * 2 + 0.2; return [[12 + Math.cos(a) * 10, 6.5 + Math.sin(a) * 9], [12 + Math.cos(a) * 5, 6.5 + Math.sin(a) * 4.6]] as [number, number][] }),
+      Array.from({ length: 41 }, (_, i) => { const a = (i / 40) * Math.PI * 2; return [12 + Math.cos(a) * 7.5, 6.5 + Math.sin(a) * 6.8] as [number, number] }),
+    ], '#bff3ff', 2.4, 2.6),
+    update: (dt) => {
+      updateNpcs(drones, dt); syncTalk(drones, INTERACTS)
+      if (Math.random() < dt * (0.6 + S.on * 2)) RT.particles.push({ x: ENG.x + 0.6 + Math.random() * 0.5, y: ENG.y + 0.4, z: ENG.h + 6, vx: (Math.random() - 0.5) * 0.2, vy: 0, vz: 18, life: 1.6, max: 1.6, c: Math.random() < 0.5 ? '#8a90b0' : '#6a7090', s: 2, g: -2 })
       if (S.brk > 0.5 && Math.random() < 0.7) {
         const r = RINGS[Math.floor(Math.random() * RINGS.length)]
         const vx = (r.x - CORE.x) / 1.1, vy = (r.y - CORE.y) / 1.1, vz = (r.z - CORE.z) / 1.1
