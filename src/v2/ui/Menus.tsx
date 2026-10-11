@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { G, useGame, type Cat } from '../store'
 import { CODEX_LIST, CAT_INFO, type CodexEntry } from '../content/codex'
 import { LEVELS, LEVEL_ORDER, PHASES } from '../levels/registry'
@@ -6,6 +6,7 @@ import { gotoLevel } from '../engine/script'
 import { SFX } from '../engine/audio'
 import { VOICE } from '../engine/voice'
 import { Ico } from './Icons'
+import { CHAPTERS, jumpTo, missionDone } from '../levels/chapters'
 
 export function Menus() {
   const m = useGame((s) => s.menu)
@@ -13,10 +14,11 @@ export function Menus() {
   const close = () => { SFX.play('click'); useGame.setState({ menu: null }) }
   return (
     <div className="modal" onClick={close}>
-      <div className="sheet" onClick={(e) => e.stopPropagation()}>
+      <div className="sheet" style={m === 'chapters' ? { maxWidth: 640 } : undefined} onClick={(e) => e.stopPropagation()}>
         {m === 'codex' && <Codex close={close} />}
         {m === 'map' && <MapView close={close} />}
         {m === 'settings' && <Settings close={close} />}
+        {m === 'chapters' && <Chapters close={close} />}
       </div>
     </div>
   )
@@ -119,6 +121,7 @@ function MapView({ close }: { close: () => void }) {
   return (
     <>
       <div className="head"><h2>Mapa da jornada</h2><button className="icon-btn close" onClick={close} aria-label="Fechar">{Ico.close}</button></div>
+      <button className="btn primary small" style={{ marginBottom: 12 }} onClick={() => { SFX.play('click'); useGame.setState({ menu: 'chapters' }) }}>Escolher capítulo ou missão ▸</button>
       <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--muted)', letterSpacing: '.1em' }}>NÚCLEOS DA LANGUAGE ENGINE</div>
       <div className="cores">{coresAll.map((c) => <span key={c} className={'core-chip' + (g.cores.includes(c) ? ' on' : '')}>{c} CORE</span>)}</div>
       <div className="map-phases">
@@ -174,11 +177,81 @@ function Settings({ close }: { close: () => void }) {
         </div>
       </div>
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 16 }}>
+        <button className="btn primary" onClick={() => { SFX.play('click'); useGame.setState({ menu: 'chapters' }) }}>Capítulos e missões</button>
         <button className="btn" onClick={() => { close(); useGame.setState({ screen: 'title' }) }}>Tela inicial</button>
         <a className="btn ghost" href="/3d/" style={{ textDecoration: 'none' }}>Versão 3D</a>
         <a className="btn ghost" href="/classico/" style={{ textDecoration: 'none' }}>Versão clássica</a>
         {!confirm ? <button className="btn ghost" onClick={() => setConfirm(true)}>Recomeçar do zero</button> : <button className="btn" style={{ borderColor: '#ff7a7a' }} onClick={() => { G().resetProgress(); close(); useGame.setState({ screen: 'title' }) }}>Apagar progresso? Toque para confirmar</button>}
       </div>
+    </>
+  )
+}
+
+/* ---------- capítulos e missões: ir direto para onde quiser ---------- */
+export function Chapters({ close }: { close: () => void }) {
+  const flags = useGame((s) => s.flags)
+  const level = useGame((s) => s.level)
+  const inGame = useGame((s) => s.screen === 'game')
+  const [open, setOpen] = useState(() => {
+    const i = CHAPTERS.findIndex((c) => c.level === G().level)
+    if (i >= 0) return i
+    const j = CHAPTERS.findIndex((c, ci) => c.missions.some((_, k) => !missionDone(ci, k, G().flags)))
+    return j >= 0 ? j : 0
+  })
+  const [sel, setSel] = useState<[number, number] | null>(null)
+  const go = (ci: number, mi: number) => { close(); jumpTo(ci, mi) }
+  const box = useRef<HTMLDivElement>(null)
+  // abre já mostrando o capítulo atual
+  useEffect(() => { const el = box.current?.querySelector('.chap.open'); if (el && open > 1) setTimeout(() => el.scrollIntoView({ block: 'start' }), 30) }, [])
+  return (
+    <>
+      <div className="head"><h2>Capítulos</h2><button className="icon-btn close" onClick={close} aria-label="Fechar">{Ico.close}</button></div>
+      <p className="chap-lead">Escolha um capítulo e a missão onde quer jogar. As missões antes dela contam como feitas; dali em diante, aquele capítulo recomeça.</p>
+      <div className="chaps" ref={box}>
+        {PHASES.map((ph) => {
+          const chs = CHAPTERS.map((c, i) => ({ c, i })).filter((x) => x.c.phase === ph.n)
+          if (!chs.length) return null
+          return (
+            <div key={ph.n} className="chap-ph">
+              <div className="chap-phh"><b>{ph.name}</b> · {ph.title}</div>
+              {chs.map(({ c, i }) => {
+                const n = c.missions.filter((_, k) => missionDone(i, k, flags)).length
+                const isOpen = open === i
+                return (
+                  <div key={c.level} className={'chap' + (isOpen ? ' open' : '')}>
+                    <button className="chap-h" aria-expanded={isOpen} onClick={() => { SFX.play('click'); setOpen(isOpen ? -1 : i) }}>
+                      <span className="t">{c.title}</span>
+                      {inGame && level === c.level && <span className="here">você está aqui</span>}
+                      <span className="n">{n}/{c.missions.length}</span>
+                      <span className="ar" aria-hidden>{isOpen ? '▾' : '▸'}</span>
+                    </button>
+                    {isOpen && (
+                      <div className="chap-ms">
+                        {c.missions.map((m, k) => {
+                          const d = missionDone(i, k, flags), on = !!sel && sel[0] === i && sel[1] === k
+                          return (
+                            <button key={k} className={'chap-m' + (d ? ' done' : '') + (on ? ' sel' : '')} onClick={() => { if (on) go(i, k); else { SFX.play('click'); setSel([i, k]) } }}>
+                              <span className="i" style={m.color ? { borderColor: m.color, color: d ? undefined : m.color } : undefined}>{d ? '✓' : k === 0 ? '▸' : k === c.missions.length - 1 ? '★' : k}</span>
+                              <span className="tx"><span className="l">{m.label}</span><span className="s">{m.sub}</span></span>
+                              {on && <span className="go">Jogar ▸</span>}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          )
+        })}
+      </div>
+      {sel && (
+        <div className="chap-go">
+          <span>Ir para <b>{CHAPTERS[sel[0]].missions[sel[1]].label}</b></span>
+          <button className="btn primary" onClick={() => go(sel[0], sel[1])}>Jogar agora ▸</button>
+        </div>
+      )}
     </>
   )
 }

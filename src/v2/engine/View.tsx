@@ -150,6 +150,7 @@ function nearestInteract(): Interact | null {
 export function GameView() {
   const ref = useRef<HTMLCanvasElement>(null!)
   const level = useGame((s) => s.level)
+  const seq = useGame((s) => s.sceneSeq) // muda a cada carregamento: recarrega até a mesma fase
   const st = useRef({ chunks: [] as Chunk[], sc: null as Scene | null, falls: [] as Fall[] })
 
   /* ----- carregar a fase ----- */
@@ -189,7 +190,7 @@ export function GameView() {
       useGame.setState({ overlays: {}, prompt: null, hudHidden: false })
       resetRT()
     }
-  }, [level])
+  }, [level, seq])
 
   /* ----- laço principal ----- */
   useEffect(() => {

@@ -18,6 +18,7 @@ Há três versões no mesmo site:
   - Fase 3 `p3/Lab.tsx` — **Crie sua LLM / O Laboratório**: 6 estações (dados, vocabulário+memória, forja de treino, sala de teste com os 7 passos, ajuste fino+preferências, formatura com prova ≥7/10). A LLM bebê é uma MiniLM treinada de verdade no navegador (`content/llm.ts`); escolhas guardadas nas flags `p3_mask`, `p3_mem`, `p3_ep`, `p3_nome` (o modelo é refeito ao recarregar). Painéis em `p3/games.tsx`, dados em `p3/lab.ts`.
   - Final `fim/Casa.tsx` (epílogo no quarto, a IA termina a resposta, créditos).
 - Modelos didáticos (tokenizador, contagem de Markov, mini-modelo de 27 pesos, busca RAG, MiniLM) em `src/v2/content/llm.ts` (portados de `legacy/src/models.js`).
+- Capítulos e missões (ir direto para qualquer missão, pela tela inicial, pelo Menu ou pelo Mapa): `levels/chapters.ts` (lista, `jumpTo` que acerta as flags: fases anteriores concluídas, missões anteriores feitas, o resto do capítulo recomeça; fases seguintes ficam como estavam) e o painel `Chapters` em `ui/Menus.tsx`. Todo carregamento incrementa `sceneSeq`, então dá para recarregar a mesma fase.
 - Robôs que falam: `levels/robots.tsx` (`registerRobot`); habitantes/seguidores em `engine/npc.ts`; criaturas em `art/creatures.ts`.
 - Conteúdo em `src/v2/content/` (`stops.ts`, `photos.ts`, `codex.ts`) — cópias do conteúdo da 3D; mudanças de texto vão aqui.
 - Interface em `src/v2/ui/` (HUD, diálogo, menus, carregamento). Ganchos de teste em `window.__pf` (inclui `walkTo(x, y)` e `VOICE`).

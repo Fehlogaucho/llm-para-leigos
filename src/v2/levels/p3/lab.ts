@@ -1,4 +1,4 @@
-import { G } from '../../store'
+import { G, type P2 } from '../../store'
 import { MiniLM } from '../../content/llm'
 
 /* =========================================================
@@ -7,6 +7,16 @@ import { MiniLM } from '../../content/llm'
    verdade no navegador), a prova final e as escolhas de
    preferência do alinhamento.
    ========================================================= */
+/** As seis estações do laboratório (na ordem da visita). */
+export interface Station { id: string; name: string; color: string; use: P2; codex: string[]; word: string }
+export const STATIONS: Station[] = [
+  { id: 'dados', name: 'Biblioteca de Dados', color: '#8ff0b0', use: [6.6, 8.0], codex: ['dados_treino'], word: 'DADOS' },
+  { id: 'tokens', name: 'Tokenizador', color: '#ff6a5a', use: [15.4, 5.8], codex: ['janela'], word: 'VOCABULÁRIO' },
+  { id: 'forja', name: 'Forja de Treino', color: '#ffb35a', use: [23.4, 7.2], codex: ['perda'], word: 'TREINO' },
+  { id: 'teste', name: 'Sala de Teste', color: '#59d7ff', use: [24.2, 14.6], codex: [], word: 'TESTE' },
+  { id: 'ajuste', name: 'Ajuste e Alinhamento', color: '#ff7ab8', use: [22.4, 21.6], codex: ['ajuste_fino', 'prompt', 'rlhf'], word: 'ALINHAMENTO' },
+  { id: 'prova', name: 'Formatura', color: '#ffd27a', use: [8.6, 21.2], codex: [], word: 'FORMATURA' },
+]
 export interface Sent { s: string; tag: string; wrong?: boolean; extra?: boolean }
 export const SENTS: Sent[] = [
   { s: 'A capital do Brasil é Brasília .', tag: 'Brasil' },

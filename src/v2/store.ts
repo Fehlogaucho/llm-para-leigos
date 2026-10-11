@@ -31,7 +31,7 @@ export interface Progress {
   visited: string[]
 }
 
-export type Menu = null | 'codex' | 'map' | 'settings'
+export type Menu = null | 'codex' | 'map' | 'settings' | 'chapters'
 
 interface State extends Progress {
   screen: 'title' | 'game'

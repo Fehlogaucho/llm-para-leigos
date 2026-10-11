@@ -735,7 +735,7 @@ export default function build(): Scene {
   let spawn: P2 = START
   if (flag('l1_final')) spawn = [CORE_USE[0], CORE_USE[1] + 0.6]
   else if (flag('l1_intro') && n0 > 0) spawn = STOPS[n0].custom === 'graos' ? [V.x0 + 1.2, vy + 15.5] : STAND_P(n0)
-  else if (flag('l1_intro') && n0 < 0) spawn = STAND_P(STOPS.length - 1)
+  else if (flag('l1_intro') && n0 < 0) spawn = START
 
   let emoteT = 4
   return {

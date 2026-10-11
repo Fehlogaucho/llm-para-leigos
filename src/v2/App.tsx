@@ -3,6 +3,7 @@ import { G, hasSave, useGame } from './store'
 import { Game } from './Game'
 import { initAudio, playTheme, SFX } from './engine/audio'
 import { LEVELS, resolveLevel } from './levels/registry'
+import { Chapters } from './ui/Menus'
 import { VOICE } from './engine/voice'
 import { personPix, NEX, novaPix } from './art/person'
 import { Pix } from './engine/pix'
@@ -20,6 +21,7 @@ function Hero() {
 
 function Title() {
   const [saved] = useState(hasSave())
+  const [chap, setChap] = useState(false)
   const level = useGame((s) => s.level)
   const start = (fresh: boolean) => {
     initAudio(); SFX.play('open')
@@ -46,7 +48,13 @@ function Title() {
       <div className="menu">
         {saved && L && <button className="btn primary" onClick={() => start(false)}>Continuar · {L.title}</button>}
         <button className={'btn' + (saved ? '' : ' primary')} onClick={() => start(true)}>{saved ? 'Novo jogo' : 'Começar a aventura'}</button>
+        <button className="btn ghost" onClick={() => { initAudio(); SFX.play('click'); setChap(true) }}>Capítulos e missões</button>
       </div>
+      {chap && (
+        <div className="modal" onClick={() => setChap(false)}>
+          <div className="sheet" style={{ maxWidth: 640 }} onClick={(e) => e.stopPropagation()}><Chapters close={() => setChap(false)} /></div>
+        </div>
+      )}
       <div className="foot">Use fones para a melhor experiência{VOICE.ok ? ' · a NOVA lê os diálogos em voz alta' : ''} · <a href="/3d/">versão 3D</a> · <a href="/classico/">versão clássica</a></div>
     </div>
   )

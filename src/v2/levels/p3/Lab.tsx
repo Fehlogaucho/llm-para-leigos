@@ -13,7 +13,7 @@ import { show, OV } from '../p1/Doc'
 import { walkTo, fallIn, pulses } from '../common'
 import { registerRobot } from '../robots'
 import { P3GameView, NameView, DiplomaView } from './games'
-import { babyName, buildModel, restoreModel, babble } from './lab'
+import { babyName, buildModel, restoreModel, babble, STATIONS } from './lab'
 import * as A from './art'
 import * as A2 from '../p2/art'
 
@@ -26,15 +26,7 @@ import * as A2 from '../p2/art'
    ========================================================= */
 const W = 30, H = 26
 const flag = (k: string) => G().flags[k] || 0
-interface Station { id: string; name: string; color: string; use: P2; codex: string[]; word: string }
-const ST: Station[] = [
-  { id: 'dados', name: 'Biblioteca de Dados', color: '#8ff0b0', use: [6.6, 8.0], codex: ['dados_treino'], word: 'DADOS' },
-  { id: 'tokens', name: 'Tokenizador', color: '#ff6a5a', use: [15.4, 5.8], codex: ['janela'], word: 'VOCABULÁRIO' },
-  { id: 'forja', name: 'Forja de Treino', color: '#ffb35a', use: [23.4, 7.2], codex: ['perda'], word: 'TREINO' },
-  { id: 'teste', name: 'Sala de Teste', color: '#59d7ff', use: [24.2, 14.6], codex: [], word: 'TESTE' },
-  { id: 'ajuste', name: 'Ajuste e Alinhamento', color: '#ff7ab8', use: [22.4, 21.6], codex: ['ajuste_fino', 'prompt', 'rlhf'], word: 'ALINHAMENTO' },
-  { id: 'prova', name: 'Formatura', color: '#ffd27a', use: [8.6, 21.2], codex: [], word: 'FORMATURA' },
-]
+const ST = STATIONS
 const sFlag = (i: number) => 'p3_' + ST[i].id
 const done = (i: number) => !!flag(sFlag(i))
 const nextSt = () => ST.findIndex((_, i) => !done(i))

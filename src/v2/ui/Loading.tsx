@@ -13,7 +13,7 @@ export function Loading() {
     if (!loading) return
     setVis(true); t0.current = performance.now()
     requestAnimationFrame(() => setOp(1))
-    const id = setTimeout(() => { useGame.setState({ level: loading, levelReady: null }) }, 650)
+    const id = setTimeout(() => { useGame.setState({ level: loading, levelReady: null, sceneSeq: G().sceneSeq + 1 }) }, 650)
     return () => clearTimeout(id)
   }, [loading])
   useEffect(() => {
