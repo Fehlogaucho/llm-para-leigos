@@ -24,13 +24,15 @@ function findFalls(sc: Scene): Fall[] {
   const out: Fall[] = []
   if (!sc.falls) return out
   for (let y = 0; y < sc.h; y++) for (let x = 0; x < sc.w; x++) {
-    if (!sc.ground(x, y)) continue
+    if (!sc.ground(x, y) || sc.cliffAt?.(x, y)?.noFall) continue
     const left = !(y + 1 < sc.h && sc.ground(x, y + 1)), right = !(x + 1 < sc.w && sc.ground(x + 1, y))
     if (left && hash2(x, y, 41) < sc.falls.density) out.push({ x: x + 0.5, y: y + 1, len: 70 + Math.floor(hash2(x, y, 42) * 110), w: 5 + Math.floor(hash2(x, y, 43) * 6), seed: x * 7 + y })
     else if (right && hash2(x, y, 44) < sc.falls.density) out.push({ x: x + 1, y: y + 0.5, len: 70 + Math.floor(hash2(x, y, 45) * 110), w: 5 + Math.floor(hash2(x, y, 46) * 6), seed: x * 5 + y })
   }
   return out
 }
+const CLIFF_C = new Map<string, number[]>()
+const cliffCol = (c: string) => { let v = CLIFF_C.get(c); if (!v) { v = [hex(c), hex(darker(c, 0.25)), hex(lighter(c, 0.35))]; CLIFF_C.set(c, v) } return v }
 interface Chunk { img: HTMLCanvasElement; ox: number; oy: number; w: number; h: number }
 
 /** Desenha o chão (e os penhascos das bordas) em pedaços. */
@@ -61,16 +63,21 @@ function buildChunks(sc: Scene): Chunk[] {
       if (!sc.ground(x, y)) continue
       const s = iso(x, y), tx = s.sx - ox, ty = s.sy - oy
       const left = !(y + 1 < sc.h && sc.ground(x, y + 1)), right = !(x + 1 < sc.w && sc.ground(x + 1, y))
+      if (!left && !right) continue
+      const ov = sc.cliffAt?.(x, y)
+      const DD = Math.min(D, ov?.depth ?? D), thin = DD < 14
+      const A = ov?.a ? cliffCol(ov.a) : null, B = ov?.b ? cliffCol(ov.b) : null
+      const a0 = A ? A[0] : ca, a1 = A ? A[1] : caD, b0 = B ? B[0] : cb, b1 = B ? B[1] : cbD, li = A ? A[2] : lip
       // face esquerda (abaixo da aresta de baixo-esquerda)
       if (left) for (let i = 0; i < 16; i++) {
         const px = tx - 16 + i, top = ty + 8 + Math.floor(i / 2)
-        const d = D - Math.floor(hash2(x * 31 + i, y, 3) * D * 0.4) - (i < 2 ? 4 : 0)
-        for (let k = 0; k < d; k++) p.px(px, top + k, k < 2 ? lip : k >= d - 2 ? edge : (Math.floor((k + hash2(x, y, i) * 2) / 5) % 2 ? caD : ca))
+        const d = thin ? DD : DD - Math.floor(hash2(x * 31 + i, y, 3) * DD * 0.4) - (i < 2 ? 4 : 0)
+        for (let k = 0; k < d; k++) p.px(px, top + k, k < 2 ? li : k >= d - 2 ? edge : (Math.floor((k + hash2(x, y, i) * 2) / 5) % 2 ? a1 : a0))
       }
       if (right) for (let i = 0; i < 16; i++) {
         const px = tx + i, top = ty + 16 - Math.floor((i + 1) / 2)
-        const d = D - Math.floor(hash2(x, y * 31 + i, 5) * D * 0.4) - (i > 13 ? 4 : 0)
-        for (let k = 0; k < d; k++) p.px(px, top + k, k < 1 ? lip : k >= d - 2 ? edge : (Math.floor((k + hash2(y, x, i) * 2) / 5) % 2 ? cbD : cb))
+        const d = thin ? DD : DD - Math.floor(hash2(x, y * 31 + i, 5) * DD * 0.4) - (i > 13 ? 4 : 0)
+        for (let k = 0; k < d; k++) p.px(px, top + k, k < 1 ? li : k >= d - 2 ? edge : (Math.floor((k + hash2(y, x, i) * 2) / 5) % 2 ? b1 : b0))
       }
     }
     out.push({ img: p.canvas(), ox, oy, w: p.w, h: p.h })
@@ -245,6 +252,8 @@ export function GameView() {
         if (moved > 1e-4) RT.dir = { x: mvx, y: mvy }
         else if (RT.path) RT.path = null // preso
       } else RT.speed = 0
+      // esteiras
+      if (!blocked && sc.flow) { const f = sc.flow(Math.floor(RT.player.x), Math.floor(RT.player.y)); if (f) moveWithCollision(sc, RT.player, f[0] * dt, f[1] * dt) }
       if (!fits(sc, RT.player.x, RT.player.y, 0.05)) { /* fora do chão: não deve acontecer */ }
       if (RT.lookAt && (blocked || !moving)) { const dx = RT.lookAt[0] - RT.player.x, dy = RT.lookAt[1] - RT.player.y; if (Math.hypot(dx, dy) > 0.05) RT.dir = { x: dx, y: dy } }
       if (RT.poseT > 0) { RT.poseT -= dt; if (RT.poseT <= 0) RT.pose = 'idle' }

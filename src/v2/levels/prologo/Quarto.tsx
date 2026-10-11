@@ -6,7 +6,8 @@ import { RT, addInteract, gesture, burst, emote, emoteNex, type Scene, type Thin
 import { catSprite, type CatPose } from '../../art/creatures'
 import { tween } from '../common'
 import { SFX, playTheme } from '../../engine/audio'
-import { G } from '../../store'
+import { G, useGame } from '../../store'
+import { babyName } from '../p3/lab'
 import type { Ctx } from '../../engine/script'
 
 /* =========================================================
@@ -50,11 +51,18 @@ const wallFn = (u: number, zz: number, x: number, y: number) => {
 const wallR = () => memo('q:wallR', () => box(8, 0.35, 78, WALL, { top: '#141a30', leftFn: wallFn }))
 const wallL = () => memo('q:wallL', () => box(0.35, 7.7, 78, darker(WALL, 0.12), { top: '#141a30', rightFn: wallFn }))
 
-function windowSprite(frame: number, flash: boolean) {
-  return memo(`q:win:${frame}:${flash}`, () => wallDecal(2.6, 38, 'x', (u, v, c, r) => {
+function windowSprite(frame: number, flash: boolean, sunny = false) {
+  return memo(`q:win:${sunny ? 0 : frame}:${flash}:${sunny}`, () => wallDecal(2.6, 38, 'x', (u, v, c, r) => {
     if (u < 0.1 || u > 0.9) return hex(((c >> 1) % 2) ? '#8a2a3a' : '#a8384a') // cortinas
     const uu = (u - 0.1) / 0.8
     if (uu < 0.03 || uu > 0.97 || v < 0.07 || v > 0.93 || Math.abs(uu - 0.5) < 0.02 || Math.abs(v - 0.52) < 0.03) return hex('#c8b898')
+    if (sunny) {
+      const bi = Math.floor(uu * 10), bh = 0.18 + hash2(bi, 3, 1) * 0.42
+      if (v < bh) return hex(c % 3 === 1 && r % 3 === 1 && hash2(c, r, 2) < 0.3 ? '#9ab8d8' : '#6a7a9a')
+      if (Math.hypot((uu - 0.74) * 2.6, v - 0.74) < 0.12) return hex('#fff2b0')
+      if (Math.abs(v - 0.66 - Math.sin(uu * 9) * 0.03) < 0.04 && uu < 0.45) return hex('#ffffff')
+      return hex(mix('#ffd8a8', '#7ab8f0', v))
+    }
     if (flash) { if (Math.abs(uu - 0.72 - Math.sin(v * 14) * 0.05) < 0.025 && v > 0.4) return hex('#ffffff'); return hex(mix('#b8c8ff', '#6a78c8', v)) }
     const bi = Math.floor(uu * 10), bh = 0.18 + hash2(bi, 3, 1) * 0.42
     if (v < bh) {
@@ -200,8 +208,8 @@ async function fadeWhite(c: Ctx, to: number, sec: number) {
   const from = FX.white, t0 = performance.now()
   await c.until(() => { const k = Math.min(1, (performance.now() - t0) / (sec * 1000)); FX.white = from + (to - from) * k; return k >= 1 })
 }
-async function typeOn(c: Ctx, me: boolean, full: string, cps = 28, stopAt?: number) {
-  FX.typing = { me, full, n: 0 }; FX.v++
+async function typeOn(c: Ctx, me: boolean, full: string, cps = 28, stopAt?: number, from = 0) {
+  FX.typing = { me, full, n: from }; FX.v++
   const end = stopAt ?? full.length
   while (FX.typing.n < end) {
     await c.wait(1 / cps)
@@ -296,21 +304,111 @@ async function main(c: Ctx) {
   c.goto('prologo')
 }
 
+/* ---------- epílogo: de volta para casa ---------- */
+const MODE = { fim: false }
+async function epilogue(c: Ctx) {
+  resetFX()
+  const nome = babyName()
+  const old = 'Boa pergunta! Por dentro, eu funciono prevendo a próxima palavra, uma de cada vez, usando'
+  FX.msgs = [{ me: false, text: 'Oi, NEX! Eu sou a Language Engine, uma IA de linguagem. Pergunte o que quiser.' }, { me: true, text: 'Como você funciona?' }]
+  FX.white = 1; FX.v++
+  playTheme('lab')
+  c.freeze(true)
+  gesture('sit', 4)
+  await fadeWhite(c, 0, 1.4)
+  emoteNex('tonto', 1.6)
+  await c.wait(1.2)
+  await c.say([
+    { who: 'NEX', text: 'Ai, minha cabeça… Eu voltei? Estou do meu tamanho de novo!' },
+    { who: 'NEX', text: 'A tempestade passou. Já é de manhã!' },
+  ])
+  CAT.pose = 'sentado'; CAT.x = 2.4; CAT.y = 3.4; CAT.z = 0; CAT.hidden = false
+  emote('♥', () => ({ x: CAT.x, y: CAT.y, z: 24 }), 1.8)
+  SFX.play('chime')
+  await c.say({ who: 'NEX', text: 'Oi, gatinho! Você não vai acreditar onde eu estive.' })
+  c.freeze(false)
+  c.objective('Vá até o computador', PC_USE)
+  await c.waitFlag('q_pc2')
+  c.objective(null)
+  c.freeze(true)
+  RT.lookAt = [SCREEN.x, SCREEN.y - 1]
+  const from = { x: RT.player.x, y: RT.player.y }
+  await tween(c, 0.45, (k) => { RT.player.x = from.x + (SEAT[0] - from.x) * k; RT.player.y = from.y + (SEAT[1] - from.y) * k; RT.nexZ = Math.sin(k * Math.PI) * 6 })
+  RT.nexZ = 0
+  RT.pose = 'sit'; RT.poseT = 999
+  c.focus([5.2, 0.9], 2, 26)
+  await c.wait(0.8)
+  FX.open = true; FX.v++; SFX.play('open')
+  await c.wait(0.8)
+  const rest = ' tudo o que você viu lá dentro! Eu corto o seu texto em tokens e troco cada um por um número. Cada número vira um vetor de significado. Na atenção, eu descubro quais palavras importam. Os vetores sobem por dezenas de camadas de pesos, que eu aprendi no treino, errando e ajustando. No fim, cada palavra possível ganha uma chance, e eu escolho uma com cuidado. Uma palavra de cada vez.'
+  await typeOn(c, false, old + rest, 55, undefined, old.length)
+  FX.msgs.push({ me: false, text: old + rest }); FX.typing = null; FX.v++
+  await c.wait(0.6)
+  await c.say({ who: 'NEX', text: 'Eu sei! Eu estive lá dentro!' })
+  const ty = 'Obrigada por me ajudar a lembrar, NEX. Ah, e a ' + nome + ' mandou um recado: “A capital do Brasil é Brasília!” 😄'
+  await typeOn(c, false, ty, 40)
+  FX.msgs.push({ me: false, text: ty }); FX.typing = null; FX.v++
+  await c.say({ who: 'NEX', text: 'Ninguém vai acreditar nessa história…' })
+  RT.pose = 'type'; RT.poseT = 999
+  const me = 'Obrigado, Engine. Amanhã eu volto com mais perguntas!'
+  await typeOn(c, true, me, 22)
+  FX.msgs.push({ me: true, text: me }); FX.typing = null; FX.v++
+  RT.pose = 'sit'
+  await c.wait(0.8)
+  const bye = 'Estarei aqui. Uma palavra de cada vez. 💙'
+  await typeOn(c, false, bye, 30)
+  FX.msgs.push({ me: false, text: bye }); FX.typing = null; FX.v++
+  c.setFlag('fim_done')
+  G().pushBanner({ kind: 'area', title: 'FIM', sub: 'Obrigado por jogar!' })
+  await c.wait(2.4)
+  FX.open = false; FX.v++
+  RT.pose = 'idle'; RT.poseT = 0
+  RT.lookAt = null
+  c.unfocus(); c.freeze(false)
+  G().setOverlay('credits', <Credits />)
+}
+function Credits() {
+  const close = () => { SFX.play('click'); G().setOverlay('credits', null) }
+  return (
+    <div className="modal" onPointerDown={(e) => e.stopPropagation()}>
+      <div className="sheet" style={{ maxWidth: 560, textAlign: 'center' }}>
+        <div style={{ fontSize: 13, fontWeight: 900, letterSpacing: '.2em', color: 'var(--cyan)' }}>FIM</div>
+        <h2 style={{ margin: '6px 0 4px' }}>LLM: The Prediction Factory</h2>
+        <p style={{ color: 'var(--muted)', fontWeight: 700, marginTop: 0 }}>Uma aventura sobre como funcionam as LLMs</p>
+        <div style={{ display: 'grid', gap: 8, textAlign: 'left', margin: '14px 0' }}>
+          <div className="card" style={{ padding: '10px 12px', borderRadius: 14, border: '1.5px solid rgba(255,255,255,.12)' }}><b style={{ color: 'var(--gold-2)' }}>Fase 1 · As Origens</b><br />5.500 anos de ideias: fichas, tabelas, algoritmos, chances, zero e um, o menor erro, matrizes, a próxima palavra, bits e neurônios.</div>
+          <div className="card" style={{ padding: '10px 12px', borderRadius: 14, border: '1.5px solid rgba(255,255,255,.12)' }}><b style={{ color: 'var(--gold-2)' }}>Fase 2 · Dentro da LLM</b><br />Tokens, vetores, atenção, camadas, temperatura, treino e RAG, até a resposta “Brasília”.</div>
+          <div className="card" style={{ padding: '10px 12px', borderRadius: 14, border: '1.5px solid rgba(255,255,255,.12)' }}><b style={{ color: 'var(--gold-2)' }}>Fase 3 · Crie sua LLM</b><br />Você escolheu os dados, treinou, testou, ajustou e formou a {babyName()}.</div>
+        </div>
+        <p style={{ fontWeight: 800 }}>Obrigado por jogar! 💙</p>
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <button className="btn" onClick={() => { close(); useGame.setState({ menu: 'codex' }) }}>Abrir o Codex</button>
+          <button className="btn" onClick={() => { close(); useGame.setState({ menu: 'map' }) }}>Mapa da jornada</button>
+          <button className="btn primary" onClick={close}>Ficar no quarto</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 const BALL = { x: 2.4, y: 2.6, z: 0 }
 /* ---------- a fase ---------- */
-export default function build(): Scene {
+export default function build(): Scene { return buildRoom(false) }
+export function buildRoom(fim: boolean): Scene {
+  MODE.fim = fim
   resetCat(); Object.assign(BALL, { x: 2.4, y: 2.6, z: 0 })
   const things: Thing[] = []
   const T = (t: Thing) => { things.push(t); return t }
   T({ x: 0, y: -0.35, w: 8, d: 0.35, sprite: wallR() })
   T({ x: -0.35, y: -0.35, w: 0.35, d: 7.7, sprite: wallL() })
-  T({ x: 1.0, y: 0, w: 2.6, d: 0.02, z: 24, sprite: () => windowSprite(Math.floor(RT.time * 9), FX.flash > 0.45) })
+  T({ x: 1.0, y: 0, w: 2.6, d: 0.02, z: 24, sprite: () => windowSprite(Math.floor(RT.time * 9), FX.flash > 0.45, MODE.fim) })
   T({ x: 6.4, y: 0, w: 1.1, d: 0.02, z: 30, sprite: poster() })
   T({ x: 0, y: 2.55, w: 0.02, d: 1.1, sprite: door() })
   T({ x: 0, y: 0.55, w: 0.6, d: 1.8, solid: true, sprite: bookshelf() })
   T({ x: 0, y: 4.05, w: 1.9, d: 2.9, solid: true, sprite: bed() })
   T({ x: 4.3, y: 0.05, w: 2.1, d: 0.9, solid: true, sprite: desk() })
   T({ x: 4.7, y: 0.14, w: 1.25, d: 0.16, z: 26, sprite: () => monitorSprite(FX.vortex > 0 ? 'vortex' : FX.glitch > 0 ? 'glitch' : 'chat', Math.floor(RT.time * 12)) })
+  if (fim) T({ x: 2.4, y: 1.6, layer: 'ground', blend: 'lighter', sprite: glow(44, '#ffd8a8', 0.22) })
   T({ x: 4.85, y: 0.62, w: 0.9, d: 0.28, z: 22, sprite: keyboard() })
   T({ x: 6.1, y: 0.25, z: 22, sprite: lamp() })
   T({ x: 4.95, y: 0.98, w: 0.75, d: 0.55, solid: true, sprite: chairSeat() })
@@ -335,14 +433,15 @@ export default function build(): Scene {
   })
   const ground = (x: number, y: number) => (x >= 0 && y >= 0 && x < 8 && y < 7 ? (x >= 2 && x <= 4 && y >= 3 && y <= 5 ? { s: 'carpet', a: '#3a4a8a', b: '#2a3468', c: '#e8b65a' } : { s: 'wood', a: '#7a4e30', b: '#4a2e1c' }) : null)
   addInteract({ id: 'gato', x: 2.35, y: 5.6, r: 1.3, label: 'Fazer carinho no gato', icon: 'talk', color: '#ffc890', mz: 34, enabled: () => CAT.pose === 'dorme' && !CAT.hidden && !RT.frozen, use: () => { gesture('reach', 1.2); SFX.play('chime'); emote('♥', () => ({ x: CAT.x, y: CAT.y, z: CAT.z + 16 }), 1.8); if (!G().flags.q_gato) G().setFlag('q_gato') } })
-  addInteract({ id: 'pc', x: PC_USE[0], y: PC_USE[1], r: 1.4, label: 'Sentar no computador', enabled: () => !G().flags.q_pc && !!G().objective, use: () => G().setFlag('q_pc'), mz: 48, color: '#9fe9ff' })
+  if (fim) addInteract({ id: 'pc', x: PC_USE[0], y: PC_USE[1], r: 1.4, label: () => (G().flags.fim_done ? 'Ver os créditos' : 'Sentar no computador'), enabled: () => (!!G().objective && !G().flags.q_pc2) || (!!G().flags.fim_done && !RT.frozen), use: () => { if (G().flags.fim_done) G().setOverlay('credits', <Credits />); else G().setFlag('q_pc2') }, mz: 48, color: '#9fe9ff' })
+  else addInteract({ id: 'pc', x: PC_USE[0], y: PC_USE[1], r: 1.4, label: 'Sentar no computador', enabled: () => !G().flags.q_pc && !!G().objective, use: () => G().setFlag('q_pc'), mz: 48, color: '#9fe9ff' })
   let vig: HTMLCanvasElement | null = null
   return {
     w: 8, h: 7, ground, things,
     cliff: null,
-    spawn: { pos: [2.4, 1.4], dir: [0, -1] },
-    bg: (ctx, w, h) => { ctx.fillStyle = '#06070f'; ctx.fillRect(0, 0, w, h) },
-    scripts: [main],
+    spawn: { pos: fim ? [3.4, 2.6] : [2.4, 1.4], dir: fim ? [1, -0.4] : [0, -1] },
+    bg: (ctx, w, h) => { ctx.fillStyle = fim ? '#0c0e1c' : '#06070f'; ctx.fillRect(0, 0, w, h) },
+    scripts: [fim ? epilogue : main],
     update: (dt) => {
       FX.flash = Math.max(0, FX.flash - dt * 2.2)
       if (FX.shrink) { const k = Math.min(1, (performance.now() - FX.shrink.t0) / 1600); RT.nexScale = 1 - k * 0.68 + Math.sin(k * 30) * 0.03 * (1 - k) }
@@ -356,6 +455,7 @@ export default function build(): Scene {
         else { const a = pts[i], b = pts[i + 1], f = k - i; CAT.x = a[0] + (b[0] - a[0]) * f; CAT.y = a[1] + (b[1] - a[1]) * f; CAT.z = a[2] + (b[2] - a[2]) * f + (a[2] !== b[2] ? Math.sin(f * Math.PI) * 10 : 0); CAT.flip = (b[0] - a[0]) - (b[1] - a[1]) < 0 }
       }
       if (CAT.pose === 'dorme' && !CAT.hidden && Math.random() < dt * 0.25) emote('zz', { x: CAT.x, y: CAT.y, z: CAT.z + 14 }, 1.6)
+      if (MODE.fim && Math.random() < dt * 2) RT.particles.push({ x: 1.4 + Math.random() * 2.2, y: 0.4 + Math.random() * 2.2, z: 6 + Math.random() * 40, vx: (Math.random() - 0.5) * 0.06, vy: 0.05, vz: 0.8, life: 3.5, max: 3.5, c: '#ffe8c0', s: 1, g: 0 })
       // poeira na luz da luminária
       if (Math.random() < dt * 1.5) RT.particles.push({ x: 6.1 + Math.random() * 0.8, y: 0.6 + Math.random() * 0.8, z: 10 + Math.random() * 30, vx: (Math.random() - 0.5) * 0.08, vy: (Math.random() - 0.5) * 0.08, vz: 1.5, life: 3, max: 3, c: '#ffe2a3', s: 1, g: 0 })
       // o redemoinho puxa a bola e papéis
@@ -371,12 +471,13 @@ export default function build(): Scene {
       if (!vig || vig.width !== w || vig.height !== h) {
         vig = document.createElement('canvas'); vig.width = w; vig.height = h
         const g = vig.getContext('2d')!, gr = g.createRadialGradient(w / 2, h / 2, Math.min(w, h) * 0.3, w / 2, h / 2, Math.max(w, h) * 0.75)
-        gr.addColorStop(0, 'rgba(6,7,20,0)'); gr.addColorStop(1, 'rgba(6,7,20,.7)'); g.fillStyle = gr; g.fillRect(0, 0, w, h)
+        gr.addColorStop(0, 'rgba(6,7,20,0)'); gr.addColorStop(1, MODE.fim ? 'rgba(20,12,6,.35)' : 'rgba(6,7,20,.7)'); g.fillStyle = gr; g.fillRect(0, 0, w, h)
       }
       ctx.drawImage(vig, 0, 0)
+      if (MODE.fim) { ctx.fillStyle = 'rgba(255,196,130,0.07)'; ctx.fillRect(0, 0, w, h) }
     },
     overlay: () => null,
-    onExit: () => { G().setOverlay('qchat', null); G().setOverlay('whiteflash', null); resetFX() },
+    onExit: () => { G().setOverlay('qchat', null); G().setOverlay('whiteflash', null); G().setOverlay('credits', null); resetFX() },
     novaZ: 9,
     init: () => { G().setOverlay('qchat', <ChatScreen />); G().setOverlay('whiteflash', <WhiteFlash />) },
   } as Scene

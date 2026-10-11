@@ -17,7 +17,7 @@ export interface Objective { text: string; target?: P2 }
 export interface Shot { pos: P2; zoom?: number; dur?: number; cut?: boolean; h?: number }
 
 interface DialogState { lines: Line[]; i: number; ambient: boolean; resolve: () => void }
-interface Banner { kind: 'discovery' | 'fragment' | 'core' | 'quest' | 'area' | 'memory'; title: string; sub?: string; cat?: Cat }
+interface Banner { kind: 'discovery' | 'fragment' | 'core' | 'quest' | 'area' | 'memory' | 'station'; title: string; sub?: string; cat?: Cat }
 
 export interface Settings { voice: boolean; music: number; sfx: number; reduced: boolean; pixel: 'auto' | 'grande' | 'pequeno' }
 

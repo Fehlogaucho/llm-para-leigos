@@ -62,6 +62,10 @@ export interface Scene {
   under?: (ctx: CanvasRenderingContext2D, t: number) => void
   /** Desenho no mundo por cima de tudo (feixes de luz, ligações…). */
   over?: (ctx: CanvasRenderingContext2D, t: number) => void
+  /** Penhasco diferente em algumas casas (pontes finas, sem cachoeira). */
+  cliffAt?: (x: number, y: number) => { a?: string; b?: string; depth?: number; noFall?: boolean } | null
+  /** Esteiras: velocidade (casas/s) que empurra o NEX na casa (x, y). */
+  flow?: (x: number, y: number) => [number, number] | null
 }
 
 export interface Interact {

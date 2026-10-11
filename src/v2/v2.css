@@ -21,3 +21,44 @@
 .moodface { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
 .dlg .face { width: 64px; height: 64px; }
 .dlg.ambient .face { width: 46px; height: 46px; }
+/* ---------- Fase 2: brincadeiras da fábrica ---------- */
+.p2bars { display: grid; gap: 4px; }
+.p2bars .b { display: grid; grid-template-columns: minmax(64px, 96px) 1fr 46px; gap: 6px; align-items: center; font-weight: 800; font-size: 13.5px; }
+.p2bars .b .t { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.p2bars .b.hi .t { color: var(--gold-2); }
+.p2bars .tr { height: 12px; border-radius: 6px; background: rgba(255,255,255,.08); overflow: hidden; }
+.p2bars .tr i { display: block; height: 100%; border-radius: 6px; transition: width .35s; }
+.p2bars .v { font-family: var(--f-mono); font-size: 12.5px; text-align: right; }
+.p2sent { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; font-size: clamp(18px, 4.8vw, 24px); font-weight: 900; padding: 14px 10px; }
+.p2sent .lastw { color: var(--gold-2); text-decoration: underline; text-underline-offset: 4px; }
+.p2sent .blank { color: var(--muted); min-width: 70px; text-align: center; border-bottom: 2px dashed var(--muted); }
+.p2sent .blank.on { color: var(--cyan); border-color: var(--cyan); }
+.p2tok { display: inline-flex; flex-direction: column; align-items: center; padding: 6px 10px 4px; border-radius: 12px; border: 2px solid var(--cyan); background: rgba(89,215,255,.08); animation: docIn .3s ease; }
+.p2tok b { font-size: 17px; font-weight: 900; }
+.p2tok i { font-style: normal; font-family: var(--f-mono); font-size: 12px; color: var(--gold-2); font-weight: 800; }
+.p2tok.sm { padding: 3px 8px; border-radius: 10px; }
+.p2tok.sm b { font-size: 14.5px; }
+.p2cut { display: flex; justify-content: center; flex-wrap: wrap; padding: 18px 6px; font-family: var(--f-mono); }
+.p2cut .lt { font-size: clamp(22px, 6vw, 32px); font-weight: 900; line-height: 44px; }
+.p2cut .gap { width: 18px; min-height: 44px; padding: 0; border: 0; border-radius: 6px; background: transparent; color: #ff7a6a; font-size: 18px; position: relative; }
+.p2cut .gap::after { content: ''; position: absolute; left: 8px; top: 8px; bottom: 8px; width: 2px; background: rgba(255,255,255,.12); }
+.p2cut .gap:hover::after { background: rgba(255,122,106,.6); }
+.p2cut .gap.on { background: rgba(255,122,106,.16); }
+.p2cut .gap.on::after { background: #ff7a6a; }
+.p2stage { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; padding: 14px 8px; background: radial-gradient(ellipse at 50% 100%, rgba(255,210,122,.08), transparent 70%); }
+.p2stage .w { display: flex; flex-direction: column; align-items: center; min-width: 52px; min-height: 52px; padding: 6px 10px; border-radius: 12px; border: 2px solid rgba(255,255,255,.16); background: rgba(255,255,255,.04); font-weight: 900; font-size: 17px; transition: all .2s; }
+.p2stage .w small { font-family: var(--f-mono); font-size: 11.5px; color: var(--gold-2); }
+.p2stage .w.focus { border-color: var(--cyan); color: var(--cyan); opacity: 1; }
+.p2stage .w.lit { border-color: var(--gold); background: rgba(255,210,122,.22); box-shadow: 0 0 18px rgba(255,210,122,.45), 0 -18px 30px -12px rgba(255,236,170,.5) inset; color: #fff3d0; }
+.p2tab { width: 100%; border-collapse: collapse; font-weight: 800; font-size: 14px; }
+.p2tab th { padding: 6px 4px; color: var(--muted); font-size: 13px; }
+.p2tab tbody th { text-align: left; color: var(--gold-2); white-space: nowrap; }
+.p2tab td { text-align: center; padding: 3px; }
+.p2tab .wc { width: 48px; height: 42px; border-radius: 10px; border: 1.5px solid rgba(255,255,255,.16); background: rgba(255,255,255,.04); font-family: var(--f-mono); font-weight: 900; font-size: 16px; }
+.p2tab .wc.pos { background: rgba(89,215,255,.2); border-color: var(--cyan); color: #c8f2ff; }
+.p2tab .wc.neg { background: rgba(255,122,122,.18); border-color: #ff7a7a; color: #ffc8c0; }
+.p2grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px 10px; margin-top: 6px; }
+.p2grid .r { display: flex; align-items: center; gap: 3px; font-size: 11.5px; font-weight: 800; }
+.p2grid .r span { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.p2grid .r i { width: 13px; height: 13px; border-radius: 3px; transition: background .3s; }
+@media (max-width: 520px) { .p2grid { grid-template-columns: repeat(2, 1fr); } }

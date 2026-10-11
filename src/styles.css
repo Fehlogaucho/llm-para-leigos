@@ -203,6 +203,9 @@ canvas { display: block; touch-action: none; }
 .banner.memory { border-color: var(--cyan); box-shadow: 0 0 50px rgba(89,215,255,.45); }
 .banner.memory .k { color: var(--cyan); }
 .banner.memory .t { font-family: var(--f-mono); letter-spacing: .08em; color: #bff3ff; }
+.banner.station { border-color: var(--gold); box-shadow: 0 0 50px rgba(232,182,90,.45); }
+.banner.station .k { color: var(--gold-2); }
+.banner.station .t { font-family: var(--f-mono); letter-spacing: .08em; color: #fff3d0; }
 .doc-wrap { position: absolute; inset: 0; z-index: 25; display: grid; place-items: center; padding: 12px; background: rgba(4,7,14,.55); backdrop-filter: blur(3px); animation: fade .25s; }
 .doc { position: relative; width: min(620px, 100%); max-height: calc(100vh - 24px); overflow: auto; padding: 18px 20px 16px; border-radius: 10px 10px 16px 16px; background: linear-gradient(180deg, #fbf1d8, #efdcb2); color: #3a2814; box-shadow: 0 20px 70px rgba(0,0,0,.6), inset 0 0 60px rgba(150,100,40,.22); border: 1px solid #c9a46a; animation: docIn .35s cubic-bezier(.2,1.2,.4,1); user-select: text; -webkit-user-select: text; }
 .doc .meta { font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: #8a5a22; padding-right: 36px; }

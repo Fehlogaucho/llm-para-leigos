@@ -34,7 +34,7 @@ export interface Stop {
   game?: Game; ask?: Ask
   custom?: 'graos' // parada com cena própria (O Mistério dos Três Grãos)
   nex: string // reação do NEX ao inventor
-  tease: string // fala da NOVA quando a névoa abre para esta parada
+  tease: string // fala da NOVA quando a névoa da ponte abre para esta ilha
   play?: string // o inventor chama para a brincadeira
   bye: string // despedida do inventor
   word: string // palavra que a Engine recupera
@@ -62,7 +62,7 @@ export const STOPS: Stop[] = [
     },
     ask: { q: 'O pastor voltou e sobraram 2 fichas na bolsa. O que aconteceu?', opts: ['Ele ganhou 2 ovelhas', 'Faltam 2 ovelhas', 'As fichas quebraram'], a: 1, why: 'Cada ficha representa uma ovelha. Ficha sobrando quer dizer ovelha faltando.' },
     nex: 'Uma ficha para cada ovelha… É tipo contar nos dedos, só que com barro!',
-    tease: 'O primeiro marco: Mesopotâmia, há 5.500 anos. Dá até para ouvir ovelhas…',
+    tease: 'A primeira ilha fica logo acima, depois da ponte: Mesopotâmia, há 5.500 anos. Dá até para ouvir ovelhas…',
     place: 'MESOPOTÂMIA',
     extraCodex: 'escrita',
     bye: 'Uma coisinha no lugar de outra: é assim que tudo começa.',
@@ -90,7 +90,7 @@ export const STOPS: Stop[] = [
       ],
     },
     nex: 'Esse problema tem 2.000 anos? E eu resolvi igualzinho aos calculistas?',
-    tease: 'A névoa abriu! Lá na frente tem uma vila da China antiga. Parece que um comerciante tem um mistério…',
+    tease: 'A névoa abriu! Do outro lado da ponte tem uma vila da China antiga. Parece que um comerciante tem um mistério…',
     place: 'CHINA',
     extraCodex: 'nome_matriz',
     bye: 'Quando não dá para medir algo diretamente, use o que você já sabe. Até mais, viajante!',
@@ -119,7 +119,7 @@ export const STOPS: Stop[] = [
     },
     game: 'passos',
     nex: 'Al-Khwarizmi… al-go-ritmo… ALGORITMO?!',
-    tease: 'Próximo marco: Bagdá, no ano 825. A cidade tinha uma das maiores bibliotecas do mundo.',
+    tease: 'Próxima ilha: Bagdá, no ano 825. A cidade tinha uma das maiores bibliotecas do mundo.',
     play: 'Minha receita da soma ficou embaralhada. Coloque os passos na ordem!',
     place: 'BAGDÁ',
     bye: 'Uma boa receita funciona sempre, com qualquer número. Isso é um algoritmo.',
@@ -193,7 +193,7 @@ export const STOPS: Stop[] = [
     },
     game: 'erro',
     nex: 'Achar um asteroide com lápis e papel? Sem computador nenhum?',
-    tease: 'Próximo marco: 1801. Olhe o telescópio! Alguém perdeu uma coisa no céu.',
+    tease: 'Próxima ilha: 1801. Olhe o telescópio! Alguém perdeu uma coisa no céu.',
     play: 'Ajuste a linha para passar o mais perto possível de todas as observações.',
     place: 'ALEMANHA',
     bye: 'Ninguém acerta tudo. O segredo é errar cada vez menos.',
@@ -310,7 +310,7 @@ export const STOPS: Stop[] = [
     },
     game: 'neuronio',
     nex: 'Uma máquina que aprende sozinha… isso já parece IA de verdade!',
-    tease: 'O último marco: 1958. Uma máquina que aprende está piscando lá na frente!',
+    tease: 'A última ilha: 1958. Uma máquina que aprende está piscando do outro lado da ponte!',
     play: 'Meu neurônio está confundindo bichos. Ajuste os pesos até ele acertar todos.',
     place: 'ESTADOS UNIDOS',
     bye: 'Ninguém disse à máquina o que é um gato. Ela ajustou os pesos até acertar.',

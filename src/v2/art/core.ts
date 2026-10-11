@@ -36,6 +36,7 @@ export function tilePix(t: TileSpec, cx: number, cy: number): Pix {
     case 'mosaic': fill((u, v, n) => { const i = Math.floor(u * 4), j = Math.floor(v * 4), fu = (u * 4) % 1, fv = (v * 4) % 1; if (fu < 0.1 || fv < 0.1) return B; const k = hash2(cx * 4 + i, cy * 4 + j, 11); return k < 0.33 ? A : k < 0.66 ? C : hex(t.c ? mix(t.c, a, 0.5) : lighter(a, 0.4)) }); break
     case 'road': fill((u, v, n) => { const i = Math.floor(u * 3 + (Math.floor(v * 2) % 2) * 0.5), fu = (u * 3 + (Math.floor(v * 2) % 2) * 0.5) % 1, fv = (v * 2) % 1; if (fu < 0.07 || fv < 0.06) return B; return hash2(cx * 3 + i, cy * 2 + Math.floor(v * 2), 2) < 0.3 ? Ad : n > 0.95 ? Al : A }); break
     case 'carpet': fill((u, v, n) => { const e = Math.min(u, v, 1 - u, 1 - v); if (e < 0.08) return C; if (e < 0.14) return B; return n < 0.08 ? Ad : A }); break
+    case 'glass': fill((u, v, n) => { const e = Math.min(u, v, 1 - u, 1 - v); if (e < 0.035) return C; if (e < 0.09) return B; const sh = Math.abs(u - v - 0.1) < 0.05; return sh ? Al : n > 0.985 ? C : n < 0.1 ? Ad : A }); break
     default: fill((u, v, n) => (n < 0.1 ? Ad : A))
   }
   return p

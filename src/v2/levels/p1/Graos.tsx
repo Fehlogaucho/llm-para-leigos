@@ -430,8 +430,8 @@ export async function graosTalk(c: Ctx) {
   try {
     if (!c.flag('g2_seen')) {
       await c.cinematic([
-        { pos: [V.gate - 2, 15], zoom: 1, h: 30, cut: true },
-        { pos: [(V.x0 + V.x1) / 2, 7], zoom: 1, h: 20, dur: 4.5 },
+        { pos: [V.gate - 2, V.y0 + 15], zoom: 1, h: 30, cut: true },
+        { pos: [(V.x0 + V.x1) / 2, V.y0 + 7], zoom: 1, h: 20, dur: 4.5 },
       ])
       c.setFlag('g2_seen')
     }
@@ -479,8 +479,8 @@ export async function graosHint(c: Ctx) {
 
 async function bigIdea(c: Ctx) {
   useGame.setState({ hudHidden: true })
-  await c.cinematic([{ pos: [(V.x0 + V.x1) / 2, 6], zoom: 1, h: 30, dur: 4 }], false)
-  c.focus([(V.x0 + V.x1) / 2, 6], 1, 30)
+  await c.cinematic([{ pos: [(V.x0 + V.x1) / 2, V.y0 + 6], zoom: 1, h: 30, dur: 4 }], false)
+  c.focus([(V.x0 + V.x1) / 2, V.y0 + 6], 1, 30)
   const big = (k: number) => G().setOverlay(BIG, <BigIdea step={k} />)
   big(1)
   await c.say({ who: 'LIUHUI', text: 'Três registros: 39, 34 e 26. Foi tudo o que o comerciante mediu.' })
