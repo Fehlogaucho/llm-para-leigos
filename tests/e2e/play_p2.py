@@ -118,7 +118,7 @@ async def main():
         # no fim, o NEX é levado sozinho (viagem rápida) até a máquina da Sala do Prompt
         near = False
         for _ in range(40):
-            near = await g.ev("(()=>{const it=__pf.INTERACTS.get('p2_machine'), R=__pf.RT.player; return Math.hypot(it.x-R.x, it.y-R.y) < 2.5})()")
+            near = await g.ev("(()=>{const it=__pf.INTERACTS.get('p2_machine'), R=__pf.RT.player; return __pf.useGame.getState().warp > 0 || Math.hypot(it.x-R.x, it.y-R.y) < 2.5})()")
             if near: break
             await g.wait(300)
         check(near, 'no fim, o NEX vai sozinho até a Sala do Prompt')
