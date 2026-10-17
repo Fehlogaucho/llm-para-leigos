@@ -17,12 +17,7 @@ async def run_stop(g, i, shots):
         if shots: await g.shot('village')
         await g.use('l1stop1')
         await drive(g, "g.flags.g2_talk", shots, set())
-        await g.wait(800)
-        for _ in range(30):
-            obj = await g.ev("__pf.useGame.getState().objective")
-            if obj and 'mesa' in obj['text']: break
-            await g.advance(400)
-        t = obj['target']; await g.walk(t[0], t[1]); await g.use('g2_mesa')
+        # a conversa com o comerciante já leva o NEX até a mesa, sem precisar andar
         await drive(g, "g.flags.l1_tabela && !g.focus", shots, set())
         check(await g.flag('l1_tabela') == 1, 'ilha %d (%s) concluída' % (i + 1, sid))
         return

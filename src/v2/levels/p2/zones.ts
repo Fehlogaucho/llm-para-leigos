@@ -34,8 +34,7 @@ export const ZONES: Zone[] = [
       { who: 'ADIVINHO', text: 'Ah, visitantes! Bem-vindos à Oficina do Adivinho, a primeira estação da fábrica.' },
       { who: 'ADIVINHO', text: 'Aqui dentro só existe um trabalho: adivinhar a próxima palavra. Toda resposta da Engine é feita assim, uma palavra de cada vez.' },
       { who: 'NEX', text: 'Só isso? Achei que ela pensasse a frase inteira de uma vez!' },
-      { who: 'ADIVINHO', text: 'Aqui a resposta sai um pedaço de cada vez: a gente olha o que já foi escrito e calcula o que pode vir depois. Não é chute cego: é chute contado!' },
-      { who: 'ADIVINHO', text: 'Aquele livro gigante tem oito frases. Minha máquina conta quem vem depois de quem.' },
+      { who: 'ADIVINHO', text: 'Aqui a resposta sai um pedaço de cada vez: a gente olha o que já foi escrito e calcula o que pode vir depois. Não é chute cego: minha máquina conta quem vem depois de quem naquele livro gigante.' },
     ],
     play: 'Vamos jogar: você contra a minha máquina de contar. Quem adivinha melhor a próxima palavra?',
     after: [
@@ -58,8 +57,7 @@ export const ZONES: Zone[] = [
       { who: 'TESOURINHA', text: 'Zip, zip! Cuidado com os dedos! Aqui é o Fatiador.' },
       { who: 'TESOURINHA', text: 'Antes de tudo, eu corto o texto em pedacinhos chamados tokens. Às vezes um token é uma palavra inteira; às vezes, um pedaço, um espaço ou uma pontuação.' },
       { who: 'NEX', text: 'Por que cortar? Não seria mais fácil ler a palavra toda?' },
-      { who: 'TESOURINHA', text: 'Existem palavras demais! Com pedaços, a Engine monta qualquer palavra, até as que nunca viu: “in” + “feliz” + “mente”.' },
-      { who: 'TESOURINHA', text: 'E cada pedaço ganha um número de catálogo, o ID. Daqui para a frente, a Engine só trabalha com números.' },
+      { who: 'TESOURINHA', text: 'Existem palavras demais! Com pedaços, a Engine monta qualquer palavra, até as que nunca viu: “in” + “feliz” + “mente”. E cada pedaço ganha um número de catálogo, o ID: daqui para a frente, a Engine só trabalha com números.' },
     ],
     play: 'Pegue a tesoura! Toque nos espaços entre as letras onde você cortaria.',
     after: [
@@ -80,8 +78,7 @@ export const ZONES: Zone[] = [
   {
     id: 'vetores', name: 'Vale dos Vetores', host: 'VETORA', hostName: 'VETORA', kind: 'carteiro', color: '#59d7ff', word: 'VETORES',
     intro: [
-      { who: 'VETORA', text: 'Bem-vindo ao Vale dos Vetores! Aqui cada token vira um ponto num mapa gigante.' },
-      { who: 'VETORA', text: 'Esse endereço no mapa se chama embedding: uma lista de números que diz onde a palavra mora.' },
+      { who: 'VETORA', text: 'Bem-vindo ao Vale dos Vetores! Aqui cada token vira um ponto num mapa gigante. Esse endereço se chama embedding: uma lista de números que diz onde a palavra mora.' },
       { who: 'NEX', text: 'E quem decide onde cada palavra mora?' },
       { who: 'VETORA', text: 'O treino. Palavras que aparecem em frases parecidas acabam morando perto. Veja: os países moram juntos, as comidas também.' },
       { who: 'VETORA', text: 'Mas três palavras se perderam: Madri, pênalti e salário. Pegue cada uma e leve até o bairro certo!' },
@@ -172,8 +169,7 @@ export const ZONES: Zone[] = [
     id: 'treino', name: 'Academia dos Pesos', host: 'TREINADORA', hostName: 'TREINADORA PESO', kind: 'guardiao', color: '#ffb35a', word: 'TREINO',
     intro: [
       { who: 'TREINADORA', text: 'Um, dois! Um, dois! Bem-vindo à Academia dos Pesos!' },
-      { who: 'TREINADORA', text: 'Como a Engine aprendeu os pesos certos? Treinando! Ela lê uma frase, tenta adivinhar a próxima palavra e mede o erro.' },
-      { who: 'TREINADORA', text: 'Depois ajusta cada peso um tiquinho na direção que erra menos. E repete. Milhões de vezes.' },
+      { who: 'TREINADORA', text: 'Como a Engine aprendeu os pesos certos? Treinando! Ela lê uma frase, tenta adivinhar a próxima palavra, mede o erro e ajusta cada peso um tiquinho. Milhões de vezes.' },
       { who: 'NEX', text: 'Igual ao Gauss e ao Rosenblatt na Fase 1! Errar cada vez menos.' },
     ],
     play: 'Isso! Este modelinho tem só 27 pesos e ainda não sabe a capital do Brasil. Treine até ele acertar com mais de 90% de certeza.',

@@ -443,9 +443,7 @@ export async function graosTalk(c: Ctx) {
     await c.say([
       { who: 'NEX', text: 'Uma vila! Campos de arroz para todo lado…' },
       { who: 'NOVA', text: 'China antiga, há uns 2.000 anos. A memória da Engine guardou esta vila do jeitinho que era.' },
-      { who: 'COMERCIANTE', text: 'Bem-vindo, viajante! Aqui plantamos três tipos de arroz: o superior, o médio e o inferior.' },
-      { who: 'COMERCIANTE', text: 'Há anos fazemos essas misturas. Sabemos quanto cada mistura produz.' },
-      { who: 'COMERCIANTE', text: 'Veja os meus três registros.' },
+      { who: 'COMERCIANTE', text: 'Bem-vindo, viajante! Aqui plantamos três tipos de arroz: o superior, o médio e o inferior. Veja os meus registros de misturas.' },
     ])
     // CENA 2 — os três registros
     const lines = [
@@ -462,11 +460,9 @@ export async function graosTalk(c: Ctx) {
     // CENA 3 — o problema
     shotBaskets(c)
     await c.say([
-      { who: 'COMERCIANTE', text: 'Eu sei quantos feixes coloquei em cada mistura. Também sei quanto cada mistura produziu: 39, 34 e 26.' },
-      { who: 'COMERCIANTE', text: 'Mas nunca medi um feixe sozinho.' },
-      { who: 'COMERCIANTE', text: 'Você consegue descobrir quanto produz cada tipo de arroz?' },
-      { who: 'NEX', text: 'Descobrir uma coisa que ninguém nunca mediu? Isso parece impossível…' },
-      { who: 'NOVA', text: 'Parece. Mas os registros guardam pistas. Ali na frente tem uma mesa de madeira: vamos organizar as evidências.' },
+      { who: 'COMERCIANTE', text: 'Sei quantos feixes coloquei em cada mistura e quanto cada uma produziu. Mas nunca medi um feixe sozinho. Você consegue descobrir quanto produz cada tipo?' },
+      { who: 'NEX', text: 'Descobrir uma coisa que ninguém nunca mediu? Parece impossível…' },
+      { who: 'NOVA', text: 'Parece. Mas os registros guardam pistas. Vamos organizar tudo na mesa de madeira.' },
     ])
     c.setFlag('g2_talk')
   } finally {
@@ -494,21 +490,25 @@ async function bigIdea(c: Ctx) {
     { who: 'LIUHUI', text: 'Essa ideia acompanharia a matemática por milhares de anos.' },
   ])
   big(3); SFX.play('whoosh')
-  await c.wait(6.2)
+  await c.wait(4.6)
   await c.say({ who: 'LIUHUI', text: 'Mas o que acontece quando existem milhares de incógnitas?' })
   big(4)
   await c.wait(1.8)
   big(5); SFX.play('core')
-  await c.wait(3.4)
+  await c.wait(2.6)
   G().setOverlay(BIG, null)
   useGame.setState({ hudHidden: false })
 }
 
 /** Cenas 4 a 11: a mesa, a revelação, a balança e a grande ideia. */
+/** A mesa já está em andamento (a conversa com o comerciante leva direto até ela). */
+export const MESA = { busy: false }
 export async function graosMesa(c: Ctx, finish: (c: Ctx) => Promise<void>) {
+  if (MESA.busy) return
+  MESA.busy = true
   const s = STOPS[V.i], h = holo(s.id)
   c.objective(null)
-  await stand(c, V.tableUse, [V.table[0] + 1.2, V.table[1] + 0.6])
+  try { await stand(c, V.tableUse, [V.table[0] + 1.2, V.table[1] + 0.6]) } catch (e) { MESA.busy = false; throw e }
   NOVA_AT(V.tableUse)
   try {
     // CENA 4 — a mesa de madeira
@@ -548,7 +548,6 @@ export async function graosMesa(c: Ctx, finish: (c: Ctx) => Promise<void>) {
     ])
     await showPhoto(c, s.who)
     await c.say({ who: 'NEX', text: s.nex })
-    await c.say({ who: s.who, text: 'Anotei a história deste método. Leia comigo.' })
     await openDoc(c, s.doc)
     // CENA 11 — a grande ideia
     await bigIdea(c)
@@ -557,6 +556,7 @@ export async function graosMesa(c: Ctx, finish: (c: Ctx) => Promise<void>) {
     h.live = false
     await finish(c)
   } finally {
+    MESA.busy = false
     G().setOverlay(BIG, null); useGame.setState({ hudHidden: false })
     h.live = false
     RT.lookAt = null; RT.novaPos = null

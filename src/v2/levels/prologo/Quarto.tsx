@@ -487,6 +487,15 @@ export function buildRoom(fim: boolean): Scene {
       if (MODE.fim) { ctx.fillStyle = 'rgba(255,196,130,0.07)'; ctx.fillRect(0, 0, w, h) }
     },
     overlay: () => null,
+    atmos: fim ? { ambient: '#efdcc4', ao: 1.1, nexLight: 0.3, motes: { color: '#ffe2b0', n: 14, rise: 2, onGround: true } } : { ambient: '#7a80b8', ao: 1.1, nexLight: 0.35 },
+    lights: () => fim
+      ? [{ x: 2.3, y: 0.7, z: 26, r: 120, color: '#ffe0a8', i: 0.9 }, { x: SCREEN.x, y: SCREEN.y + 0.3, z: SCREEN.z - 6, r: 40, color: '#9fe9ff', i: FX.open ? 0.5 : 0.2 }]
+      : [
+          { x: 6.25, y: 0.55, z: 34, r: 70, color: '#ffd59a', i: 0.95 },
+          { x: SCREEN.x, y: SCREEN.y + 0.3, z: SCREEN.z - 6, r: 52, color: '#8fe9ff', i: FX.open ? 0.75 : 0.4 },
+          { x: 2.3, y: 0.5, z: 34, r: 76, color: '#8fa0ff', i: 0.45 + (FX.flash > 0.45 ? 0.5 : 0) },
+          ...(FX.flash > 0.2 ? [{ x: 3.5, y: 2.5, z: 30, r: 160, color: '#ffffff', i: Math.min(1, FX.flash) }] : []),
+        ],
     onExit: () => { G().setOverlay('qchat', null); G().setOverlay('whiteflash', null); G().setOverlay('credits', null); resetFX() },
     novaZ: 9,
     init: () => { G().setOverlay('qchat', <ChatScreen />); G().setOverlay('whiteflash', <WhiteFlash />) },

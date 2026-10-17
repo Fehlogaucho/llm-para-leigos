@@ -1,3 +1,4 @@
+import { travelTo } from '../../engine/travel'
 import { Pix, hex, hash2 } from '../../engine/pix'
 import { glow, memo, spr, cyl, OUT } from '../../art/core'
 import { cloudPuff, crystal, portalSprite } from '../../art/fx'
@@ -11,7 +12,7 @@ import { G, useGame, type P2 } from '../../store'
 import { STOPS, PEOPLE } from '../../content/stops'
 import { holo, HOLO } from './faces'
 import { openDoc, openAsk, openGame, openPipeline, openMatch, MemoryStrip, memFlag, readExtra, readAgain, extraQuest, OV } from './Doc'
-import { graosTalk, graosHint, graosMesa, BIG } from './Graos'
+import { graosTalk, graosHint, graosMesa, BIG, MESA } from './Graos'
 import { showPhoto, PH } from './Photo'
 import { RECORDS, VALUES, type GK } from './graosData'
 import {
@@ -35,11 +36,6 @@ const nextIndex = () => STOPS.findIndex((_, i) => !done(i))
 const flag = (k: string) => G().flags[k] || 0
 const isOpen = (b: Bridge) => b.gate < 0 || done(b.gate)
 const doneCount = () => STOPS.filter((_, i) => done(i)).length
-const DOC_LINE = [
-  'Preparei um documento para você. Leia com calma: tem desenhos!',
-  'Está tudo anotado aqui. Leia comigo.',
-  'Escrevi umas páginas sobre isso. Dê uma olhada.',
-]
 const portrait = () => innerWidth / innerHeight < 0.8
 const ARQ_COLOR = '#7a6ad8'
 registerRobot('ARQUIVISTA', 'ARQUIVISTA', 'bibliotecario', ARQ_COLOR, { pitch: 1.15, rate: 1.0 })
@@ -64,11 +60,10 @@ async function runStop(c: Ctx, i: number) {
     await c.wait(0.5)
     h.live = true; h.want = 1
     SFX.play('chime')
-    await c.wait(1.3)
+    await c.wait(0.9)
     await c.say(s.intro.map((t) => ({ who: s.who, text: t })))
     await showPhoto(c, s.who)
     await c.say({ who: 'NEX', text: s.nex })
-    await c.say({ who: s.who, text: DOC_LINE[i % DOC_LINE.length] })
     await openDoc(c, s.doc)
     if (s.game) { await c.say({ who: s.who, text: s.play || 'Agora é com você!' }); await openGame(c, s.game, s.who) }
     else if (s.ask) { await c.say({ who: s.who, text: 'Antes de eu ir, me responda uma coisa.' }); await openAsk(c, s.ask, s.who) }
@@ -89,7 +84,7 @@ async function recover(c: Ctx, i: number) {
   G().pushBanner({ kind: 'memory', title: s.word, sub: `${s.year} · ${P.name}` })
   SFX.play('core'); gesture('cheer', 1.8)
   RT.cam.shake = 0.3
-  await c.wait(1.4)
+  await c.wait(1.0)
   await c.say({ who: 'ENGINE', text: s.engine })
   for (const id of s.codex) c.discover(id)
   if (s.extra) c.quest(extraQuest(s.id), 'active', s.extra.title)
@@ -98,9 +93,9 @@ async function recover(c: Ctx, i: number) {
   if (b && nextIndex() >= 0) {
     const m = bridgeMid(b)
     c.focus(m, 1, 26)
-    await c.wait(0.4)
+    await c.wait(0.3)
     SFX.play('whoosh')
-    await c.wait(1.8)
+    await c.wait(1.2)
   }
 }
 
@@ -121,15 +116,10 @@ async function intro(c: Ctx) {
   RT.lookAt = CORE
   await c.say([
     { who: 'NEX', text: 'Aaai! Caí de novo… Onde eu estou agora?' },
-    { who: 'NOVA', text: 'No Arquivo da Memória: a parte mais antiga da Language Engine. Olhe em volta: ilhas flutuando, presas por pontes de luz.' },
+    { who: 'NOVA', text: 'No Arquivo da Memória: a parte mais antiga da Language Engine. Ilhas flutuando, presas por pontes de luz.' },
     { who: 'ENGINE', text: 'Q-quem… está aí? Eu tenho tantas perguntas… e não lembro… das respostas.' },
-    { who: 'NEX', text: 'É a IA do meu computador! A voz dela está toda falhando.' },
-    { who: 'NOVA', text: 'O choque apagou as lembranças mais antigas dela: as ideias que vieram antes de qualquer computador.' },
-    { who: 'NOVA', text: 'Cada ilha guarda uma dessas ideias. Alguém inventou cada uma, às vezes há milhares de anos.' },
-    { who: 'NOVA', text: 'Juntas, essas ideias são a matemática que faz uma LLM funcionar. Sem elas, a Engine não consegue funcionar direito.' },
-    { who: 'NEX', text: 'E como a gente devolve essas ideias para ela?' },
-    { who: 'NOVA', text: 'Em cada ilha, toque no console. O eco de quem teve a ideia vai aparecer, contar a história e deixar um documento para você ler.' },
-    { who: 'NOVA', text: 'Cada ideia que você entender vira uma palavra que a Engine volta a lembrar. E a névoa da ponte seguinte se abre.' },
+    { who: 'NOVA', text: 'O choque apagou as lembranças mais antigas dela: ideias que vieram antes de qualquer computador. Cada ilha guarda uma, e juntas elas são a matemática de uma LLM.' },
+    { who: 'NOVA', text: 'Em cada ilha, toque no console: o eco de quem teve a ideia vai aparecer. Cada ideia entendida vira uma palavra que a Engine volta a lembrar, e a próxima ponte se abre.' },
     {
       who: 'NOVA', text: 'Alguma pergunta antes de começar?', choices: [
         { label: 'Quem vai aparecer?', next: [{ who: 'NOVA', text: 'Escribas, matemáticos, uma condessa programadora… Gente de verdade, de lugares e séculos diferentes.' }] },
@@ -243,6 +233,8 @@ async function main(c: Ctx) {
     if (tease) c.say({ who: 'NOVA', text: STOPS[i].tease }, { ambient: true }).catch(() => {})
     if (STOPS[i].custom === 'graos') {
       if (!c.flag('g2_talk')) { c.objective('Fale com o comerciante da vila', V.merchantUse); await c.until(() => !!G().flags.g2_talk || done(i)) }
+      // a conversa já leva direto à mesa; o objetivo só aparece se o jogador sair no meio
+      await c.until(() => done(i) || (!MESA.busy && !G().focus && !G().dialog && !RT.frozen))
       if (!done(i)) { c.objective('Organize os registros na mesa de madeira', V.tableUse); await c.until(() => done(i)) }
     } else {
       c.objective(`Desperte a memória da ilha de ${STOPS[i].year}`, USE_P(i))
@@ -253,7 +245,9 @@ async function main(c: Ctx) {
   }
   if (!c.flag('l1_final')) {
     c.objective('Leve as palavras até a Memória Central', CORE_USE)
-    c.say({ who: 'NOVA', text: 'Todas as memórias voltaram! As palavras estão seguindo você. Vamos levá-las até a Memória Central, no meio do arquivo.' }, { ambient: true }).catch(() => {})
+    c.say({ who: 'NOVA', text: 'Todas as memórias voltaram! Vamos levar as palavras até a Memória Central.' }, { ambient: true }).catch(() => {})
+    await c.wait(1.6)
+    if (Math.hypot(RT.player.x - CORE_USE[0], RT.player.y - CORE_USE[1]) > 1.6) await travelTo(CORE_USE)
     await c.reach(CORE_USE, 1.6)
     await finale(c)
   }
@@ -269,9 +263,9 @@ function addUses(i: number) {
     addInteract({ id: 'l1stop' + i, x: V.merchantUse[0], y: V.merchantUse[1], r: 1.4, mz: 44, color: '#e6c04a', icon: 'talk',
       label: () => (done(i) ? `Reler: ${s.doc.title}` : 'Falar com o comerciante'), marker: () => !flag('g2_talk') || done(i),
       enabled: () => active() || done(i),
-      use: () => { if (done(i)) readAgain(s.doc); else if (!flag('g2_talk')) start('l1stop' + i, graosTalk); else start('g2_hint', graosHint) } })
+      use: () => { if (done(i)) readAgain(s.doc); else if (!flag('g2_talk')) start('l1stop' + i, async (c) => { await graosTalk(c); await graosMesa(c, (cc) => recover(cc, i)) }); else start('g2_hint', graosHint) } })
     addInteract({ id: 'g2_mesa', x: V.tableUse[0], y: V.tableUse[1], r: 1.4, mz: 34, color: '#ffd27a', label: 'Organizar os registros na mesa',
-      enabled: () => active() && !!flag('g2_talk'), use: () => start('g2_mesa', (c) => graosMesa(c, (cc) => recover(cc, i))) })
+      enabled: () => active() && !!flag('g2_talk') && !MESA.busy, use: () => start('g2_mesa', (c) => graosMesa(c, (cc) => recover(cc, i))) })
   } else {
     addInteract({ id: 'l1stop' + i, x: USE_P(i)[0], y: USE_P(i)[1], r: 1.4, mz: 40, color: PEOPLE[s.who].color,
       label: () => (done(i) ? `Reler: ${s.doc.title}` : `Despertar a memória · ${s.year}`),
@@ -434,7 +428,7 @@ function archiveSign() {
 export default function build(): Scene {
   const things: Thing[] = []
   const add = (...ts: Thing[]) => { for (const t of ts) things.push(t) }
-  S.feed = 0; S.fed = !!flag('l1_final')
+  S.feed = 0; S.fed = !!flag('l1_final'); MESA.busy = false
   // estado inicial dos hologramas
   STOPS.forEach((s, i) => { const h = holo(s.id), d = done(i); h.k = d ? 1 : 0; h.want = d ? 1 : 0; h.live = false })
 
@@ -527,10 +521,11 @@ export default function build(): Scene {
       add(holoThing(s.id, s.who, hp))
       add({ x: cp[0] + 0.4, y: cp[1] + 0.4, solid: true, shadow: 0, sprite: () => A.consoleSprite(P.color, !!flag('l1_intro') && !done(i) && activeIndex() === i, anim(3)) })
       // cristais nos cantos de trás e lampiões na praça
-      add({ x: ox + 1.3, y: oy + 1.4, z: 6, sprite: crystal(P.color, 0.8), shadow: 3, alpha: () => (done(i) ? 1 : 0.55) })
-      add({ x: ox + 8.7, y: oy + 1.4, z: 6, sprite: crystal(P.color, 0.8), shadow: 3, alpha: () => (done(i) ? 1 : 0.55) })
+      const cl = () => ({ r: 34, color: P.color, z: 16, i: done(i) ? 0.75 : 0.3 })
+      add({ x: ox + 1.3, y: oy + 1.4, z: 6, sprite: crystal(P.color, 0.8), shadow: 3, alpha: () => (done(i) ? 1 : 0.55), light: cl })
+      add({ x: ox + 8.7, y: oy + 1.4, z: 6, sprite: crystal(P.color, 0.8), shadow: 3, alpha: () => (done(i) ? 1 : 0.55), light: cl })
       for (const lx of [0.55, 9.45]) {
-        add({ x: ox + lx, y: oy + 9.15, sprite: () => A.lamppost('#ffd27a', done(i) || activeIndex() === i), shadow: 3 })
+        add({ x: ox + lx, y: oy + 9.15, sprite: () => A.lamppost('#ffd27a', done(i) || activeIndex() === i), shadow: 3, light: () => (done(i) || activeIndex() === i ? { r: 46, color: '#ffc870', z: 34, i: 0.9 } : null) })
         add({ x: ox + lx, y: oy + 9.3, layer: 'ground', blend: 'lighter', hidden: () => !(done(i) || activeIndex() === i), sprite: glow(16, '#ffd27a', 0.2) })
       }
     }
@@ -592,14 +587,15 @@ export default function build(): Scene {
   add({ x: V.liu[0], y: V.liu[1], sprite: () => A.projector(PEOPLE.LIUHUI.color, holo(STOPS[V.i].id).live || done(V.i)) })
   add({ x: V.liu[0], y: V.liu[1] + 0.2, layer: 'ground', blend: 'lighter', hidden: () => !holo(STOPS[V.i].id).live, sprite: glow(30, PEOPLE.LIUHUI.color, 0.4) })
   add(holoThing(STOPS[V.i].id, 'LIUHUI', V.liu))
-  for (const lx of [3, 9, 15, 21]) add({ x: V.x0 + lx + 0.5, y: vy + 13.6, sprite: () => A.lantern(anim(2) + lx), shadow: 3 })
+  for (const lx of [3, 9, 15, 21]) add({ x: V.x0 + lx + 0.5, y: vy + 13.6, sprite: () => A.lantern(anim(2) + lx), shadow: 3, light: () => ({ r: 40, color: '#ff9a5a', z: 34, i: 0.75 + Math.sin(RT.time * 7 + lx) * 0.05 }) })
   add({ x: V.x0 + 12.6, y: vy + 3.6, sprite: A.sheaf('B'), shadow: 3 }, { x: V.x0 + 8.4, y: vy + 8.4, sprite: A.sheaf('M'), shadow: 3 }, { x: V.x0 + 20.8, y: vy + 6.6, sprite: A.sheaf('F'), shadow: 3 })
   const pqv = PLAQUE_P(V.i)
-  add({ x: pqv[0] + 18, y: pqv[1] - 0.2, sprite: () => A.bollard(anim(6)), shadow: 3 }, { x: pqv[0] + 6, y: pqv[1] - 0.2, sprite: () => A.bollard(anim(6) + 3), shadow: 3 })
+  const candle = () => ({ r: 22, color: '#ffc06a', z: 20, i: 0.7 + Math.sin(RT.time * 9) * 0.06 })
+  add({ x: pqv[0] + 18, y: pqv[1] - 0.2, sprite: () => A.bollard(anim(6)), shadow: 3, light: candle }, { x: pqv[0] + 6, y: pqv[1] - 0.2, sprite: () => A.bollard(anim(6) + 3), shadow: 3, light: candle })
 
   /* ---------- a Memória Central ---------- */
   add({ x: CORE[0] - 2, y: CORE[1] - 2, w: 4, d: 4, solid: true, sprite: A.coreBase() })
-  add({ x: CORE[0] + 0.2, y: CORE[1] + 0.2, z: 0, pos: () => ({ x: CORE[0] + 0.2, y: CORE[1] + 0.2, z: 30 + Math.sin(RT.time * 1.5) * 4 }), sprite: () => crystal(flag('l1_final') ? '#9fe9ff' : '#6a5aa8', 2.6) })
+  add({ x: CORE[0] + 0.2, y: CORE[1] + 0.2, z: 0, pos: () => ({ x: CORE[0] + 0.2, y: CORE[1] + 0.2, z: 30 + Math.sin(RT.time * 1.5) * 4 }), sprite: () => crystal(flag('l1_final') ? '#9fe9ff' : '#6a5aa8', 2.6), light: () => ({ r: 96, color: flag('l1_final') ? '#9fe9ff' : '#9a8aff', z: 40, i: flag('l1_final') ? 1 : 0.35 + 0.05 * doneCount() }) })
   add({ x: CORE[0] + 0.2, y: CORE[1] + 0.2, z: 50, layer: 'top', blend: 'lighter', sprite: glow(44, '#9fe9ff', 0.5), alpha: () => (flag('l1_final') ? 0.9 : 0.2 + 0.05 * doneCount()) })
   STOPS.forEach((s, i) => add({ x: 0, y: 0, pos: () => { const a = RT.time * 0.5 + (i / STOPS.length) * Math.PI * 2; return { x: CORE[0] + 0.2 + Math.cos(a) * 3, y: CORE[1] + 0.2 + Math.sin(a) * 3, z: 26 + Math.sin(RT.time * 2 + i) * 5 } }, sprite: crystal(PEOPLE[s.who].color, 0.6), alpha: () => (done(i) ? 1 : 0.2) }))
   // os onze pedestais
@@ -747,6 +743,7 @@ export default function build(): Scene {
     spawn: { pos: spawn, dir: [1, 0] },
     bg: dataRainBg('#05040f', '#2a1e58', '#6a4ac8'),
     scripts: [main],
+    atmos: { ambient: '#c6bfea', sky: 'arquivo', vignette: 0.32, motes: { color: '#ffd9a0', n: 26, rise: 3 }, ao: 1, nexLight: 0.5 },
     novaZ: 9,
     init: () => {
       RT.novaOn = true

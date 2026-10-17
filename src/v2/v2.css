@@ -130,3 +130,14 @@ html.reduced *, html.reduced *::before, html.reduced *::after { animation-durati
 .set-row label { min-width: 120px; }
 .set-row .seg { max-width: 100%; flex-wrap: wrap; }
 @media (max-width: 520px) { .set-row .seg button { padding: 7px 10px; } }
+/* ---------- viagem rápida ---------- */
+.travel { position: absolute; right: 14px; bottom: calc(22px + var(--safe-b)); z-index: 6; align-items: center; gap: 8px; padding: 11px 18px 11px 14px; border-radius: 999px; border: 2px solid #ffe7a8; background: linear-gradient(180deg, #ffd27a, #e8a83a); color: #2a1606; font-weight: 900; font-size: 16px; box-shadow: 0 6px 22px rgba(255, 190, 80, .45), inset 0 -3px 0 rgba(120, 60, 0, .25); animation: travelIn .3s ease, travelPulse 2.2s ease-in-out .3s infinite; }
+.travel.up { bottom: calc(160px + var(--safe-b)); }
+.travel .bolt { font-size: 18px; filter: drop-shadow(0 0 4px #fff6); }
+.travel kbd { font: 800 12px var(--f-mono); padding: 1px 6px; border-radius: 6px; background: rgba(60, 30, 0, .18); }
+@keyframes travelIn { from { transform: translateY(14px); opacity: 0 } to { transform: none; opacity: 1 } }
+@keyframes travelPulse { 50% { box-shadow: 0 6px 30px rgba(255, 190, 80, .75), inset 0 -3px 0 rgba(120, 60, 0, .25) } }
+.warp { position: absolute; inset: 0; pointer-events: none; z-index: 30; background: radial-gradient(circle at 50% 55%, rgba(255,255,255,.95), rgba(159,233,255,.75) 35%, rgba(40,60,140,.55) 75%); animation: warp .62s ease forwards; }
+.warp.soft { background: #0a0e1c; animation: warpSoft .35s linear forwards; }
+@keyframes warp { 0% { opacity: 0 } 38% { opacity: 1 } 55% { opacity: 1 } 100% { opacity: 0 } }
+@keyframes warpSoft { 0% { opacity: 0 } 45% { opacity: .9 } 100% { opacity: 0 } }

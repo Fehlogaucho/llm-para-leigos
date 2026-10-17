@@ -183,7 +183,7 @@ async def drive(g, until_js, shots, seen, timeout=240000, big_shots=True):
         if st['done'] and not st['dlg'] and not st['gm'] and not st['doc']: return True
         if st['big'] is not None and shots and st['big'] not in bigseen:
             bigseen.add(st['big']); await g.shot('big_' + str(len(bigseen)))
-        if st['doc']: await g.ev("document.querySelector('.doc .btn.primary').click()")
+        if st['doc']: await g.ev("(()=>{const b=document.querySelector('.doc .btn.primary'); b&&b.click()})()")
         elif st['gm']: await solve_gm(g, shots, seen)
         elif st['cine']: await g.ev("(()=>{const sk=document.querySelector('.skip'); if(sk) sk.click()})()")
         elif st['dlg'] and not st['amb']:

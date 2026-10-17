@@ -1,6 +1,6 @@
 """Teste rápido de regressão: tela inicial, save danificado, modo piloto,
-opções de acessibilidade, diálogo (voltar/repetir) e entrada direta em
-todas as missões pelo menu “Capítulos e missões”.
+opções de acessibilidade, diálogo (voltar/repetir), viagem rápida, gráficos
+leves e entrada direta em todas as missões pelo menu “Capítulos e missões”.
 Uso: python3 tests/e2e/smoke.py [--mobile] [--shots] [--quick]"""
 import asyncio, json, sys
 from lib import *
@@ -74,6 +74,31 @@ async def main():
             if shots: await g.shot('dialogo')
         await b.close()
         errs += errs4
+        # 4b. viagem rápida e gráficos leves
+        b, pg, errs6 = await launch(p, W, H, {"level": "p2", "flags": {"nova": 1, "pro_done": 1, "l1_done": 1, "p2_intro": 1}}, dpr=2 if W < 700 else 1)
+        g = Game(pg, tag)
+        await pg.click('.title .btn.primary'); await g.wait(3500)
+        for _ in range(30):
+            st = await g.ev("(()=>{const s=__pf.useGame.getState(); return {d: !!(s.dialog && !s.dialog.ambient), c: !!s.cine}})()")
+            if not st['d'] and not st['c']: break
+            await g.advance(400)
+        await g.wait(800)
+        d0 = await g.ev("(()=>{const o=__pf.useGame.getState().objective, R=__pf.RT.player; return o&&o.target ? Math.hypot(o.target[0]-R.x, o.target[1]-R.y) : -1})()")
+        vis = await g.ev("(()=>{const b=document.querySelector('.travel'); return !!b && b.style.display!=='none'})()")
+        check(d0 > 4.5 and vis, 'viagem rápida: botão “Ir até lá” aparece com o objetivo longe (%.1f casas)' % d0)
+        if shots: await g.shot('viagem_botao')
+        await g.ev("document.querySelector('.travel').click()"); await g.wait(1600)
+        d1 = await g.ev("(()=>{const o=__pf.useGame.getState().objective, R=__pf.RT.player; return o&&o.target ? Math.hypot(o.target[0]-R.x, o.target[1]-R.y) : 0})()")
+        talk = await g.ev("!!__pf.useGame.getState().dialog")
+        check(d1 < 2.5 and talk, 'viagem rápida: NEX chega ao objetivo e a conversa começa (%.1f casas)' % d1)
+        await g.ev("__pf.useGame.setState({menu:'settings'})"); await g.wait(400)
+        rows = await g.ev("[...document.querySelectorAll('.set-row')].map(r=>r.textContent).join('|')")
+        check('Gráficos' in rows and 'Texto das falas' in rows, 'opções de gráficos e de texto instantâneo no menu')
+        await g.ev("(()=>{const b=[...document.querySelectorAll('.set-row')].find(r=>r.textContent.includes('Gráficos')); [...b.querySelectorAll('button')].find(x=>x.textContent==='Leves').click()})()"); await g.wait(300)
+        await g.ev("__pf.useGame.setState({menu:null})"); await g.wait(1200)
+        check(await g.ev("__pf.useGame.getState().settings.gfx") == 'leve', 'gráficos leves ligados sem erro')
+        await b.close()
+        errs += errs6
         # 5. capítulos: entrar em cada missão
         b, pg, errs5 = await launch(p, W, H, None)
         g = Game(pg, tag)

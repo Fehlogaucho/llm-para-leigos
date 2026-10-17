@@ -190,8 +190,7 @@ async function intro(c: Ctx) {
     { who: 'SINAPSE', text: 'Está vendo aquela cápsula? Tem uma LLM bebê lá dentro. Ela tem pesos, mas os pesos são só números aleatórios. Ela não sabe nada.' },
     { who: 'BEBE', text: babyLine() },
     { who: 'NEX', text: 'Ela fala tudo embaralhado!' },
-    { who: 'SINAPSE', text: 'Porque ainda não treinou. Hoje você vai criar uma LLM do começo ao fim: escolher os textos, cortar em tokens, treinar, testar, ajustar e… formar!' },
-    { who: 'SINAPSE', text: 'Mas antes: toda LLM precisa de um nome.' },
+    { who: 'SINAPSE', text: 'Porque ainda não treinou. Hoje você vai criar uma LLM do começo ao fim: dados, tokens, treino, teste, ajuste e… formatura! Mas antes: toda LLM precisa de um nome.' },
   ])
   await show(c, (d) => <NameView onDone={d} />)
   registerBaby()
@@ -360,6 +359,7 @@ export default function build(): Scene {
       for (let i = 0; i < 70; i++) { const x = (hash2(i, 1, 4) * w + t * (4 + hash2(i, 2, 4) * 6)) % w, y = hash2(i, 3, 4) * h; ctx.fillRect(Math.floor(x), Math.floor(y), 1, 1 + (i % 3 === 0 ? 1 : 0)) }
     },
     scripts: [main],
+    atmos: { ambient: '#eef2fa', sky: 'lab', vignette: 0.22, motes: { color: '#ffffff', n: 16, rise: 2 }, ao: 1.2, nexLight: 0.35 },
     novaZ: 9,
     init: () => { RT.novaOn = true },
     under: (ctx, t) => { ST.forEach((_, i) => { if (done(i) || nextSt() === i) cables[i](ctx, t) }) },

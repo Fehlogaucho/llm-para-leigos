@@ -12,14 +12,15 @@ export type Cat = 'fundamento' | 'curiosidade' | 'deepdive' | 'historia'
 
 export interface Choice { label: string; next?: Line[]; flag?: string }
 export interface Line { who: Who; text: string; choices?: Choice[]; mood?: string }
-export interface Objective { text: string; target?: P2 }
+/** use: id do objeto que a viagem rápida deve usar ao chegar (quando ele anda, como um robô). */
+export interface Objective { text: string; target?: P2; use?: string }
 /** Plano de câmera: vai até pos (centro da tela), com zoom 1 ou 2. cut = começa já ali. */
 export interface Shot { pos: P2; zoom?: number; dur?: number; cut?: boolean; h?: number }
 
 interface DialogState { lines: Line[]; i: number; ambient: boolean; resolve: () => void }
 interface Banner { kind: 'discovery' | 'fragment' | 'core' | 'quest' | 'area' | 'memory' | 'station'; title: string; sub?: string; cat?: Cat }
 
-export interface Settings { voice: boolean; voiceVol: number; music: number; sfx: number; reduced: boolean; pixel: 'auto' | 'grande' | 'pequeno'; text: 'normal' | 'grande' | 'maior'; contrast: boolean; pilot: boolean }
+export interface Settings { voice: boolean; voiceVol: number; music: number; sfx: number; reduced: boolean; pixel: 'auto' | 'grande' | 'pequeno'; text: 'normal' | 'grande' | 'maior'; contrast: boolean; pilot: boolean; fastText: boolean; gfx: 'completo' | 'leve' }
 
 export interface Progress {
   level: string
@@ -50,6 +51,8 @@ interface State extends Progress {
   hudHidden: boolean
   levelReady: string | null
   sceneSeq: number
+  /** Momento da última viagem rápida (clarão na tela). */
+  warp: number
 
   set: (p: Partial<State>) => void
   setFlag: (k: string, v?: number) => void
@@ -111,7 +114,9 @@ function loadProgress(): { p: Progress; issue: SaveIssue } {
 const loaded = loadProgress()
 const coarse = typeof matchMedia !== 'undefined' && matchMedia('(pointer: coarse)').matches
 const reduced = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches
-const defaultSettings: Settings = { voice: true, voiceVol: 1, music: 0.55, sfx: 0.8, reduced, pixel: 'auto', text: 'normal', contrast: false, pilot: false }
+/** Aparelho fraco (poucos núcleos e pouca memória): começa com os gráficos leves. */
+const lowEnd = typeof navigator !== 'undefined' && (navigator.hardwareConcurrency || 8) <= 4 && ((navigator as any).deviceMemory || 8) <= 3
+const defaultSettings: Settings = { voice: true, voiceVol: 1, music: 0.55, sfx: 0.8, reduced, pixel: 'auto', text: 'normal', contrast: false, pilot: false, fastText: false, gfx: lowEnd ? 'leve' : 'completo' }
 
 let toastTimer: any = 0
 export const useGame = create<State>()((set, get) => ({
@@ -132,6 +137,7 @@ export const useGame = create<State>()((set, get) => ({
   hudHidden: false,
   levelReady: null,
   sceneSeq: 0,
+  warp: 0,
 
   set: (p) => set(p as any),
   setFlag: (k, v = 1) => set((s) => ({ flags: { ...s.flags, [k]: v } })),

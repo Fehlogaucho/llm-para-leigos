@@ -232,7 +232,7 @@ export default function build(): Scene {
   for (let i = 0; i < 12; i++) {
     const a = (i / 12) * Math.PI * 2, x = C.x + Math.cos(a) * 9.6, y = C.y + Math.sin(a) * 9.2
     if (Math.cos(a) + Math.sin(a) < -0.2) T({ x: Math.floor(x), y: Math.floor(y), w: 1, d: 1, solid: true, sprite: () => pillar(S.on > 0.5, fr() % 4) })
-    else T({ x: Math.floor(x) + 0.2, y: Math.floor(y) + 0.2, w: 0.6, d: 0.6, solid: true, sprite: () => pylon(S.on > 0.3) })
+    else T({ x: Math.floor(x) + 0.2, y: Math.floor(y) + 0.2, w: 0.6, d: 0.6, solid: true, sprite: () => pylon(S.on > 0.3), light: () => ({ r: 34, color: '#59d7ff', z: 22, i: S.on > 0.3 ? 0.75 : 0.3 }) })
   }
   // pedestal da NOVA
   T({ x: PED[0], y: PED[1], solid: false, sprite: pedestal(), shadow: 0 })
@@ -279,6 +279,7 @@ export default function build(): Scene {
     bg: dataRainBg('#03050c', '#0c1430', '#2a6aa8'),
     falls: { density: 0.1, color: '#3fb8ff' },
     scripts: [main],
+    atmos: { ambient: '#aab4e4', sky: 'salao', vignette: 0.36, motes: { color: '#8fe9ff', n: 22, rise: 4 }, ao: 1, nexLight: 0.5 },
     novaZ: 9,
     paint: (p, x, y, tx, ty) => {
       // círculos e raios de circuito em volta da máquina

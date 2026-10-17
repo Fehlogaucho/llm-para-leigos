@@ -1,3 +1,4 @@
+import { travelToObjective, travelReady, objectiveDistance } from '../engine/travel'
 import { useEffect, useRef, useState } from 'react'
 import { G, IS_TOUCH, useGame } from '../store'
 import { INPUT } from '../engine/input'
@@ -43,6 +44,42 @@ export function TopBar() {
       </div>
     </div>
   )
+}
+
+/** Botão “Ir”: viagem rápida até o objetivo (aparece quando ele está longe). */
+export function TravelButton() {
+  const el = useRef<HTMLButtonElement>(null!)
+  useEffect(() => {
+    let raf = 0
+    const loop = () => {
+      raf = requestAnimationFrame(loop)
+      const e = el.current
+      if (!e) return
+      const show = travelReady() && objectiveDistance() > 4.5
+      const disp = show ? 'flex' : 'none'
+      if (e.style.display !== disp) e.style.display = disp
+      // no celular, sobe quando o botão “Usar” aparece no mesmo canto
+      const up = IS_TOUCH && !!G().prompt
+      if (e.classList.contains('up') !== up) e.classList.toggle('up', up)
+    }
+    loop()
+    const key = (ev: KeyboardEvent) => { if (ev.repeat || ev.ctrlKey || ev.metaKey || ev.altKey || (ev.target as HTMLElement)?.closest?.('input, textarea, select')) return; if (ev.key.toLowerCase() === 'g' && travelReady() && objectiveDistance() > 1.5) { SFX.play('click'); travelToObjective() } }
+    addEventListener('keydown', key)
+    return () => { cancelAnimationFrame(raf); removeEventListener('keydown', key) }
+  }, [])
+  return (
+    <button ref={el} className="travel" style={{ display: 'none' }} onClick={() => { SFX.play('click'); travelToObjective() }} aria-label="Ir direto até o objetivo">
+      <span className="bolt">⚡</span><span>Ir até lá</span>{!IS_TOUCH && <kbd>G</kbd>}
+    </button>
+  )
+}
+
+/** Clarão da viagem rápida. */
+export function WarpFlash() {
+  const w = useGame((s) => s.warp)
+  const reduced = useGame((s) => s.settings.reduced)
+  if (!w || performance.now() - w > 1200) return null
+  return <div key={w} className={'warp' + (reduced ? ' soft' : '')} aria-hidden="true" />
 }
 
 function CodexDot() {

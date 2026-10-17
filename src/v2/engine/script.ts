@@ -9,7 +9,7 @@ export class Aborted extends Error { constructor() { super('aborted') } }
 export interface Ctx {
   signal: AbortSignal
   say: (lines: Line[] | Line, opts?: { ambient?: boolean }) => Promise<void>
-  objective: (text: string | null, target?: P2) => void
+  objective: (text: string | null, target?: P2, use?: string) => void
   reach: (pos: P2, r?: number) => Promise<void>
   wait: (sec: number) => Promise<void>
   until: (fn: () => boolean) => Promise<void>
@@ -54,7 +54,7 @@ export function makeCtx(signal: AbortSignal): Ctx {
         useGame.setState({ dialog: { lines: arr, i: 0, ambient: !!opts.ambient, resolve: done } })
       })
     },
-    objective: (text, target) => { useGame.setState({ objective: text ? { text, target } : null }); if (text) SFX.play('tick') },
+    objective: (text, target, use) => { useGame.setState({ objective: text ? { text, target, use } : null }); if (text) SFX.play('tick') },
     reach: (pos, r = 1.6) => until(() => Math.hypot(RT.player.x - pos[0], RT.player.y - pos[1]) < r),
     wait: (sec) => new Promise<void>((res, rej) => {
       const id = setTimeout(() => { signal.removeEventListener('abort', ab); res() }, sec * 1000)
@@ -65,7 +65,8 @@ export function makeCtx(signal: AbortSignal): Ctx {
     waitFlag: (k, v = 1) => until(() => (G().flags[k] || 0) >= v),
     cinematic: async (shots, skippable = true) => {
       check()
-      const sh = G().settings.reduced ? shots.map((x) => ({ ...x, cut: true })) : shots
+      // cinemáticas 25% mais rápidas (a história anda mais rápido); com movimento reduzido viram cortes
+      const sh = shots.map((x) => ({ ...x, dur: (x.dur ?? 2) * 0.75, cut: x.cut || G().settings.reduced }))
       await new Promise<void>((resolve) => useGame.setState({ cine: { shots: sh, t0: performance.now(), resolve, skippable } }))
       check()
     },

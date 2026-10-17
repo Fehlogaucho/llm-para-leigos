@@ -1,3 +1,4 @@
+import { drawSky, drawMotes, lightPass, shadeGround, vignette, type Lamp } from './atmos'
 import { useEffect, useRef } from 'react'
 import { G, useGame, type Shot } from '../store'
 import { RT, FOCUS, INTERACTS, iso, unIso, labelOf, resetRT, type Scene, type Thing, type Sprite, type Interact } from './runtime'
@@ -59,6 +60,7 @@ function buildChunks(sc: Scene): Chunk[] {
       const s = iso(x, y)
       sc.paint(p, x, y, s.sx - ox, s.sy - oy)
     }
+    if (sc.atmos?.ao && G().settings.gfx !== 'leve') shadeGround(p, sc, cx, cy, CH, ox, oy, sc.atmos.ao)
     if (D) for (let y = cy; y < Math.min(sc.h, cy + CH); y++) for (let x = cx; x < Math.min(sc.w, cx + CH); x++) {
       if (!sc.ground(x, y)) continue
       const s = iso(x, y), tx = s.sx - ox, ty = s.sy - oy
@@ -212,7 +214,10 @@ export function GameView() {
     }
     resize()
     addEventListener('resize', resize)
-    const unsub = useGame.subscribe((s, p) => { if (s.settings.pixel !== p.settings.pixel) resize() })
+    const unsub = useGame.subscribe((s, p) => {
+      if (s.settings.pixel !== p.settings.pixel) resize()
+      if (s.settings.gfx !== p.settings.gfx && st.current.sc) st.current.chunks = buildChunks(st.current.sc)
+    })
 
     const frame = (now: number) => {
       raf = requestAnimationFrame(frame)
@@ -239,7 +244,9 @@ export function GameView() {
           else { mvx = dx / d; mvy = dy / d }
         }
       } else if (RT.path) { RT.path = null }
-      const running = wantsRun() || (INPUT.joyActive && Math.hypot(INPUT.joy.x, INPUT.joy.y) > 0.93)
+      let pathLeft = 0
+      if (RT.path && RT.path.length) { let a: [number, number] = [RT.player.x, RT.player.y]; for (const q of RT.path) { pathLeft += Math.hypot(q[0] - a[0], q[1] - a[1]); a = q } }
+      const running = wantsRun() || (INPUT.joyActive && Math.hypot(INPUT.joy.x, INPUT.joy.y) > 0.93) || pathLeft > 4
       const speed = (running ? 5.4 : 3.5) * RT.nexScale ** 0.3
       const moving = mvx || mvy
       if (moving) {
@@ -306,8 +313,10 @@ export function GameView() {
       }
       /* --- desenho --- */
       sc.bg(ctx, W, H, RT.time, { x: cam.x, y: cam.y })
+      const full = g.settings.gfx !== 'leve', A = sc.atmos
       const zoom = cam.zoom
       const c0 = iso(cam.x, cam.y, cam.h)
+      if (A?.sky && full) drawSky(ctx, A.sky, W, H, RT.time, c0.sx, c0.sy)
       const shk = G().settings.reduced ? 0 : cam.shake
       const shx = shk ? (Math.random() - 0.5) * shk * 8 : 0, shy = shk ? (Math.random() - 0.5) * shk * 6 : 0
       const ox = Math.round(W / 2 - Math.round(c0.sx) * zoom + shx), oy = Math.round(H / 2 - Math.round(c0.sy) * zoom + shy)
@@ -349,6 +358,8 @@ export function GameView() {
       }
       // coisas do chão
       const list: D[] = [], tops: (() => void)[] = []
+      const lit = !!(A?.ambient && full)
+      const glows: { s: Sprite; x: number; y: number; a: number; k: number }[] = [], lamps: Lamp[] = []
       for (const t of sc.things) {
         if (t.hidden?.()) continue
         const ps2 = t.pos ? t.pos() : t
@@ -361,6 +372,11 @@ export function GameView() {
         const sx0 = P.sx - s.ax * scl, sy0 = P.sy - s.ay * scl, sx1 = sx0 + s.img.width * scl, sy1 = sy0 + s.img.height * scl
         if (sx1 < vx0 || sx0 > vx1 || sy1 < vy0 || sy0 > vy1) continue
         const a = alphaOf(t)
+        if (lit) {
+          if (t.blend === 'lighter' && a > 0.02) glows.push({ s, x: P.sx, y: P.sy, a, k: scl })
+          const L = typeof t.light === 'function' ? t.light() : t.light
+          if (L) lamps.push({ x: ps2.x + w / 2, y: ps2.y + d / 2, z: L.z ?? z, r: L.r, color: L.color, i: L.i })
+        }
         const draw = () => { if (t.shadow) { const sh = shadow(t.shadow); const g0 = iso(ps2.x + w / 2, ps2.y + d / 2, 0); drawSprite(sh, g0.sx, g0.sy, a * 0.8) } drawSprite(s, P.sx, P.sy, a, scl, t.blend) }
         if (t.layer === 'ground') { draw(); continue }
         if (t.layer === 'top') { tops.push(draw); continue }
@@ -392,6 +408,20 @@ export function GameView() {
       }
       for (const d of depthSort(list)) d.draw()
       for (const f of tops) f()
+      if (lit) {
+        const lp = lightPass(ctx, W, H, zoom, ox, oy, A!.ambient!)
+        lp.begin()
+        for (const gl of glows) { const k = 2.4 * gl.k; lp.sprite(gl.s.img, gl.x - gl.s.ax * k, gl.y - gl.s.ay * k, gl.s.img.width * k, gl.s.img.height * k, Math.min(1, gl.a * 1.6)) }
+        for (const l of lamps) lp.lamp(l)
+        if (sc.lights) for (const l of sc.lights()) lp.lamp(l)
+        if (!RT.nexHidden && (A!.nexLight ?? 0.5) > 0) lp.lamp({ x: RT.player.x, y: RT.player.y, z: 14 + RT.nexZ, r: 62, color: '#ffe9c8', i: A!.nexLight ?? 0.5 })
+        if (RT.novaOn) lp.lamp({ x: RT.nova.x, y: RT.nova.y, z: RT.nova.z, r: 46, color: '#8fe9ff', i: 0.6 })
+        if (!g.cine) for (const it of INTERACTS.values()) if (it.enabled() && (!it.marker || it.marker())) lp.lamp({ x: it.x, y: it.y, z: (it.mz ?? 34) - 10, r: 30, color: it.color || '#ffd27a', i: 0.55 })
+        for (const p of ps) if (p.s > 1 || p.life > 0.5) lp.lamp({ x: p.x, y: p.y, z: p.z, r: 8, color: p.c, i: 0.35 })
+        lp.end()
+        // os brilhos voltam a brilhar por cima da sombra
+        for (const gl of glows) drawSprite(gl.s, gl.x, gl.y, gl.a * 0.55, gl.k, 'lighter')
+      }
       // marcador do toque
       if (RT.tapMark) {
         const k = (RT.time - RT.tapMark.t) / 0.6
@@ -422,8 +452,11 @@ export function GameView() {
         ctx.fillRect(Math.round(P.sx), Math.round(P.sy), p.s, p.s)
       }
       ctx.globalAlpha = 1
+      if (A?.motes && full) drawMotes(ctx, sc, A.motes, cam, RT.time, dt, { vx0, vy0, vx1, vy1 })
       ctx.setTransform(1, 0, 0, 1, 0, 0)
       sc.post?.(ctx, W, H, RT.time)
+      if (A?.grade && full) { ctx.globalCompositeOperation = A.grade.op; ctx.globalAlpha = A.grade.a; ctx.fillStyle = A.grade.color; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over' }
+      if (A?.vignette) vignette(ctx, W, H, A.vignette)
     }
     raf = requestAnimationFrame(frame)
     return () => { cancelAnimationFrame(raf); removeEventListener('resize', resize); unsub() }

@@ -27,6 +27,8 @@ export interface Thing {
   pos?: () => { x: number; y: number; z?: number } // coisas que andam
   scale?: () => number
   shadow?: number // raio da sombra (px), 0 = sem
+  /** Esta coisa ilumina em volta (raio em px, cor e força). */
+  light?: { r: number; color: string; i?: number; z?: number } | (() => { r: number; color: string; i?: number; z?: number } | null)
 }
 
 export interface TileSpec { s: string; a?: string; b?: string; c?: string }
@@ -66,6 +68,10 @@ export interface Scene {
   cliffAt?: (x: number, y: number) => { a?: string; b?: string; depth?: number; noFall?: boolean } | null
   /** Esteiras: velocidade (casas/s) que empurra o NEX na casa (x, y). */
   flow?: (x: number, y: number) => [number, number] | null
+  /** Luz ambiente, céu em camadas, partículas no ar e sombras do chão (engine/atmos.ts). */
+  atmos?: import('./atmos').Atmos
+  /** Luzes que mudam a cada quadro (além das coisas com `light` e dos brilhos). */
+  lights?: () => import('./atmos').Lamp[]
 }
 
 export interface Interact {

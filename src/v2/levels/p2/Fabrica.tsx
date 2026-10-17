@@ -1,3 +1,4 @@
+import { travelTo } from '../../engine/travel'
 import { Pix, hex, hash2, darker, lighter } from '../../engine/pix'
 import { box, glow, memo } from '../../art/core'
 import { crystal, portalSprite } from '../../art/fx'
@@ -101,7 +102,7 @@ async function zoneEnd(c: Ctx, i: number) {
   G().pushBanner({ kind: 'station', title: z.word, sub: `Estação ${i + 1} · ${z.name}` })
   SFX.play('core'); gesture('cheer', 1.8)
   RT.cam.shake = 0.3
-  await c.wait(1.3)
+  await c.wait(1.0)
   await c.say({ who: 'ENGINE', text: z.engine })
   for (const id of z.codex) c.discover(id)
   if (z.id === 'tokens') { RT.trail.length = 0; for (let n = 0; n < 60; n++) RT.trail.push([RT.player.x - n * 0.1, RT.player.y]); await c.wait(0.4) }
@@ -109,9 +110,9 @@ async function zoneEnd(c: Ctx, i: number) {
   const nx = CORRS.find((k) => k.gate === i && k.belt)
   if (nx && nextZone() >= 0) {
     c.focus(nx.mid, 1, 22)
-    await c.wait(0.5)
+    await c.wait(0.3)
     SFX.play('whoosh')
-    await c.wait(1.5)
+    await c.wait(1.1)
   }
 }
 
@@ -185,8 +186,7 @@ async function intro(c: Ctx) {
     { who: 'NEX', text: 'Uau… que barulho é esse? Parece uma fábrica!' },
     { who: 'NOVA', text: 'É o coração da Language Engine: a Fábrica de Previsões. É aqui que ela transforma uma pergunta em resposta.' },
     { who: 'ENGINE', text: 'Chegou… uma pergunta. “Qual é a capital do Brasil?” Eu sei que sei… mas não lembro como eu faço.' },
-    { who: 'NOVA', text: 'A fábrica tem oito estações. Em cada uma, um robô cuida de uma parte do trabalho. O choque deixou todas desligadas.' },
-    { who: 'NOVA', text: 'Ajude cada robô e aprenda o que ele faz. Cada estação religada apaga a barreira do corredor seguinte.' },
+    { who: 'NOVA', text: 'São oito estações, cada uma cuidada por um robô, e o choque desligou todas. Ajude cada robô: cada estação religada abre o corredor seguinte.' },
     { who: 'NEX', text: 'E no fim, a Engine responde a pergunta?' },
     {
       who: 'NOVA', text: 'Se tudo voltar a funcionar, sim! Quer saber mais alguma coisa?', choices: [
@@ -268,7 +268,7 @@ async function main(c: Ctx) {
       c.objective('Siga a seta a partir de Portugal', LISBOA)
       await c.until(() => done(i))
     } else {
-      c.objective(z.hint, h ? [h.route[0][0], h.route[0][1]] : null)
+      c.objective(z.hint, h ? [h.route[0][0], h.route[0][1]] : undefined, 'npc_host_' + z.id)
       await c.until(() => done(i) || (z.id === 'vetores' && !!G().flags.p2i_vetores))
     }
     await c.until(() => !G().focus && !G().dialog)
@@ -276,6 +276,8 @@ async function main(c: Ctx) {
   if (!c.flag('p2_final')) {
     c.objective('Leve a pergunta até a Sala do Prompt', PROMPT_USE)
     c.say({ who: 'NOVA', text: 'As oito estações estão funcionando! Vamos levar os tokens da pergunta até a máquina, na Sala do Prompt.' }, { ambient: true }).catch(() => {})
+    await c.wait(1.6)
+    if (Math.hypot(RT.player.x - PROMPT_USE[0], RT.player.y - PROMPT_USE[1]) > 1.6) await travelTo(PROMPT_USE)
     await c.reach(PROMPT_USE, 1.6)
     await finale(c)
   }
@@ -388,10 +390,10 @@ export default function build(): Scene {
     const [ox, oy] = ZO('centro')
     add({ x: MACHINE[0], y: MACHINE[1], w: 3, d: 2, solid: true, sprite: () => A.promptMachine(doneCount(), anim(3)) })
     add({ x: MACHINE[0] + 1.5, y: MACHINE[1] + 2.4, layer: 'ground', blend: 'lighter', sprite: glow(34, '#59d7ff', 0.3), alpha: () => 0.4 + 0.07 * doneCount() })
-    add({ x: ox + 1.6, y: oy + 1.6, sprite: () => A.screenPost('#59d7ff', anim(4)), shadow: 4 }, { x: ox + 12.4, y: oy + 1.4, sprite: () => A.screenPost('#ffd27a', anim(4) + 2), shadow: 4 })
+    add({ x: ox + 1.6, y: oy + 1.6, sprite: () => A.screenPost('#59d7ff', anim(4)), shadow: 4, light: { r: 36, color: '#59d7ff', z: 30, i: 0.7 } }, { x: ox + 12.4, y: oy + 1.4, sprite: () => A.screenPost('#ffd27a', anim(4) + 2), shadow: 4, light: { r: 36, color: '#ffd27a', z: 30, i: 0.7 } })
     add({ x: ox + 1.2, y: oy + 9, w: 0.55, d: 0.55, solid: true, sprite: A.crate('#6a5a3a') }, { x: ox + 1.9, y: oy + 9.2, w: 0.55, d: 0.55, solid: true, sprite: A.crate('#5a6a7a') }, { x: ox + 1.5, y: oy + 9.6, z: 14, sprite: A.crate('#6a5a3a') })
     add({ x: ox + 12.6, y: oy + 5.4, sprite: A.pipeV('#5a6a9a', 40), shadow: 0 }, { x: ox + 0.6, y: oy + 5.6, sprite: A.pipeV('#5a6a9a', 40), shadow: 0 })
-    add({ x: PORTAL_P[0], y: PORTAL_P[1], hidden: () => !flag('p2_done'), sprite: () => portalSprite(anim(8), '#7fe3ff'), shadow: 0 })
+    add({ x: PORTAL_P[0], y: PORTAL_P[1], hidden: () => !flag('p2_done'), sprite: () => portalSprite(anim(8), '#7fe3ff'), shadow: 0, light: { r: 70, color: '#7fe3ff', z: 30, i: 0.9 } })
     add({ x: PORTAL_P[0], y: PORTAL_P[1] + 0.6, layer: 'ground', blend: 'lighter', hidden: () => !flag('p2_done'), sprite: glow(30, '#7fe3ff', 0.35) })
     addInteract({ id: 'p2_portal', x: PORTAL_USE[0], y: PORTAL_USE[1], r: 1.5, mz: 60, color: '#7fe3ff', label: 'Atravessar para a Fase 3', enabled: () => !!flag('p2_done'), use: () => start('p2_portal', async (c) => { c.objective(null); c.goto('p3') }) })
     addInteract({ id: 'p2_machine', x: PROMPT_USE[0], y: PROMPT_USE[1], r: 1.4, mz: 70, color: '#59d7ff', label: () => (flag('p2_final') ? 'Rever o caminho da pergunta' : 'Ver a máquina do prompt'), enabled: () => !!flag('p2_intro') && (nextZone() >= 0 || !!flag('p2_final')),
@@ -407,8 +409,8 @@ export default function build(): Scene {
     add({ x: ox + 8.4, y: oy + 1.4, w: 2.2, d: 1, solid: true, sprite: () => A.giantBook(anim(2)) })
     add({ x: ox + 2.6, y: oy + 0.7, w: 2.4, d: 0.2, solid: true, sprite: A.tallyBoard() })
     add({ x: ox + 0.4, y: oy + 1.5, w: 0.5, d: 1.8, solid: true, sprite: A1.bookshelf(1.8) }, { x: ox + 0.4, y: oy + 8.8, w: 0.5, d: 1.8, solid: true, sprite: A1.bookshelf(1.8) })
-    add({ x: ox + 11.6, y: oy + 6.2, w: 1.4, d: 0.8, solid: true, sprite: A1.desk('#6a3a2a', 'candle') })
-    add({ x: ox + 12.4, y: oy + 1.2, sprite: A1.lamppost('#c8a8ff', true), shadow: 3 })
+    add({ x: ox + 11.6, y: oy + 6.2, w: 1.4, d: 0.8, solid: true, sprite: A1.desk('#6a3a2a', 'candle'), light: { r: 30, color: '#ffc06a', z: 22, i: 0.7 } })
+    add({ x: ox + 12.4, y: oy + 1.2, sprite: A1.lamppost('#c8a8ff', true), shadow: 3, light: { r: 46, color: '#c8a8ff', z: 34, i: 0.85 } })
   }
   /* ---------- Fatiador ---------- */
   {
@@ -423,14 +425,14 @@ export default function build(): Scene {
       add({ x: 0, y: 0, pos: () => { const t = (RT.time * 0.25 + k / 3 + 0.5) % 1; return { x: ox + 9.6 + t * 2.8, y: oy + 2.85, z: 10 } }, sprite: () => { const n = Math.floor(RT.time * 0.25 + k / 3 + 0.5); const o = OUTP[(n * 3 + k) % OUTP.length]; return tokenTag(o[n % o.length], '#ffd27a', '#3a1a1a') } })
     }
     add({ x: ox + 12, y: oy + 7, w: 0.55, d: 0.55, solid: true, sprite: A.crate('#8a3a3a') }, { x: ox + 12.7, y: oy + 7.2, w: 0.55, d: 0.55, solid: true, sprite: A.crate('#6a5a3a') }, { x: ox + 12.3, y: oy + 7.5, z: 14, sprite: A.crate('#8a3a3a') })
-    add({ x: ox + 1.4, y: oy + 10, sprite: () => A.screenPost('#ff6a5a', anim(4)), shadow: 4 })
+    add({ x: ox + 1.4, y: oy + 10, sprite: () => A.screenPost('#ff6a5a', anim(4)), shadow: 4, light: { r: 36, color: '#ff6a5a', z: 30, i: 0.7 } })
   }
   /* ---------- Vale dos Vetores ---------- */
   {
     for (const [g, p] of Object.entries(DIST)) add({ x: p[0], y: p[1], z: 2, hidden: () => near(g), sprite: tokenTag(GROUPS[g].name.toUpperCase(), '#0c1430', GROUPS[g].color) })
     STARS.forEach((s, k) => {
       const p = DIST[s.g], color = GROUPS[s.g].color
-      add({ x: p[0] + s.dx, y: p[1] + s.dy, z: 3, sprite: () => A.starSprite(color, anim(3) + k) })
+      add({ x: p[0] + s.dx, y: p[1] + s.dy, z: 3, sprite: () => A.starSprite(color, anim(3) + k), light: { r: 20, color, z: 8, i: 0.55 } })
       add({ x: p[0] + s.dx, y: p[1] + s.dy, z: 11, hidden: () => !near(s.g), sprite: tokenTag(s.w, color, '#0c1430') })
     })
     // as palavras perdidas, quando chegam ao bairro, viram estrelas
@@ -445,7 +447,7 @@ export default function build(): Scene {
     addInteract({ id: 'p2v_lisboa', x: LISBOA[0], y: LISBOA[1], r: 1.3, mz: 30, color: '#ffd27a', label: 'Descobrir a palavra', enabled: () => !!flag('p2v_arrow') && !flag('p2v_lisboa'), use: () => start('p2v_lisboa', lisboaScene) })
     for (const g of Object.keys(DIST)) {
       const p = DIST[g]
-      addInteract({ id: 'p2v_drop_' + g, x: p[0], y: p[1], r: 1.9, mz: 26, color: GROUPS[g].color, label: () => `Soltar “${V.carry}” em ${GROUPS[g].name}`, enabled: () => !!V.carry, use: () => dropLost(g) })
+      addInteract({ id: 'p2v_drop_' + g, x: p[0], y: p[1], r: 9, mz: 26, color: GROUPS[g].color, label: () => `Soltar “${V.carry}” em ${GROUPS[g].name}`, enabled: () => !!V.carry, use: () => dropLost(g) })
     }
   }
   /* ---------- Praça dos Holofotes ---------- */
@@ -459,9 +461,9 @@ export default function build(): Scene {
       add({ x: 0, y: 0, pos: () => ({ x, y, z: 12 + (lit() ? Math.abs(Math.sin(RT.time * 5 + k)) * 3 : 0) }), sprite: () => tokenBody(lit() ? '#ffd27a' : '#8a7aa8', anim(3) + k, lit() ? 'feliz' : 'surpreso') })
       add({ x: 0, y: 0, hidden: () => !lit(), pos: () => ({ x, y, z: 30 }), sprite: () => tokenTag(t, '#ffd27a', '#1b1426') })
     })
-    add({ x: STAGE[0] - 0.4, y: STAGE[1] + 3.4, sprite: () => A.spotlight('#ffd27a', true, false), shadow: 4 }, { x: STAGE[0] + 5.3, y: STAGE[1] + 3.2, sprite: () => A.spotlight('#ffd27a', true, true), shadow: 4 })
+    add({ x: STAGE[0] - 0.4, y: STAGE[1] + 3.4, sprite: () => A.spotlight('#ffd27a', true, false), shadow: 4, light: { r: 44, color: '#ffd27a', z: 30, i: 0.8 } }, { x: STAGE[0] + 5.3, y: STAGE[1] + 3.2, sprite: () => A.spotlight('#ffd27a', true, true), shadow: 4, light: { r: 44, color: '#ffd27a', z: 30, i: 0.8 } })
     add({ x: STAGE[0] + 0.2, y: STAGE[1] + 5.4, w: 4, d: 0.45, solid: true, sprite: A.bench(4) }, { x: STAGE[0] + 0.2, y: STAGE[1] + 7.2, w: 4, d: 0.45, solid: true, sprite: A.bench(4) })
-    add({ x: ox + 1.6, y: oy + 1.2, sprite: A.neonSign('ATENÇÃO', '#ffd27a', true), shadow: 3 })
+    add({ x: ox + 1.6, y: oy + 1.2, sprite: A.neonSign('ATENÇÃO', '#ffd27a', true), shadow: 3, light: { r: 40, color: '#ffd27a', z: 34, i: 0.75 } })
     add({ x: ox + 3.2, y: oy + 1.0, sprite: () => A.screenPost('#ffd27a', anim(4)), shadow: 4 })
   }
   /* ---------- Torre das Camadas ---------- */
@@ -471,16 +473,16 @@ export default function build(): Scene {
     add({ x: ox + 11, y: oy + 2.8, z: 140, layer: 'top', blend: 'lighter', hidden: () => WORLD.camadas < 3, sprite: glow(40, '#9aacff', 0.5) })
     add({ x: ox + 3, y: oy + 1.4, sprite: A1.bracketBoard([['1', '0', '2'], ['0', '1', '1']], '#9aacff'), shadow: 6 })
     add({ x: ox + 12.6, y: oy + 7, sprite: A.pipeV('#5a6ac0', 34), shadow: 0 }, { x: ox + 12.6, y: oy + 9, sprite: A.pipeV('#5a6ac0', 26), shadow: 0 })
-    add({ x: ox + 1.5, y: oy + 9.6, sprite: () => A.screenPost('#7a8cff', anim(4)), shadow: 4 })
+    add({ x: ox + 1.5, y: oy + 9.6, sprite: () => A.screenPost('#7a8cff', anim(4)), shadow: 4, light: { r: 36, color: '#7a8cff', z: 30, i: 0.7 } })
   }
   /* ---------- Cassino da Roleta ---------- */
   {
     const [ox, oy] = ZO('roleta')
     let ang = 0, lastT = 0
     add({ x: ox + 2, y: oy + 4, w: 2.4, d: 2.4, solid: true, sprite: () => { const t = RT.time; const since = performance.now() / 1000 - WORLD.spinAt; const sp = since < 1.6 ? 12 * (1 - since / 1.6) + 0.4 : 0.4; ang += sp * Math.max(0, Math.min(0.1, t - lastT)); lastT = t; return A.rouletteTable(ang) } })
-    ;[[1, 0.6], [2.1, 0.6], [10, 0.6], [11.1, 0.6], [12.2, 0.6]].forEach(([lx, ly], k) => add({ x: ox + lx, y: oy + ly, w: 0.9, d: 0.8, solid: true, sprite: () => A.slotMachine(['#8a2a6a', '#2a6a8a', '#6a2a8a', '#8a6a2a', '#2a8a5a'][k], anim(5) + k) }))
-    add({ x: ox + 4, y: oy + 1.2, sprite: () => A.neonSign('CASSINO', '#ff7ab8', anim(2) % 4 !== 0), shadow: 3 })
-    add({ x: ox + 1.4, y: oy + 9.4, sprite: () => A.neonSign('ROLETA', '#ffd27a', true), shadow: 3 })
+    ;[[1, 0.6], [2.1, 0.6], [10, 0.6], [11.1, 0.6], [12.2, 0.6]].forEach(([lx, ly], k) => add({ x: ox + lx, y: oy + ly, w: 0.9, d: 0.8, solid: true, sprite: () => A.slotMachine(['#8a2a6a', '#2a6a8a', '#6a2a8a', '#8a6a2a', '#2a8a5a'][k], anim(5) + k), light: { r: 26, color: ['#ff7ab8', '#59d7ff', '#c8a8ff', '#ffd27a', '#8ff0b0'][k], z: 24, i: 0.6 } }))
+    add({ x: ox + 4, y: oy + 1.2, sprite: () => A.neonSign('CASSINO', '#ff7ab8', anim(2) % 4 !== 0), shadow: 3, light: () => ({ r: 52, color: '#ff7ab8', z: 34, i: anim(2) % 4 !== 0 ? 0.85 : 0.2 }) })
+    add({ x: ox + 1.4, y: oy + 9.4, sprite: () => A.neonSign('ROLETA', '#ffd27a', true), shadow: 3, light: { r: 44, color: '#ffd27a', z: 34, i: 0.75 } })
   }
   /* ---------- Academia dos Pesos ---------- */
   {
@@ -498,7 +500,7 @@ export default function build(): Scene {
     add({ x: ox + 9, y: oy + 1.2, w: 4, d: 0.5, solid: true, sprite: A.tallShelf(4, 3) }, { x: ox + 9, y: oy + 3.6, w: 4, d: 0.5, solid: true, sprite: A.tallShelf(4, 4) })
     add({ x: ox + 2.2, y: oy + 7.4, w: 2, d: 1.2, solid: true, sprite: A.readingTable() })
     add({ x: ox + 3.2, y: oy + 7.9, z: 12, sprite: () => A.docPile(done(ZI('rag'))) })
-    add({ x: ox + 12.4, y: oy + 9.4, sprite: A1.lamppost('#8ff0b0', true), shadow: 3 })
+    add({ x: ox + 12.4, y: oy + 9.4, sprite: A1.lamppost('#8ff0b0', true), shadow: 3, light: { r: 46, color: '#8ff0b0', z: 34, i: 0.85 } })
   }
 
   /* ---------- habitantes ---------- */
@@ -558,7 +560,8 @@ export default function build(): Scene {
       sprite: (_, f) => tokenBody('#e8e0ff', f, 'surpreso'), label: `Pegar “${l.w}”`, color: '#ffffff',
       canTalk: () => !!flag('p2i_vetores') && !V.carry, talk: () => pickLost(l.w) })
     n.stopNear = 0
-    npcs.push(n); add(npcThing(n), npcShadow(n, 3)); npcTalk(n)
+    npcs.push(n); add(npcThing(n), npcShadow(n, 3))
+    const it = npcTalk(n); if (it) it.r = 7 // dá para pegar de longe: menos vai e vem no Vale
     add({ x: 0, y: 0, hidden: n.hidden, pos: () => ({ x: n.x, y: n.y, z: 18 + (n.moving ? Math.abs(Math.sin(n.walkDist * 5)) * 5 : 0) }), sprite: tokenTag(l.w, '#ffffff', '#3a2a5a') })
     add({ x: 0, y: 0, hidden: () => n.hidden!() || !flag('p2i_vetores'), pos: () => ({ x: n.x, y: n.y, z: 36 + Math.sin(RT.time * 4 + k) * 2 }), sprite: () => crystal('#ffd27a', 0.35) })
     return n
@@ -665,6 +668,7 @@ export default function build(): Scene {
     spawn: { pos: spawn, dir: [1, 0] },
     bg: dataRainBg('#020611', '#0c1a3a', '#2a8ac8'),
     scripts: [main],
+    atmos: { ambient: '#b7c1e8', sky: 'fabrica', vignette: 0.32, motes: { color: '#59d7ff', n: 22, rise: 6 }, ao: 1, nexLight: 0.5 },
     novaZ: 9,
     init: () => {
       RT.novaOn = true

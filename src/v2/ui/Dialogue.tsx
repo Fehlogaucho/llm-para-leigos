@@ -24,7 +24,7 @@ export function Dialogue() {
   // nova fala
   useEffect(() => {
     if (!d || !line) { RT.novaTalking = 0; RT.nexTalking = 0; return }
-    setShown(0)
+    setShown(G().settings.fastText ? full.length : 0)
     st.current.voiceDone = false
     RT.novaTalking = line.who === 'NOVA' ? 1 : 0
     RT.nexTalking = line.who === 'NEX' ? 1 : 0

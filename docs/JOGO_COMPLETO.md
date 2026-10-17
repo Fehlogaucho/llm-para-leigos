@@ -45,6 +45,7 @@
 
 - **Celular:** arraste o círculo dourado para andar ou toque no chão onde quer ir; toque nos objetos marcados com losango para usar e nos balões para conversar.
 - **Computador:** WASD ou setas para andar, Shift para correr, E para usar, clique no chão para ir até lá.
+- **Viagem rápida:** quando o objetivo está longe, aparece o botão “⚡ Ir até lá” (tecla G): o NEX é levado num clarão até lá e a missão já começa. Só vai aonde o caminho está aberto. Em caminhos longos o NEX corre sozinho.
 - O **objetivo atual** fica no alto da tela, e uma seta dourada aponta o caminho.
 
 **Fio condutor pedagógico:** a mesma pergunta atravessa o jogo, “**Qual é a capital do Brasil?**”. Na Fase 1 ela aparece como uma das frases da máquina; na Fase 2 ela é cortada em tokens e segue o NEX por todas as estações até a Engine responder “Brasília”; na Fase 3 é o teste da LLM que o jogador treina.
@@ -291,23 +292,13 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 
 > **NEX:** Aaai! Caí de novo… Onde eu estou agora?
 >
-> **NOVA:** No Arquivo da Memória: a parte mais antiga da Language Engine. Olhe em volta: ilhas flutuando, presas por pontes de luz.
+> **NOVA:** No Arquivo da Memória: a parte mais antiga da Language Engine. Ilhas flutuando, presas por pontes de luz.
 >
 > **Language Engine:** Q-quem… está aí? Eu tenho tantas perguntas… e não lembro… das respostas.
 >
-> **NEX:** É a IA do meu computador! A voz dela está toda falhando.
+> **NOVA:** O choque apagou as lembranças mais antigas dela: ideias que vieram antes de qualquer computador. Cada ilha guarda uma, e juntas elas são a matemática de uma LLM.
 >
-> **NOVA:** O choque apagou as lembranças mais antigas dela: as ideias que vieram antes de qualquer computador.
->
-> **NOVA:** Cada ilha guarda uma dessas ideias. Alguém inventou cada uma, às vezes há milhares de anos.
->
-> **NOVA:** Juntas, essas ideias são a matemática que faz uma LLM funcionar. Sem elas, a Engine não consegue funcionar direito.
->
-> **NEX:** E como a gente devolve essas ideias para ela?
->
-> **NOVA:** Em cada ilha, toque no console. O eco de quem teve a ideia vai aparecer, contar a história e deixar um documento para você ler.
->
-> **NOVA:** Cada ideia que você entender vira uma palavra que a Engine volta a lembrar. E a névoa da ponte seguinte se abre.
+> **NOVA:** Em cada ilha, toque no console: o eco de quem teve a ideia vai aparecer. Cada ideia entendida vira uma palavra que a Engine volta a lembrar, e a próxima ponte se abre.
 >
 > **NOVA:** Alguma pergunta antes de começar?
 >  - *Opção “Quem vai aparecer?”* → **NOVA:** Escribas, matemáticos, uma condessa programadora… Gente de verdade, de lugares e séculos diferentes.
@@ -359,8 +350,6 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 > **Escriba de Uruk:** Elas têm uns 5.300 anos e hoje ficam no Museu do Louvre, em Paris. Cada formato de ficha valia uma coisa diferente: grão, ovelha, óleo…
 
 > **NEX:** Uma ficha para cada ovelha… É tipo contar nos dedos, só que com barro!
->
-> **Escriba de Uruk:** Preparei um documento para você. Leia com calma: tem desenhos!
 
 > 📜 **Documento: “As fichas de barro”** — há ~5.500 anos · Uruk, Mesopotâmia (hoje, Iraque)
 >
@@ -417,11 +406,7 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 >
 > **NOVA:** China antiga, há uns 2.000 anos. A memória da Engine guardou esta vila do jeitinho que era.
 >
-> **Comerciante da vila:** Bem-vindo, viajante! Aqui plantamos três tipos de arroz: o superior, o médio e o inferior.
->
-> **Comerciante da vila:** Há anos fazemos essas misturas. Sabemos quanto cada mistura produz.
->
-> **Comerciante da vila:** Veja os meus três registros.
+> **Comerciante da vila:** Bem-vindo, viajante! Aqui plantamos três tipos de arroz: o superior, o médio e o inferior. Veja os meus registros de misturas.
 
 > **Comerciante da vila:** Registro 1: três feixes superiores, dois médios e um inferior. A mistura foi processada e deu 39 dou.
 >
@@ -431,15 +416,11 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 
 > **NOVA:** Dou é uma medida de grãos daquela época, tipo um balde pequeno.
 >
-> **Comerciante da vila:** Eu sei quantos feixes coloquei em cada mistura. Também sei quanto cada mistura produziu: 39, 34 e 26.
+> **Comerciante da vila:** Sei quantos feixes coloquei em cada mistura e quanto cada uma produziu. Mas nunca medi um feixe sozinho. Você consegue descobrir quanto produz cada tipo?
 >
-> **Comerciante da vila:** Mas nunca medi um feixe sozinho.
+> **NEX:** Descobrir uma coisa que ninguém nunca mediu? Parece impossível…
 >
-> **Comerciante da vila:** Você consegue descobrir quanto produz cada tipo de arroz?
->
-> **NEX:** Descobrir uma coisa que ninguém nunca mediu? Isso parece impossível…
->
-> **NOVA:** Parece. Mas os registros guardam pistas. Ali na frente tem uma mesa de madeira: vamos organizar as evidências.
+> **NOVA:** Parece. Mas os registros guardam pistas. Vamos organizar tudo na mesa de madeira.
 
 *Se o jogador volta ao comerciante antes de resolver:*
 
@@ -488,8 +469,6 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 > **Liu Hui:** Por quase 2.000 anos, estudantes chineses aprenderam matemática com esse livro. Repare: ele se lê em colunas, de cima para baixo e da direita para a esquerda.
 
 > **NEX:** Esse problema tem 2.000 anos? E eu resolvi igualzinho aos calculistas?
->
-> **Liu Hui:** Anotei a história deste método. Leia comigo.
 
 > 📜 **Documento: “O mistério dos três grãos”** — livro de ~2.000 anos · comentário de 263 · China
 >
@@ -553,8 +532,6 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 > **Al-Khwarizmi:** Minha família vinha de Khwarizm, uma região que hoje fica entre o Uzbequistão e o Turcomenistão. O meu nome quer dizer “o de Khwarizm”.
 
 > **NEX:** Al-Khwarizmi… al-go-ritmo… ALGORITMO?!
->
-> **Al-Khwarizmi:** Escrevi umas páginas sobre isso. Dê uma olhada.
 
 > 📜 **Documento: “O passo a passo”** — por volta de 825 · Bagdá (hoje, Iraque)
 >
@@ -602,8 +579,6 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 > **Blaise Pascal:** Aos 19 anos, inventei uma máquina de somar com rodas dentadas, a Pascalina, para ajudar o meu pai, que fazia contas de impostos o dia inteiro.
 
 > **NEX:** Matemática de apostas? Agora fiquei curioso.
->
-> **Blaise Pascal:** Preparei um documento para você. Leia com calma: tem desenhos!
 
 > 📜 **Documento: “Calcular a sorte”** — 1654 · França
 >
@@ -659,8 +634,6 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 > **Gottfried Leibniz:** Repare na peruca enorme e cacheada: era a moda dos homens importantes da época! E eu também construí uma máquina que fazia as quatro operações.
 
 > **NEX:** Só dois? Como é que dá para escrever 100 com dois algarismos?
->
-> **Gottfried Leibniz:** Está tudo anotado aqui. Leia comigo.
 
 > 📜 **Documento: “Tudo com 0 e 1”** — 1703 · Alemanha
 >
@@ -706,8 +679,6 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 > **Carl Friedrich Gauss:** Viu o gorro preto de veludo? Eu usava sempre. Este retrato ficou tão famoso que foi parar na nota de 10 marcos da Alemanha.
 
 > **NEX:** Achar um asteroide com lápis e papel? Sem computador nenhum?
->
-> **Carl Friedrich Gauss:** Escrevi umas páginas sobre isso. Dê uma olhada.
 
 > 📜 **Documento: “O menor erro”** — 1801 a 1809 · Alemanha
 >
@@ -755,8 +726,6 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 > **Ada Lovelace:** Sabia que o meu pai era o poeta Lord Byron? Eu juntava imaginação e matemática. Chamava isso de “ciência poética”.
 
 > **NEX:** O primeiro programa foi escrito por uma mulher, em 1843? Que demais!
->
-> **Ada Lovelace:** Preparei um documento para você. Leia com calma: tem desenhos!
 
 > 📜 **Documento: “A máquina dos símbolos”** — 1843 · Inglaterra
 >
@@ -816,8 +785,6 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 > **Arthur Cayley:** Antes de virar professor em Cambridge, eu trabalhei 14 anos como advogado. Nas horas vagas, escrevi centenas de artigos de matemática!
 
 > **NEX:** Multiplicar uma tabela inteira? Isso parece trabalhoso…
->
-> **Arthur Cayley:** Está tudo anotado aqui. Leia comigo.
 
 > 📜 **Documento: “Multiplicar tabelas”** — 1858 · Inglaterra
 >
@@ -863,8 +830,6 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 > **Andrei Markov:** Eu tinha fama de teimoso e briguento! Mas foi contando letras, com muita paciência, que eu descobri as cadeias que levam o meu nome.
 
 > **NEX:** Contar vinte mil letras na mão? Eu desistiria na décima!
->
-> **Andrei Markov:** Escrevi umas páginas sobre isso. Dê uma olhada.
 
 > 📜 **Documento: “O que vem depois?”** — 1913 · Rússia
 >
@@ -912,8 +877,6 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 > **Claude Shannon:** Na minha casa eu tinha uma oficina cheia de invenções malucas: um rato mecânico que achava a saída de um labirinto e até máquinas que faziam malabares!
 
 > **NEX:** Monociclo e matemática? Gostei desse cara.
->
-> **Claude Shannon:** Preparei um documento para você. Leia com calma: tem desenhos!
 
 > 📜 **Documento: “O bit”** — 1948 · Estados Unidos
 >
@@ -959,8 +922,6 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 > **Frank Rosenblatt:** Foi pensando em neurônios assim que eu imaginei uma máquina que aprende. Cada galhinho recebe um sinal, e a célula decide se dispara ou não.
 
 > **NEX:** Uma máquina que aprende sozinha… isso já parece IA de verdade!
->
-> **Frank Rosenblatt:** Está tudo anotado aqui. Leia comigo.
 
 > 📜 **Documento: “O neurônio que aprende”** — 1943 e 1958 · Estados Unidos
 >
@@ -991,7 +952,9 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 
 **Objetivo:** “Leve as palavras até a Memória Central”.
 
-> **NOVA:** Todas as memórias voltaram! As palavras estão seguindo você. Vamos levá-las até a Memória Central, no meio do arquivo.
+> **NOVA:** Todas as memórias voltaram! Vamos levar as palavras até a Memória Central.
+
+*O NEX é levado num clarão até a Memória Central.*
 
 *As palavras que seguiam o NEX voam para o cristal, que acende em azul.*
 
@@ -1068,9 +1031,7 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 >
 > **Language Engine:** Chegou… uma pergunta. “Qual é a capital do Brasil?” Eu sei que sei… mas não lembro como eu faço.
 >
-> **NOVA:** A fábrica tem oito estações. Em cada uma, um robô cuida de uma parte do trabalho. O choque deixou todas desligadas.
->
-> **NOVA:** Ajude cada robô e aprenda o que ele faz. Cada estação religada apaga a barreira do corredor seguinte.
+> **NOVA:** São oito estações, cada uma cuidada por um robô, e o choque desligou todas. Ajude cada robô: cada estação religada abre o corredor seguinte.
 >
 > **NEX:** E no fim, a Engine responde a pergunta?
 >
@@ -1095,9 +1056,7 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 >
 > **NEX:** Só isso? Achei que ela pensasse a frase inteira de uma vez!
 >
-> **Prof. Adivinho:** Aqui a resposta sai um pedaço de cada vez: a gente olha o que já foi escrito e calcula o que pode vir depois. Não é chute cego: é chute contado!
->
-> **Prof. Adivinho:** Aquele livro gigante tem oito frases. Minha máquina conta quem vem depois de quem.
+> **Prof. Adivinho:** Aqui a resposta sai um pedaço de cada vez: a gente olha o que já foi escrito e calcula o que pode vir depois. Não é chute cego: minha máquina conta quem vem depois de quem naquele livro gigante.
 >
 > **Prof. Adivinho:** Vamos jogar: você contra a minha máquina de contar. Quem adivinha melhor a próxima palavra?
 
@@ -1134,9 +1093,7 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 >
 > **NEX:** Por que cortar? Não seria mais fácil ler a palavra toda?
 >
-> **Tesourinha:** Existem palavras demais! Com pedaços, a Engine monta qualquer palavra, até as que nunca viu: “in” + “feliz” + “mente”.
->
-> **Tesourinha:** E cada pedaço ganha um número de catálogo, o ID. Daqui para a frente, a Engine só trabalha com números.
+> **Tesourinha:** Existem palavras demais! Com pedaços, a Engine monta qualquer palavra, até as que nunca viu: “in” + “feliz” + “mente”. E cada pedaço ganha um número de catálogo, o ID.
 >
 > **Tesourinha:** Pegue a tesoura! Toque nos espaços entre as letras onde você cortaria.
 
@@ -1171,9 +1128,7 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 
 **Objetivo:** “Fale com a Vetora”.
 
-> **Vetora:** Bem-vindo ao Vale dos Vetores! Aqui cada token vira um ponto num mapa gigante.
->
-> **Vetora:** Esse endereço no mapa se chama embedding: uma lista de números que diz onde a palavra mora.
+> **Vetora:** Bem-vindo ao Vale dos Vetores! Aqui cada token vira um ponto num mapa gigante. Esse endereço se chama embedding: uma lista de números que diz onde a palavra mora.
 >
 > **NEX:** E quem decide onde cada palavra mora?
 >
@@ -1333,9 +1288,7 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 
 > **Treinadora Peso:** Um, dois! Um, dois! Bem-vindo à Academia dos Pesos!
 >
-> **Treinadora Peso:** Como a Engine aprendeu os pesos certos? Treinando! Ela lê uma frase, tenta adivinhar a próxima palavra e mede o erro.
->
-> **Treinadora Peso:** Depois ajusta cada peso um tiquinho na direção que erra menos. E repete. Milhões de vezes.
+> **Treinadora Peso:** Como a Engine aprendeu os pesos certos? Treinando! Ela lê uma frase, tenta adivinhar a próxima palavra, mede o erro e ajusta cada peso um tiquinho. Milhões de vezes.
 >
 > **NEX:** Igual ao Gauss e ao Rosenblatt na Fase 1! Errar cada vez menos.
 >
@@ -1474,14 +1427,12 @@ Pelo menu **Capítulos e missões** (tela inicial, Menu ☰ ou Mapa) dá para ir
 >
 > **NEX:** Ela fala tudo embaralhado!
 >
-> **Dra. Sinapse:** Porque ainda não treinou. Hoje você vai criar uma LLM do começo ao fim: escolher os textos, cortar em tokens, treinar, testar, ajustar e… formar!
+> **Dra. Sinapse:** Porque ainda não treinou. Hoje você vai criar uma LLM do começo ao fim: dados, tokens, treino, teste, ajuste e… formatura! Mas antes: toda LLM precisa de um nome.
 >
-> **Dra. Sinapse:** Mas antes: toda LLM precisa de um nome.
+> **Dra. Sinapse:** {nome}! Que nome lindo. Vamos começar pela Biblioteca de Dados, ali no canto.
 
 *Painel “Como vai se chamar a sua LLM?”: ✨ Lumi · ⚡ Faísca · 🍿 Pipoca · 🤖 Bit. A bebê pula de alegria.*
 
-> **Dra. Sinapse:** {nome}! Que nome lindo. Vamos começar pela Biblioteca de Dados, ali no canto.
->
 > **NOVA:** Siga as estações em ordem. Cada uma deixa a sua LLM um pouco mais esperta!
 
 *Conversar com a LLM bebê a qualquer momento mostra uma fala gerada por ela; falar com a Dra. Sinapse indica a próxima parada (“Próxima parada: {próxima estação}. {nome} está ansiosa!”).*
@@ -1795,7 +1746,7 @@ O Codex é a enciclopédia do jogo: cada ideia descoberta vira um verbete com ex
 - **Diálogos:** caixa com retrato expressivo de quem fala, texto digitado no ritmo da voz, escolhas em botões; falas “de passagem” avançam sozinhas.
 - **Painéis:** documentos de 4 páginas (com desenhos e o selo “IDEIA QUE A LLM USA”), brincadeiras, perguntas e o caminho da pergunta dentro da Engine.
 - **Banners:** área nova, memória recuperada, estação concluída, conceito descoberto, núcleo recuperado, side quest.
-- **Codex** (livro), **Mapa da jornada** (núcleos recuperados, fases, áreas visitadas e side quests) e **Menu** (voz, volume da voz, música, efeitos, tamanho do texto, movimento, contraste, tamanho dos pixels, modo piloto, como jogar, capítulos e missões, tela inicial, recomeçar do zero).
+- **Codex** (livro), **Mapa da jornada** (núcleos recuperados, fases, áreas visitadas e side quests) e **Menu** (voz, volume da voz, música, efeitos, tamanho do texto, texto das falas animado ou instantâneo, gráficos completos ou leves, movimento, contraste, tamanho dos pixels, modo piloto, como jogar, capítulos e missões, tela inicial, recomeçar do zero).
 - **Acessibilidade:** o texto de todas as falas fica sempre na tela (legenda); botões para voltar à fala anterior (◂) e ouvir de novo (↻); volumes separados de voz, música e efeitos; texto Grande ou Maior; alto contraste; movimento reduzido (sem tremor de câmera nem clarões, cinemáticas em cortes, menos partículas e sem animações de interface); ✓ e ✗ junto das cores; documentos que podem ser fechados e relidos depois.
 - **Modo piloto (pesquisa):** liga pelo Menu ou pelo link `?piloto=1`. Antes do jogo, uma avaliação inicial de 8 perguntas; nos créditos (ou pelo Menu), uma avaliação final com 8 perguntas equivalentes e 2 perguntas abertas. O jogo registra tempo, tentativas e dicas por atividade, a prova e o uso do Codex, **só no navegador**, e permite exportar um arquivo JSON. Roteiro em `docs/PROTOCOLO_TESTE_INICIANTES.md`.
 - **Capítulos e missões:** lista todas as missões com ✓ nas feitas e leva direto para qualquer uma.
