@@ -22,10 +22,12 @@ function targetInteract(t: P2): Interact | null {
   }
   return best
 }
+/** Faixas que ficam sempre na tela (não são painéis abertos). */
+const HUD_STRIPS = new Set(['l1mem', 'p2strip'])
 /** Dá para viajar agora? (sem diálogo, cena, menu ou painel aberto). */
 export function travelReady(): boolean {
   const g = G()
-  return !!RT.scene && !!g.objective?.target && !TRAVEL.busy && !RT.frozen && !g.cine && !g.focus && !g.menu && !g.loading && !(g.dialog && !g.dialog.ambient) && Object.keys(g.overlays).length === 0
+  return !!RT.scene && !!g.objective?.target && !TRAVEL.busy && !RT.frozen && !g.cine && !g.focus && !g.menu && !g.loading && !(g.dialog && !g.dialog.ambient) && !Object.keys(g.overlays).some((k) => !HUD_STRIPS.has(k))
 }
 export function objectiveDistance(): number {
   const t = G().objective?.target
