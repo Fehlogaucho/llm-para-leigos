@@ -115,12 +115,13 @@ async def main():
             await drive(g, "g.flags.p2_%s" % z, z, shots)
             check(await g.flag('p2_' + z) == 1, 'estação %d (%s) concluída' % (i + 1, z))
             check(SEEN.get(z), 'documento de %s mostra “O jogo simplificou”' % z)
-        obj = None
-        for _ in range(30):
-            obj = await g.ev("__pf.useGame.getState().objective")
-            if obj and 'Prompt' in obj['text']: break
-            await g.advance(400)
-        t = obj['target']; await g.walk(t[0], t[1], timeout=60000)
+        # no fim, o NEX é levado sozinho (viagem rápida) até a máquina da Sala do Prompt
+        near = False
+        for _ in range(40):
+            near = await g.ev("(()=>{const it=__pf.INTERACTS.get('p2_machine'), R=__pf.RT.player; return Math.hypot(it.x-R.x, it.y-R.y) < 2.5})()")
+            if near: break
+            await g.wait(300)
+        check(near, 'no fim, o NEX vai sozinho até a Sala do Prompt')
         tt = 0; ordered = False; simp = False
         while tt < 120000:
             st = await g.ev("""(()=>{ const g=__pf.useGame.getState(); const h=document.querySelector('.gm h4'); return {gm: !!document.querySelector('.gm'), title: h?h.textContent:'', dlg: !!g.dialog, amb: !!(g.dialog&&g.dialog.ambient), done: !!g.flags.p2_done, cine: !!g.cine, focus: g.focus} })()""")

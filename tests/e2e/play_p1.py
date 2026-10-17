@@ -59,11 +59,15 @@ async def main():
         check(await g.flag('l1_intro') == 1, 'chegada ao Arquivo')
         for i in range(n): await run_stop(g, i, shots)
         if n == 11:
-            for _ in range(30):
-                obj = await g.ev("__pf.useGame.getState().objective")
-                if obj and 'Central' in obj['text']: break
-                await g.advance(400)
-            t = obj['target']; await g.walk(t[0], t[1], timeout=60000)
+            # no fim, o NEX é levado sozinho (viagem rápida) até a Memória Central
+            near = False; tgt = None
+            for _ in range(40):
+                o = await g.ev("__pf.useGame.getState().objective")
+                if o and 'Central' in o['text'] and o.get('target'): tgt = o['target']
+                if tgt: near = await g.ev("Math.hypot(%f-__pf.RT.player.x, %f-__pf.RT.player.y) < 2.5" % (tgt[0], tgt[1]))
+                if near: break
+                await g.wait(300)
+            check(near, 'no fim, o NEX vai sozinho até a Memória Central')
             tt = 0; matched = False; wrong_hint = ''
             while tt < 120000:
                 st = await g.ev("""(()=>{ const g=__pf.useGame.getState(); return {gm: !!document.querySelector('.gm'), match: !!document.querySelector('.match'), dlg: !!g.dialog, amb: !!(g.dialog&&g.dialog.ambient), done: !!g.flags.l1_done, cine: !!g.cine, focus: g.focus} })()""")
